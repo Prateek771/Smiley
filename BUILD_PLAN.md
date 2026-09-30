@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Local framework setup is complete. Phase 1 is in progress: GitHub publication to a private repository named `Smiley` is authorized. Later product implementation and service provisioning remain outside this setup task.
+**Current position:** Phases 0 and 1 are complete. The framework, contributor guide, and tracker are saved in the private [Prateek771/Smiley](https://github.com/Prateek771/Smiley) repository with passing GitHub checks. Phase 2 is next; later product implementation and service provisioning remain outside this setup task.
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -45,12 +45,12 @@ Planned code areas: `src/app/` for routes/screens; focused feature modules under
 
 The requested document files and their ZIP/tar archive entries have been removed from both checkouts. Phase 1 publishes a fresh root checkpoint; the original local history remains recoverable locally and is excluded from GitHub.
 
-### Phase 1 — Save the checkpoint and connect private GitHub
+### Phase 1 — Save the checkpoint and connect private GitHub: complete
 
-- [ ] Complete Phase 1 and record evidence.
+- [x] Complete Phase 1 and record evidence.
 - **Build:** Agree repository owner/name; save the cleanup and guide/tracker. Inspect current files, old archives, and the history to be published. Prepare a clean publishable history without removed documents, preserving local work and the managed worktree. Add GitHub Actions for the current lint, typecheck, and build commands.
 - **Test:** A fresh checkout installs from the lockfile and passes those checks; the published files, archives, and history exclude the removed documents and credentials.
-- **Pass when:** The approved private repository contains the checkpoint and CI is green. Until GitHub publication is authorized, local commits can support development.
+- **Pass when:** The approved private repository contains the checkpoint and CI is green. Verified on `c0be1ce`: [GitHub Actions run](https://github.com/Prateek771/Smiley/actions/runs/36769233198).
 
 ### Phase 2 — Define the first workflow and expected cases
 
@@ -220,7 +220,7 @@ These are separate small build/test cycles after the core workflow is proven; th
 
 | Decision | Needed before | Current position |
 | --- | --- | --- |
-| GitHub owner/name and publishable history | Phase 1 publication | `Prateek771/Smiley`, private; fresh root history prepared; publication/checks in progress |
+| GitHub owner/name and publishable history | Phase 1 publication | [Prateek771/Smiley](https://github.com/Prateek771/Smiley), private; clean root history published; main and codex branches connected |
 | First workflow details and synthetic expected results | Phase 2 | Cashless discharge first; details still need review |
 | Component library | Phase 3 | Tailwind installed; shadcn/ui recommendation awaits confirmation |
 | Identity/tenancy mapping and internal tables | Phases 4–7 | Review required; 42-domain-table inventory retained |
@@ -236,15 +236,16 @@ Add one row for each completed phase or meaningful failed checkpoint. Store test
 | Date | Phase | Commit | Checks/result | Demo/evidence and remaining issues |
 | --- | --- | --- | --- | --- |
 | 2026-10-01 | 0: framework setup | Original local-only `fe35d53` | Lint, typecheck, and production build passed during setup | Managed worktree verified; original history excluded from publication |
-| 2026-10-01 | Planning | Not committed | Tracker structure and current commands verified | Implementation remains unstarted beyond the framework |
+| 2026-10-01 | Planning | `c0be1ce` | Tracker structure and current commands verified | Contributor guide and tracker included in the published checkpoint |
+| 2026-10-01 | 1: private GitHub and CI | `c0be1ce` | Local lint/typecheck/build passed; fresh GitHub checkout ran npm ci and all three checks successfully | [CI evidence](https://github.com/Prateek771/Smiley/actions/runs/36769233198); privacy/default branch verified; uploaded history and archives exclude removed PDFs/Word documents; both checkouts clean |
 
 For later rows record: date, phase, commit/PR link, commands and outcomes, evidence location, unresolved issues, and next action. Reopen a phase if a later change invalidates its acceptance evidence.
 
 ## GitHub recommendation and references
 
-Connect a **private GitHub repository now**, after Phase 1's publication checks. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting can be decided in Phase 20.
+The **private GitHub repository is connected** and Phase 1's publication checks passed. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting can be decided in Phase 20.
 
-The owner has authorized creating `Prateek771/Smiley` as a private repository. Publish the clean checkpoint while retaining the original history locally and preserving the managed worktree. Hosting and later product implementation need their own scope decisions.
+Created `Prateek771/Smiley` privately under the owner's authorization. `main` and `codex/saavantus-app` track their remote branches. The managed worktree is preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions.
 
 - [GitHub: adding local code](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github)
 - [GitHub: continuous integration](https://docs.github.com/en/actions/get-started/continuous-integration)
