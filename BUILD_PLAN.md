@@ -48,6 +48,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 1 — Save the checkpoint and connect private GitHub: complete
 
 - [x] Complete Phase 1 and record evidence.
+- [x] Add pinned agent-browser tooling; verify desktop/mobile capture and browser errors on the local starter.
 - **Build:** Agree repository owner/name; save the cleanup and guide/tracker. Inspect current files, old archives, and the history to be published. Prepare a clean publishable history without removed documents, preserving local work and the managed worktree. Add GitHub Actions for the current lint, typecheck, and build commands.
 - **Test:** A fresh checkout installs from the lockfile and passes those checks; the published files, archives, and history exclude the removed documents and credentials.
 - **Pass when:** The approved private repository contains the checkpoint and CI is green. Verified on `c0be1ce`: [GitHub Actions run](https://github.com/Prateek771/Smiley/actions/runs/36769233198).
@@ -238,6 +239,8 @@ Add one row for each completed phase or meaningful failed checkpoint. Store test
 | 2026-10-01 | 0: framework setup | Original local-only `fe35d53` | Lint, typecheck, and production build passed during setup | Managed worktree verified; original history excluded from publication |
 | 2026-10-01 | Planning | `c0be1ce` | Tracker structure and current commands verified | Contributor guide and tracker included in the published checkpoint |
 | 2026-10-01 | 1: private GitHub and CI | `c0be1ce` | Local lint/typecheck/build passed; fresh GitHub checkout ran npm ci and all three checks successfully | [CI evidence](https://github.com/Prateek771/Smiley/actions/runs/36769233198); privacy/default branch verified; uploaded history and archives exclude removed PDFs/Word documents; both checkouts clean |
+
+| 2026-10-01 | Tooling: agent-browser | [e2919c8](https://github.com/Prateek771/Smiley/commit/e2919c8167fd7ecfc18ff41a2199b1425da18e64) | Fresh npm ci, browser version 0.38.1, lint, typecheck, and production build passed | Headless local starter opened; rendered text/snapshot verified; 1280×800 and 390×844 screenshots inspected; zero page errors; evidence in local ignored tmp/browser/; testing session/server closed. Contributor guide remains 397 words after dev restart. Regression journeys remain planned for Phase 3. |
 
 For later rows record: date, phase, commit/PR link, commands and outcomes, evidence location, unresolved issues, and next action. Reopen a phase if a later change invalidates its acceptance evidence.
 
