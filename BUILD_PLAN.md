@@ -29,7 +29,7 @@ These decisions supersede older stack proposals in `outputs/`. The existing prot
 
 A completed phase needs its deliverable, passing checks, a short demo/review where relevant, and a recorded commit. Provider failures or missing facts should have usable fallback paths. Documentation-only work needs content/link verification rather than an application rebuild.
 
-**Existing commands:** `npm ci`, `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run start`. There is currently no automated test runner or `npm test`. Add and document test/database/worker commands when those capabilities are implemented.
+**Existing commands:** `npm ci`, `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run start`, `npm run browser:install`, and `npm run browser -- <command>`. Use Node.js 24+. agent-browser supports exploratory UI checks and screenshots with isolated synthetic sessions; see `README.md`. There is currently no regression test runner or `npm test`. Add and document test/database/worker commands when those capabilities are implemented.
 
 Planned code areas: `src/app/` for routes/screens; focused feature modules under `src/features/`; server access and storage adapters under `src/server/`; reviewed schema/migrations under `drizzle/`; worker entry points under `src/worker/`; browser journeys under `tests/e2e/`. These additional directories do not exist yet. Define each phase's precise file changes when it starts.
 
@@ -62,7 +62,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 3 — Build the desk shell and first browser journey
 
 - [ ] Complete Phase 3 and record evidence.
-- **Build:** Confirm the component approach; create navigation, a fictional work queue, and case detail screens with clear owner/next action and empty/error states. Introduce Playwright Test and documented scripts.
+- **Build:** Confirm the component approach; create navigation, a fictional work queue, and case detail screens with clear owner/next action and empty/error states. Introduce Playwright Test and documented scripts. Use agent-browser to inspect each UI slice and capture desktop/mobile evidence.
 - **Test:** Open the queue, select a case, return without losing context, and exercise loading/empty/error states. Mocked role views are labelled as demonstrations.
 - **Pass when:** This small journey works locally and in CI. Test tools are installed and reproducible.
 

@@ -2,11 +2,11 @@
 
 ## Project Structure & Module Organization
 
-`src/app/` contains App Router pages, layouts, and global CSS; `@/*` maps to `src/*`. `prototype/` and `outputs/` contain historical references and the standalone demo; rebuild it with `node prototype/build.js`. No `public/` directory exists yet; add static assets there when needed. The separate `build-guide/` repository remains in the original checkout.
+`src/app/` holds App Router pages, layouts, and CSS; `@/*` maps to `src/*`. `prototype/` and `outputs/` are historical references; rebuild the standalone demo with `node prototype/build.js`. Add static assets under `public/` when needed. The separate `build-guide/` repository stays in the original checkout.
 
 ## Build, Test, and Development Commands
 
-Use Node.js >=20.9 and npm from the worktree root.
+Use Node.js 24+ and npm from the worktree root.
 
 - `npm ci`: install locked dependencies.
 - `npm run dev`: run locally at `http://localhost:3000`.
@@ -14,14 +14,16 @@ Use Node.js >=20.9 and npm from the worktree root.
 - `npm run typecheck`: generate route types and check TypeScript.
 - `npm run build`: create a production build.
 - `npm run start`: serve the completed build.
+- `npm run browser:install`: install Chrome for browser checks.
+- `npm run browser -- <command>`: invoke agent-browser.
 
 ## Coding Style & Naming Conventions
 
-Use strict TypeScript, two-space indentation, double quotes, and semicolons. Use PascalCase for components/types and camelCase for functions/variables. Keep Next.js filenames (`page.tsx`, `layout.tsx`, `route.ts`). Prefer Server Components; add `"use client"` for browser behavior. ESLint is configured; Prettier is not.
+Use strict TypeScript, two-space indentation, double quotes, and semicolons. Use PascalCase for components/types and camelCase for functions/variables. Keep Next.js filenames (`page.tsx`, `layout.tsx`, `route.ts`). Prefer Server Components; add `"use client"` for browser behavior. ESLint is configured; Prettier is not. Check unfamiliar Next.js APIs in `node_modules/next/dist/docs/`.
 
 ## Testing Guidelines
 
-No test runner, `npm test`, or coverage threshold is configured. For application changes, run lint, typecheck, and build; GitHub Actions repeats these checks. Check UI changes locally. When adding browser tests, use Playwright Test and `tests/e2e/*.spec.ts`; prioritize key journeys and hospital/branch/role isolation.
+Use agent-browser for interactive UI checks; `README.md` documents isolated sessions and screenshots. No regression runner, `npm test`, or coverage threshold exists yet. Run lint/typecheck/build for application changes; CI repeats them. Add Playwright Test under `tests/e2e/*.spec.ts` in Phase 3; prioritize key journeys and hospital/branch/role isolation.
 
 ## Commit & Pull Request Guidelines
 

@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src next.config.ts postcss.config.mjs eslint.config.mjs",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "browser": "agent-browser",
+    "browser:install": "agent-browser install"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=24.0.0"
   },
   "dependencies": {
     "next": "16.3.8",
@@ -22,9 +24,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "agent-browser": "0.38.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "agent-browser@0.38.1": true
   }
 }

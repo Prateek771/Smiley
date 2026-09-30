@@ -33,6 +33,8 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Verify browser CLI
+        run: npm run browser -- --version
       - name: Lint
         run: npm run lint
       - name: Check TypeScript
