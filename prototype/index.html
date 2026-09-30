@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102945">
+  <meta name="description" content="A fictional, interactive preview of the Saavantus hospital insurance desk.">
+  <title>Saavantus | Claims Desk Prototype</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23102945'/%3E%3Cpath d='M32 10l6.2 15.8H55L41.4 35.6l5.2 16.4L32 42.3 17.4 52l5.2-16.4L9 25.8h16.8z' fill='%23F1BD68'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01" stroke-width="3"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.3-7 8-7s8 2.5 8 7"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.1 3.1 8.8 8 11 4.9-2.2 8-5.9 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5M9 12h7M9 16h7"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.7 4.6a5.5 5.5 0 0 0-7.8 0L12 5.5l-.9-.9a5.5 5.5 0 0 0-7.8 7.8L12 21l8.7-8.6a5.5 5.5 0 0 0 0-7.8Z"/><path d="M3 12h5l2-3 3 6 2-3h6"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="16" rx="3"/><path d="M2 9h20M6 5V3h13M17 15h2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 21V3M3 21h18M7 17v-5M12 17V7M17 17v-9"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9zM19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M10 2h4l.7 2.4 2.1.9 2.2-1.2 2.8 2.8-1.2 2.2.9 2.1L24 12v4l-2.4.7-.9 2.1 1.2 2.2-2.8 2.8-2.2-1.2-2.1.9L14 26h-4l-.7-2.4-2.1-.9-2.2 1.2-2.8-2.8 1.2-2.2-.9-2.1L0 16v-4l2.4-.7.9-2.1-1.2-2.2 2.8-2.8 2.2 1.2 2.1-.9z" transform="translate(0 -2) scale(1 .92)"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m12 2 10 19H2zM12 9v5M12 18h.01"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  </svg>
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Main navigation"></aside>
+    <div class="workspace">
+      <header id="topbar" class="topbar"></header>
+      <main id="main" tabindex="-1"></main>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="confirm-dialog" class="modal"><form method="dialog"><h2 id="dialog-title"></h2><p id="dialog-copy"></p><div class="modal-actions"><button class="btn btn-quiet" value="cancel">Cancel</button><button class="btn btn-primary" value="confirm">Confirm</button></div></form></dialog>
+  <noscript><p class="noscript">This interactive prototype needs JavaScript enabled.</p></noscript>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

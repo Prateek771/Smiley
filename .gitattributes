@@ -1,0 +1,10 @@
+* text=auto
+
+# Preserve document and archive bytes across Windows worktree checkouts.
+*.pdf binary
+*.docx binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.zip binary
+*.gz binary
