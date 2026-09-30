@@ -2,6 +2,8 @@
 
 Date: 1 October 2026. Result: synthetic workflow and expected-case review passed. This is specification/fixture validation, not an application test or hospital financial approval.
 
+Source checkpoint: [9e2f78a](https://github.com/Prateek771/Smiley/commit/9e2f78a153f2c70acb50b4b33b722620f2fe8f82).
+
 ## Inputs reviewed
 
 - [Workflow and role contract](../superpowers/specs/2026-10-01-cashless-discharge-design.md)
