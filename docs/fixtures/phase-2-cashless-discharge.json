@@ -1,0 +1,2493 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Synthetic Phase 2 acceptance inputs and independently specified expected outcomes; not a production policy or database schema.",
+  "fictional": true,
+  "currency": "INR",
+  "amountUnit": "integer-paise",
+  "displayTimezone": "Asia/Kolkata",
+  "ruleContract": {
+    "version": "SYN-DISCHARGE-1",
+    "order": [
+      "patient-excluded-lines",
+      "approved-hospital-reduction",
+      "deductible",
+      "copay",
+      "payer-benefit-limit"
+    ],
+    "copayDenominator": 10000,
+    "rounding": "half-up-to-one-paise",
+    "benefitLimitExcessAllocation": "patient-explicit-fictional-rule",
+    "requiredDocuments": [
+      "policy",
+      "preauthorization",
+      "final-bill",
+      "discharge-summary"
+    ],
+    "approvalSource": "external-payer-evidence",
+    "unknownRepresentation": null,
+    "conditionalDocuments": {
+      "patient-payment": "Required for each non-zero verified deposit/payment; all five packs include a deposit.",
+      "approved-hospital-reduction": "Required for each non-zero hospital reduction; all five packs include one."
+    }
+  },
+  "packs": [
+    {
+      "id": "P2-01",
+      "title": "Clean approval",
+      "fictional": true,
+      "hospitalId": "SYN-HOSPITAL-1",
+      "branchId": "SYN-BRANCH-1",
+      "sourceDocuments": [
+        {
+          "id": "P2-01-policy-v1",
+          "kind": "policy",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-01",
+            "patientId": "SYN-PATIENT-P2-01",
+            "policyId": "SYN-POLICY-P2-01",
+            "encounterId": "SYN-ENCOUNTER-P2-01"
+          },
+          "content": {
+            "ruleVersion": "SYN-DISCHARGE-1",
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "limitExcessAllocation": "patient"
+          },
+          "availableFromEventId": "P2-01-bill-ready"
+        },
+        {
+          "id": "P2-01-preauth-v1",
+          "kind": "preauthorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-01",
+            "patientId": "SYN-PATIENT-P2-01",
+            "policyId": "SYN-POLICY-P2-01",
+            "encounterId": "SYN-ENCOUNTER-P2-01"
+          },
+          "content": {
+            "reference": "SYN-PREAUTH-P2-01",
+            "contextOnly": true,
+            "note": "Initial approval is not final discharge authorization."
+          },
+          "availableFromEventId": "P2-01-bill-ready"
+        },
+        {
+          "id": "P2-01-tariff-v1",
+          "kind": "approved-hospital-reduction",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-01",
+            "patientId": "SYN-PATIENT-P2-01",
+            "policyId": "SYN-POLICY-P2-01",
+            "encounterId": "SYN-ENCOUNTER-P2-01"
+          },
+          "content": {
+            "hospitalReductionPaise": 700000,
+            "approvalRef": "SYN-REDUCTION-P2-01",
+            "authority": "Fictional Billing supervisor"
+          },
+          "availableFromEventId": "P2-01-bill-ready"
+        },
+        {
+          "id": "P2-01-bill-v1",
+          "kind": "final-bill",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-01",
+            "patientId": "SYN-PATIENT-P2-01",
+            "policyId": "SYN-POLICY-P2-01",
+            "encounterId": "SYN-ENCOUNTER-P2-01"
+          },
+          "content": {
+            "grossBillPaise": 10000000,
+            "lines": [
+              {
+                "id": "services",
+                "classification": "eligible-before-reduction",
+                "amountPaise": 9200000
+              },
+              {
+                "id": "patient-items",
+                "classification": "patient-excluded",
+                "amountPaise": 800000
+              }
+            ],
+            "approvedReductionPaise": 700000
+          },
+          "availableFromEventId": "P2-01-bill-ready"
+        },
+        {
+          "id": "P2-01-summary-v1",
+          "kind": "discharge-summary",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-01",
+            "patientId": "SYN-PATIENT-P2-01",
+            "policyId": "SYN-POLICY-P2-01",
+            "encounterId": "SYN-ENCOUNTER-P2-01"
+          },
+          "content": {
+            "description": "Fictional discharge summary supplied by hospital medical staff; no real clinical history."
+          },
+          "availableFromEventId": "P2-01-bill-ready"
+        },
+        {
+          "id": "P2-01-deposit-v1",
+          "kind": "patient-payment",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-01",
+            "patientId": "SYN-PATIENT-P2-01",
+            "policyId": "SYN-POLICY-P2-01",
+            "encounterId": "SYN-ENCOUNTER-P2-01"
+          },
+          "content": {
+            "reference": "SYN-DEPOSIT-P2-01",
+            "amountPaise": 500000
+          },
+          "availableFromEventId": "P2-01-bill-ready"
+        },
+        {
+          "id": "P2-01-authorization-v1",
+          "kind": "final-authorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-01",
+            "patientId": "SYN-PATIENT-P2-01",
+            "policyId": "SYN-POLICY-P2-01",
+            "encounterId": "SYN-ENCOUNTER-P2-01"
+          },
+          "content": {
+            "reference": "SYN-AUTH-P2-01",
+            "billVersion": 1,
+            "authorizedPaise": 8500000,
+            "conditions": [],
+            "cumulativeFinalAmount": true
+          },
+          "availableFromEventId": "P2-01-decision"
+        }
+      ],
+      "events": [
+        {
+          "id": "P2-01-bill-ready",
+          "type": "bill-ready",
+          "occurredAt": "2026-10-01T10:00:00+05:30",
+          "recordedAt": "2026-10-01T10:00:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-01-bill-v1"
+          ]
+        },
+        {
+          "id": "P2-01-pack-ready",
+          "type": "pack-ready",
+          "occurredAt": "2026-10-01T10:20:00+05:30",
+          "recordedAt": "2026-10-01T10:20:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-01-bill-v1",
+            "P2-01-summary-v1"
+          ]
+        },
+        {
+          "id": "P2-01-submit-ack",
+          "type": "submission-acknowledged",
+          "occurredAt": "2026-10-01T10:25:00+05:30",
+          "recordedAt": "2026-10-01T10:25:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-SUBMIT-01"
+          ]
+        },
+        {
+          "id": "P2-01-decision",
+          "type": "final-decision-received",
+          "occurredAt": "2026-10-01T11:00:00+05:30",
+          "recordedAt": "2026-10-01T11:00:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-01-authorization-v1"
+          ]
+        },
+        {
+          "id": "P2-01-billing-signoff",
+          "type": "patient-amount-confirmed",
+          "occurredAt": "2026-10-01T11:15:00+05:30",
+          "recordedAt": "2026-10-01T11:15:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-01-authorization-v1",
+            "P2-01-deposit-v1"
+          ]
+        }
+      ],
+      "queries": [],
+      "checkpoints": [
+        {
+          "id": "P2-01-confirmed",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 10000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 500000,
+            "payerAuthorizationPaise": 8500000,
+            "payerReceipts": []
+          },
+          "expected": {
+            "eligibleBasePaise": 8500000,
+            "deductibleAppliedPaise": 0,
+            "copayAppliedPaise": 0,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 8500000,
+            "estimatedPatientPaise": 800000,
+            "confirmedPatientPaise": 800000,
+            "confirmedHospitalReductionPaise": 700000,
+            "unresolvedDecisionPaise": 0,
+            "patientCollectPaise": 300000,
+            "patientRefundOwedPaise": 0,
+            "netPayerReceivedPaise": 0,
+            "authorizedReceivablePaise": 8500000
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "none",
+            "settlement": "awaiting-receipt",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Keep final authorization and submission evidence linked."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Collect only the confirmed 300000 paise and issue an evidenced explanation."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Await and reconcile actual payer receipts for 8500000 paise."
+            }
+          ],
+          "asOfEventId": "P2-01-billing-signoff",
+          "availableDocumentIds": [
+            "P2-01-policy-v1",
+            "P2-01-preauth-v1",
+            "P2-01-tariff-v1",
+            "P2-01-bill-v1",
+            "P2-01-summary-v1",
+            "P2-01-deposit-v1",
+            "P2-01-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": 1,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-01",
+            "sourcePolicyId": "SYN-POLICY-P2-01",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        }
+      ],
+      "failureVariants": [
+        {
+          "input": "Initial preauthorization has the same amount as the estimate.",
+          "expected": "Do not treat it as final discharge authorization."
+        },
+        {
+          "input": "Final decision has conditions or references another bill revision.",
+          "expected": "Hold affected Billing sign-off for Desk/Billing review."
+        },
+        {
+          "input": "Payer rejects the claim with authorization 0.",
+          "expected": "Record rejection evidence, assign review, and keep unresolved allocation separate from patient debt."
+        }
+      ],
+      "expectedTimingMinutes": {
+        "preparation": 20,
+        "submissionDelay": 5,
+        "payerWaitCycles": [
+          35
+        ],
+        "queryResponseCycles": [],
+        "billingReview": 15,
+        "deskResolution": 75
+      },
+      "defaultCheckpoint": "P2-01-confirmed"
+    },
+    {
+      "id": "P2-02",
+      "title": "Missing and conflicting evidence",
+      "fictional": true,
+      "hospitalId": "SYN-HOSPITAL-1",
+      "branchId": "SYN-BRANCH-1",
+      "sourceDocuments": [
+        {
+          "id": "P2-02-policy-v1",
+          "kind": "policy",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "ruleVersion": "SYN-DISCHARGE-1",
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 9000000,
+            "limitExcessAllocation": "patient"
+          },
+          "availableFromEventId": "P2-02-bill-ready"
+        },
+        {
+          "id": "P2-02-preauth-v1",
+          "kind": "preauthorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "reference": "SYN-PREAUTH-P2-02",
+            "contextOnly": true,
+            "note": "Initial approval is not final discharge authorization."
+          },
+          "availableFromEventId": "P2-02-bill-ready"
+        },
+        {
+          "id": "P2-02-tariff-v1",
+          "kind": "approved-hospital-reduction",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "hospitalReductionPaise": 700000,
+            "approvalRef": "SYN-REDUCTION-P2-02",
+            "authority": "Fictional Billing supervisor"
+          },
+          "availableFromEventId": "P2-02-bill-ready"
+        },
+        {
+          "id": "P2-02-bill-v1",
+          "kind": "final-bill",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "grossBillPaise": 10000000,
+            "lines": [
+              {
+                "id": "services",
+                "classification": "eligible-before-reduction",
+                "amountPaise": 9200000
+              },
+              {
+                "id": "patient-items",
+                "classification": "patient-excluded",
+                "amountPaise": 800000
+              }
+            ],
+            "approvedReductionPaise": 700000
+          },
+          "availableFromEventId": "P2-02-bill-ready"
+        },
+        {
+          "id": "P2-02-bill-v2",
+          "kind": "final-bill",
+          "version": 2,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "grossBillPaise": 11000000,
+            "lines": [
+              {
+                "id": "services",
+                "classification": "eligible-before-reduction",
+                "amountPaise": 10200000
+              },
+              {
+                "id": "patient-items",
+                "classification": "patient-excluded",
+                "amountPaise": 800000
+              }
+            ],
+            "approvedReductionPaise": 700000
+          },
+          "availableFromEventId": "P2-02-bill-ready"
+        },
+        {
+          "id": "P2-02-summary-v1",
+          "kind": "discharge-summary",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "description": "Fictional discharge summary supplied by hospital medical staff; no real clinical history."
+          },
+          "availableFromEventId": "P2-02-resolved"
+        },
+        {
+          "id": "P2-02-deposit-v1",
+          "kind": "patient-payment",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "reference": "SYN-DEPOSIT-P2-02",
+            "amountPaise": 2000000
+          },
+          "availableFromEventId": "P2-02-bill-ready"
+        },
+        {
+          "id": "P2-02-authorization-v1",
+          "kind": "final-authorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-02",
+            "patientId": "SYN-PATIENT-P2-02",
+            "policyId": "SYN-POLICY-P2-02",
+            "encounterId": "SYN-ENCOUNTER-P2-02"
+          },
+          "content": {
+            "reference": "SYN-AUTH-P2-02",
+            "billVersion": 2,
+            "authorizedPaise": 9000000,
+            "conditions": [],
+            "cumulativeFinalAmount": true
+          },
+          "availableFromEventId": "P2-02-decision"
+        }
+      ],
+      "events": [
+        {
+          "id": "P2-02-bill-ready",
+          "type": "bill-ready",
+          "occurredAt": "2026-10-01T10:00:00+05:30",
+          "recordedAt": "2026-10-01T10:00:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-02-bill-v1"
+          ]
+        },
+        {
+          "id": "P2-02-blocked",
+          "type": "evidence-review-required",
+          "occurredAt": "2026-10-01T10:10:00+05:30",
+          "recordedAt": "2026-10-01T10:10:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-02-bill-v1",
+            "P2-02-policy-v1"
+          ]
+        },
+        {
+          "id": "P2-02-bill-authority-confirmed",
+          "type": "bill-authority-confirmed",
+          "occurredAt": "2026-10-01T10:45:00+05:30",
+          "recordedAt": "2026-10-01T10:45:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-02-bill-v1",
+            "P2-02-bill-v2"
+          ]
+        },
+        {
+          "id": "P2-02-resolved",
+          "type": "facts-verified",
+          "occurredAt": "2026-10-01T10:50:00+05:30",
+          "recordedAt": "2026-10-01T10:50:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-02-bill-v2",
+            "P2-02-policy-v1",
+            "P2-02-summary-v1"
+          ]
+        },
+        {
+          "id": "P2-02-pack-ready",
+          "type": "pack-ready",
+          "occurredAt": "2026-10-01T11:00:00+05:30",
+          "recordedAt": "2026-10-01T11:00:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-02-bill-v2",
+            "P2-02-summary-v1"
+          ]
+        },
+        {
+          "id": "P2-02-submit-ack",
+          "type": "submission-acknowledged",
+          "occurredAt": "2026-10-01T11:05:00+05:30",
+          "recordedAt": "2026-10-01T11:05:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-SUBMIT-02"
+          ]
+        },
+        {
+          "id": "P2-02-decision",
+          "type": "final-decision-received",
+          "occurredAt": "2026-10-01T11:40:00+05:30",
+          "recordedAt": "2026-10-01T11:40:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-02-authorization-v1"
+          ]
+        },
+        {
+          "id": "P2-02-billing-signoff",
+          "type": "patient-amount-confirmed",
+          "occurredAt": "2026-10-01T12:00:00+05:30",
+          "recordedAt": "2026-10-01T12:00:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-02-authorization-v1",
+            "P2-02-deposit-v1"
+          ]
+        }
+      ],
+      "queries": [],
+      "checkpoints": [
+        {
+          "id": "P2-02-blocked",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": false,
+          "billingSignedOff": false,
+          "financialInputs": {
+            "grossBillPaise": 10000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 9000000,
+            "netPatientPaymentsPaise": 2000000,
+            "payerAuthorizationPaise": null,
+            "payerReceipts": []
+          },
+          "expected": {
+            "eligibleBasePaise": null,
+            "deductibleAppliedPaise": null,
+            "copayAppliedPaise": null,
+            "benefitLimitExcessPaise": null,
+            "estimatedInsurerPaise": null,
+            "estimatedPatientPaise": null,
+            "confirmedPatientPaise": null,
+            "confirmedHospitalReductionPaise": null,
+            "unresolvedDecisionPaise": null,
+            "patientCollectPaise": null,
+            "patientRefundOwedPaise": null,
+            "netPayerReceivedPaise": 0,
+            "authorizedReceivablePaise": null
+          },
+          "expectedState": {
+            "discharge": "needs-review",
+            "decisionDispute": "not-assessed",
+            "settlement": "no-authorization",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [
+            "missing-summary",
+            "policy-id-conflict",
+            "bill-version-conflict"
+          ],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Obtain the summary, correct the policy ID against the source, and ask Billing to select the authoritative bill."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Confirm bill v2 and its changed gross amount before assessment."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Retain the deposit evidence; do not issue a calculated refund yet."
+            }
+          ],
+          "asOfEventId": "P2-02-blocked",
+          "availableDocumentIds": [
+            "P2-02-policy-v1",
+            "P2-02-preauth-v1",
+            "P2-02-tariff-v1",
+            "P2-02-bill-v1",
+            "P2-02-bill-v2",
+            "P2-02-deposit-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": null,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-WRONG",
+            "sourcePolicyId": "SYN-POLICY-P2-02",
+            "policyVerified": false,
+            "billAuthorityConfirmed": false
+          }
+        },
+        {
+          "id": "P2-02-corrected-confirmed",
+          "billVersion": 2,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 11000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 9000000,
+            "netPatientPaymentsPaise": 2000000,
+            "payerAuthorizationPaise": 9000000,
+            "payerReceipts": []
+          },
+          "expected": {
+            "eligibleBasePaise": 9500000,
+            "deductibleAppliedPaise": 0,
+            "copayAppliedPaise": 0,
+            "benefitLimitExcessPaise": 500000,
+            "estimatedInsurerPaise": 9000000,
+            "estimatedPatientPaise": 1300000,
+            "confirmedPatientPaise": 1300000,
+            "confirmedHospitalReductionPaise": 700000,
+            "unresolvedDecisionPaise": 0,
+            "patientCollectPaise": 0,
+            "patientRefundOwedPaise": 700000,
+            "netPayerReceivedPaise": 0,
+            "authorizedReceivablePaise": 9000000
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "none",
+            "settlement": "awaiting-receipt",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Preserve corrected facts and superseded bill v1."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Confirm patient share 1300000 paise and refund owed 700000 paise; approve the refund request."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Execute the authorized refund using the hospital process and await payer receipts."
+            }
+          ],
+          "asOfEventId": "P2-02-billing-signoff",
+          "availableDocumentIds": [
+            "P2-02-policy-v1",
+            "P2-02-preauth-v1",
+            "P2-02-tariff-v1",
+            "P2-02-bill-v1",
+            "P2-02-bill-v2",
+            "P2-02-summary-v1",
+            "P2-02-deposit-v1",
+            "P2-02-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": 2,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-02",
+            "sourcePolicyId": "SYN-POLICY-P2-02",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        }
+      ],
+      "failureVariants": [
+        {
+          "input": "OCR/model provider is unavailable.",
+          "expected": "Desk/Billing manually verify sources; no AI-required gate."
+        },
+        {
+          "input": "A summary has another hospitalId, branchId, or caseId.",
+          "expected": "Reject attachment to this case and block affected readiness."
+        },
+        {
+          "input": "A rule needs unsupported room proration or package interpretation.",
+          "expected": "Hold the affected assessment for human review; do not invent a rule."
+        }
+      ],
+      "initialEvidenceIssues": [
+        {
+          "kind": "missing-document",
+          "documentId": "P2-02-summary-v1",
+          "detail": "Summary is unavailable at the blocked checkpoint and arrives before facts-verified."
+        },
+        {
+          "kind": "conflicting-policy-id",
+          "sourceRef": "P2-02-policy-v1#page=1",
+          "extracted": "SYN-POLICY-WRONG",
+          "verified": "SYN-POLICY-P2-02"
+        },
+        {
+          "kind": "competing-bill-versions",
+          "candidates": [
+            "P2-02-bill-v1",
+            "P2-02-bill-v2"
+          ],
+          "detail": "Billing confirms v2 supersedes v1; latest amount is 11000000 paise."
+        }
+      ],
+      "expectedTimingMinutes": {
+        "preparation": 60,
+        "submissionDelay": 5,
+        "payerWaitCycles": [
+          35
+        ],
+        "queryResponseCycles": [],
+        "billingReview": 20,
+        "deskResolution": 120
+      },
+      "defaultCheckpoint": "P2-02-blocked"
+    },
+    {
+      "id": "P2-03",
+      "title": "Repeated payer queries",
+      "fictional": true,
+      "hospitalId": "SYN-HOSPITAL-1",
+      "branchId": "SYN-BRANCH-1",
+      "sourceDocuments": [
+        {
+          "id": "P2-03-policy-v1",
+          "kind": "policy",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "ruleVersion": "SYN-DISCHARGE-1",
+            "deductiblePaise": 1000000,
+            "copayBps": 1000,
+            "benefitLimitPaise": 20000000,
+            "limitExcessAllocation": "patient"
+          },
+          "availableFromEventId": "P2-03-bill-ready"
+        },
+        {
+          "id": "P2-03-preauth-v1",
+          "kind": "preauthorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "reference": "SYN-PREAUTH-P2-03",
+            "contextOnly": true,
+            "note": "Initial approval is not final discharge authorization."
+          },
+          "availableFromEventId": "P2-03-bill-ready"
+        },
+        {
+          "id": "P2-03-tariff-v1",
+          "kind": "approved-hospital-reduction",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "hospitalReductionPaise": 500000,
+            "approvalRef": "SYN-REDUCTION-P2-03",
+            "authority": "Fictional Billing supervisor"
+          },
+          "availableFromEventId": "P2-03-bill-ready"
+        },
+        {
+          "id": "P2-03-bill-v1",
+          "kind": "final-bill",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "grossBillPaise": 11500000,
+            "lines": [
+              {
+                "id": "services",
+                "classification": "eligible-before-reduction",
+                "amountPaise": 11000000
+              },
+              {
+                "id": "patient-items",
+                "classification": "patient-excluded",
+                "amountPaise": 500000
+              }
+            ],
+            "approvedReductionPaise": 500000
+          },
+          "availableFromEventId": "P2-03-bill-ready"
+        },
+        {
+          "id": "P2-03-bill-v2",
+          "kind": "final-bill",
+          "version": 2,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "grossBillPaise": 12000000,
+            "lines": [
+              {
+                "id": "services",
+                "classification": "eligible-before-reduction",
+                "amountPaise": 11500000
+              },
+              {
+                "id": "patient-items",
+                "classification": "patient-excluded",
+                "amountPaise": 500000
+              }
+            ],
+            "approvedReductionPaise": 500000
+          },
+          "availableFromEventId": "P2-03-bill-revised"
+        },
+        {
+          "id": "P2-03-summary-v1",
+          "kind": "discharge-summary",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "description": "Fictional discharge summary supplied by hospital medical staff; no real clinical history."
+          },
+          "availableFromEventId": "P2-03-bill-ready"
+        },
+        {
+          "id": "P2-03-deposit-v1",
+          "kind": "patient-payment",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "reference": "SYN-DEPOSIT-P2-03",
+            "amountPaise": 1000000
+          },
+          "availableFromEventId": "P2-03-bill-ready"
+        },
+        {
+          "id": "P2-03-authorization-v1",
+          "kind": "final-authorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-03",
+            "patientId": "SYN-PATIENT-P2-03",
+            "policyId": "SYN-POLICY-P2-03",
+            "encounterId": "SYN-ENCOUNTER-P2-03"
+          },
+          "content": {
+            "reference": "SYN-AUTH-P2-03",
+            "billVersion": 2,
+            "authorizedPaise": 9000000,
+            "conditions": [],
+            "cumulativeFinalAmount": true
+          },
+          "availableFromEventId": "P2-03-decision"
+        }
+      ],
+      "events": [
+        {
+          "id": "P2-03-bill-ready",
+          "type": "bill-ready",
+          "occurredAt": "2026-10-01T10:00:00+05:30",
+          "recordedAt": "2026-10-01T10:00:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-03-bill-v1"
+          ]
+        },
+        {
+          "id": "P2-03-pack-ready",
+          "type": "pack-ready",
+          "occurredAt": "2026-10-01T10:15:00+05:30",
+          "recordedAt": "2026-10-01T10:15:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-03-bill-v1",
+            "P2-03-summary-v1"
+          ]
+        },
+        {
+          "id": "P2-03-submit-ack",
+          "type": "submission-acknowledged",
+          "occurredAt": "2026-10-01T10:20:00+05:30",
+          "recordedAt": "2026-10-01T10:20:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-SUBMIT-03"
+          ]
+        },
+        {
+          "id": "P2-03-query-1",
+          "type": "query-received",
+          "occurredAt": "2026-10-01T11:00:00+05:30",
+          "recordedAt": "2026-10-01T11:00:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-QUERY-03-1"
+          ]
+        },
+        {
+          "id": "P2-03-response-1",
+          "type": "query-response-acknowledged",
+          "occurredAt": "2026-10-01T11:20:00+05:30",
+          "recordedAt": "2026-10-01T11:20:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-RESPONSE-03-1"
+          ]
+        },
+        {
+          "id": "P2-03-query-2",
+          "type": "query-received",
+          "occurredAt": "2026-10-01T11:40:00+05:30",
+          "recordedAt": "2026-10-01T11:40:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-QUERY-03-2"
+          ]
+        },
+        {
+          "id": "P2-03-bill-revised",
+          "type": "bill-revised",
+          "occurredAt": "2026-10-01T11:45:00+05:30",
+          "recordedAt": "2026-10-01T11:45:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-03-bill-v2"
+          ]
+        },
+        {
+          "id": "P2-03-facts-v2-verified",
+          "type": "financial-facts-verified",
+          "occurredAt": "2026-10-01T11:50:00+05:30",
+          "recordedAt": "2026-10-01T11:50:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-03-bill-v2",
+            "P2-03-policy-v1",
+            "P2-03-tariff-v1"
+          ]
+        },
+        {
+          "id": "P2-03-response-2",
+          "type": "query-response-acknowledged",
+          "occurredAt": "2026-10-01T12:10:00+05:30",
+          "recordedAt": "2026-10-01T12:10:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-RESPONSE-03-2",
+            "P2-03-bill-v2"
+          ]
+        },
+        {
+          "id": "P2-03-decision",
+          "type": "final-decision-received",
+          "occurredAt": "2026-10-01T12:40:00+05:30",
+          "recordedAt": "2026-10-01T12:40:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-03-authorization-v1"
+          ]
+        },
+        {
+          "id": "P2-03-billing-signoff",
+          "type": "patient-amount-confirmed",
+          "occurredAt": "2026-10-01T13:00:00+05:30",
+          "recordedAt": "2026-10-01T13:00:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-03-authorization-v1",
+            "P2-03-deposit-v1"
+          ]
+        }
+      ],
+      "queries": [
+        {
+          "reference": "SYN-QUERY-03-1",
+          "text": "Provide the signed fictional summary and source-backed deductible explanation.",
+          "responseReference": "SYN-RESPONSE-03-1",
+          "responseSources": [
+            "P2-03-summary-v1#page=1",
+            "P2-03-policy-v1#page=1"
+          ],
+          "approvedByRole": "Desk",
+          "receivedBillVersion": 1,
+          "responseBillVersion": 1,
+          "receivedAtEventId": "P2-03-query-1",
+          "responseAcknowledgedAtEventId": "P2-03-response-1"
+        },
+        {
+          "reference": "SYN-QUERY-03-2",
+          "text": "Provide the authoritative current bill and explain any changed charges with source evidence.",
+          "responseReference": "SYN-RESPONSE-03-2",
+          "responseSources": [
+            "P2-03-bill-v2#page=1",
+            "P2-03-policy-v1#page=1"
+          ],
+          "approvedByRole": "Desk",
+          "receivedBillVersion": 1,
+          "responseBillVersion": 2,
+          "receivedAtEventId": "P2-03-query-2",
+          "responseAcknowledgedAtEventId": "P2-03-response-2"
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "P2-03-query-1",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": false,
+          "financialInputs": {
+            "grossBillPaise": 11500000,
+            "patientExcludedPaise": 500000,
+            "hospitalReductionPaise": 500000,
+            "deductiblePaise": 1000000,
+            "copayBps": 1000,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 1000000,
+            "payerAuthorizationPaise": null,
+            "payerReceipts": []
+          },
+          "expected": {
+            "eligibleBasePaise": 10500000,
+            "deductibleAppliedPaise": 1000000,
+            "copayAppliedPaise": 950000,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 8550000,
+            "estimatedPatientPaise": 2450000,
+            "confirmedPatientPaise": null,
+            "confirmedHospitalReductionPaise": null,
+            "unresolvedDecisionPaise": null,
+            "patientCollectPaise": null,
+            "patientRefundOwedPaise": null,
+            "netPayerReceivedPaise": 0,
+            "authorizedReceivablePaise": null
+          },
+          "expectedState": {
+            "discharge": "payer-query",
+            "decisionDispute": "not-assessed",
+            "settlement": "no-authorization",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Review and submit source-backed response to query 1; record actual acknowledgement."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Verify the deductible/co-pay explanation; do not confirm the patient share before a usable decision."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Retain verified deposits; authorization and receipt remain separate."
+            }
+          ],
+          "asOfEventId": "P2-03-query-1",
+          "availableDocumentIds": [
+            "P2-03-policy-v1",
+            "P2-03-preauth-v1",
+            "P2-03-tariff-v1",
+            "P2-03-bill-v1",
+            "P2-03-summary-v1",
+            "P2-03-deposit-v1"
+          ],
+          "activeQueryReferences": [
+            "SYN-QUERY-03-1"
+          ],
+          "currentQueryStates": [
+            {
+              "reference": "SYN-QUERY-03-1",
+              "responseAcknowledged": false
+            }
+          ],
+          "authoritativeBillVersion": 1,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-03",
+            "sourcePolicyId": "SYN-POLICY-P2-03",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        },
+        {
+          "id": "P2-03-query-2",
+          "billVersion": 2,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": false,
+          "financialInputs": {
+            "grossBillPaise": 12000000,
+            "patientExcludedPaise": 500000,
+            "hospitalReductionPaise": 500000,
+            "deductiblePaise": 1000000,
+            "copayBps": 1000,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 1000000,
+            "payerAuthorizationPaise": null,
+            "payerReceipts": []
+          },
+          "expected": {
+            "eligibleBasePaise": 11000000,
+            "deductibleAppliedPaise": 1000000,
+            "copayAppliedPaise": 1000000,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 9000000,
+            "estimatedPatientPaise": 2500000,
+            "confirmedPatientPaise": null,
+            "confirmedHospitalReductionPaise": null,
+            "unresolvedDecisionPaise": null,
+            "patientCollectPaise": null,
+            "patientRefundOwedPaise": null,
+            "netPayerReceivedPaise": 0,
+            "authorizedReceivablePaise": null
+          },
+          "expectedState": {
+            "discharge": "payer-query",
+            "decisionDispute": "not-assessed",
+            "settlement": "no-authorization",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Handle query 2 separately; freeze and acknowledge a new response pack using bill v2."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Bill v2 financial facts are now verified; affected v1 approvals remain invalid, and final patient confirmation awaits the current decision."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Keep deposits recorded; do not interpret the response draft as authorization."
+            }
+          ],
+          "asOfEventId": "P2-03-facts-v2-verified",
+          "availableDocumentIds": [
+            "P2-03-policy-v1",
+            "P2-03-preauth-v1",
+            "P2-03-tariff-v1",
+            "P2-03-bill-v1",
+            "P2-03-bill-v2",
+            "P2-03-summary-v1",
+            "P2-03-deposit-v1"
+          ],
+          "activeQueryReferences": [
+            "SYN-QUERY-03-2"
+          ],
+          "currentQueryStates": [
+            {
+              "reference": "SYN-QUERY-03-1",
+              "responseAcknowledged": true
+            },
+            {
+              "reference": "SYN-QUERY-03-2",
+              "responseAcknowledged": false
+            }
+          ],
+          "authoritativeBillVersion": 2,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-03",
+            "sourcePolicyId": "SYN-POLICY-P2-03",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          },
+          "invalidatedArtifacts": [
+            "bill-v1-assessment",
+            "bill-v1-pack-approval",
+            "bill-v1-response-draft"
+          ]
+        },
+        {
+          "id": "P2-03-confirmed",
+          "billVersion": 2,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 12000000,
+            "patientExcludedPaise": 500000,
+            "hospitalReductionPaise": 500000,
+            "deductiblePaise": 1000000,
+            "copayBps": 1000,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 1000000,
+            "payerAuthorizationPaise": 9000000,
+            "payerReceipts": []
+          },
+          "expected": {
+            "eligibleBasePaise": 11000000,
+            "deductibleAppliedPaise": 1000000,
+            "copayAppliedPaise": 1000000,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 9000000,
+            "estimatedPatientPaise": 2500000,
+            "confirmedPatientPaise": 2500000,
+            "confirmedHospitalReductionPaise": 500000,
+            "unresolvedDecisionPaise": 0,
+            "patientCollectPaise": 1500000,
+            "patientRefundOwedPaise": 0,
+            "netPayerReceivedPaise": 0,
+            "authorizedReceivablePaise": 9000000
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "none",
+            "settlement": "awaiting-receipt",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Retain both query cycles and their acknowledged responses; link current final decision."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Collect only 1500000 paise after confirming the 2500000 paise patient share."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Await and reconcile 9000000 paise of authorized payer receipts."
+            }
+          ],
+          "asOfEventId": "P2-03-billing-signoff",
+          "availableDocumentIds": [
+            "P2-03-policy-v1",
+            "P2-03-preauth-v1",
+            "P2-03-tariff-v1",
+            "P2-03-bill-v1",
+            "P2-03-bill-v2",
+            "P2-03-summary-v1",
+            "P2-03-deposit-v1",
+            "P2-03-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [
+            {
+              "reference": "SYN-QUERY-03-1",
+              "responseAcknowledged": true
+            },
+            {
+              "reference": "SYN-QUERY-03-2",
+              "responseAcknowledged": true
+            }
+          ],
+          "authoritativeBillVersion": 2,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-03",
+            "sourcePolicyId": "SYN-POLICY-P2-03",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        }
+      ],
+      "failureVariants": [
+        {
+          "input": "The second query or acknowledgement is imported twice.",
+          "expected": "Match the original reference and do not create a third cycle or duplicate action."
+        },
+        {
+          "input": "External upload succeeds locally but no acknowledgement is available.",
+          "expected": "Keep response acknowledgement pending; do not start a fabricated payer-wait interval."
+        },
+        {
+          "input": "An old bill-v1 sign-off/AI draft is submitted after bill v2 becomes authoritative.",
+          "expected": "Reject stale action; require review and a new versioned pack."
+        },
+        {
+          "input": "Two staff save different revisions of the same case.",
+          "expected": "Reject the stale write, preserve the timeline, and require reload/review."
+        }
+      ],
+      "expectedTimingMinutes": {
+        "preparation": 15,
+        "submissionDelay": 5,
+        "payerWaitCycles": [
+          40,
+          20,
+          30
+        ],
+        "queryResponseCycles": [
+          20,
+          30
+        ],
+        "billingReview": 20,
+        "deskResolution": 180
+      },
+      "defaultCheckpoint": "P2-03-query-2"
+    },
+    {
+      "id": "P2-04",
+      "title": "Disputed deduction",
+      "fictional": true,
+      "hospitalId": "SYN-HOSPITAL-1",
+      "branchId": "SYN-BRANCH-1",
+      "sourceDocuments": [
+        {
+          "id": "P2-04-policy-v1",
+          "kind": "policy",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-04",
+            "patientId": "SYN-PATIENT-P2-04",
+            "policyId": "SYN-POLICY-P2-04",
+            "encounterId": "SYN-ENCOUNTER-P2-04"
+          },
+          "content": {
+            "ruleVersion": "SYN-DISCHARGE-1",
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "limitExcessAllocation": "patient"
+          },
+          "availableFromEventId": "P2-04-bill-ready"
+        },
+        {
+          "id": "P2-04-preauth-v1",
+          "kind": "preauthorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-04",
+            "patientId": "SYN-PATIENT-P2-04",
+            "policyId": "SYN-POLICY-P2-04",
+            "encounterId": "SYN-ENCOUNTER-P2-04"
+          },
+          "content": {
+            "reference": "SYN-PREAUTH-P2-04",
+            "contextOnly": true,
+            "note": "Initial approval is not final discharge authorization."
+          },
+          "availableFromEventId": "P2-04-bill-ready"
+        },
+        {
+          "id": "P2-04-tariff-v1",
+          "kind": "approved-hospital-reduction",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-04",
+            "patientId": "SYN-PATIENT-P2-04",
+            "policyId": "SYN-POLICY-P2-04",
+            "encounterId": "SYN-ENCOUNTER-P2-04"
+          },
+          "content": {
+            "hospitalReductionPaise": 700000,
+            "approvalRef": "SYN-REDUCTION-P2-04",
+            "authority": "Fictional Billing supervisor"
+          },
+          "availableFromEventId": "P2-04-bill-ready"
+        },
+        {
+          "id": "P2-04-bill-v1",
+          "kind": "final-bill",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-04",
+            "patientId": "SYN-PATIENT-P2-04",
+            "policyId": "SYN-POLICY-P2-04",
+            "encounterId": "SYN-ENCOUNTER-P2-04"
+          },
+          "content": {
+            "grossBillPaise": 10000000,
+            "lines": [
+              {
+                "id": "services",
+                "classification": "eligible-before-reduction",
+                "amountPaise": 9200000
+              },
+              {
+                "id": "patient-items",
+                "classification": "patient-excluded",
+                "amountPaise": 800000
+              }
+            ],
+            "approvedReductionPaise": 700000
+          },
+          "availableFromEventId": "P2-04-bill-ready"
+        },
+        {
+          "id": "P2-04-summary-v1",
+          "kind": "discharge-summary",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-04",
+            "patientId": "SYN-PATIENT-P2-04",
+            "policyId": "SYN-POLICY-P2-04",
+            "encounterId": "SYN-ENCOUNTER-P2-04"
+          },
+          "content": {
+            "description": "Fictional discharge summary supplied by hospital medical staff; no real clinical history."
+          },
+          "availableFromEventId": "P2-04-bill-ready"
+        },
+        {
+          "id": "P2-04-deposit-v1",
+          "kind": "patient-payment",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-04",
+            "patientId": "SYN-PATIENT-P2-04",
+            "policyId": "SYN-POLICY-P2-04",
+            "encounterId": "SYN-ENCOUNTER-P2-04"
+          },
+          "content": {
+            "reference": "SYN-DEPOSIT-P2-04",
+            "amountPaise": 500000
+          },
+          "availableFromEventId": "P2-04-bill-ready"
+        },
+        {
+          "id": "P2-04-authorization-v1",
+          "kind": "final-authorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-04",
+            "patientId": "SYN-PATIENT-P2-04",
+            "policyId": "SYN-POLICY-P2-04",
+            "encounterId": "SYN-ENCOUNTER-P2-04"
+          },
+          "content": {
+            "reference": "SYN-AUTH-P2-04",
+            "billVersion": 1,
+            "authorizedPaise": 8200000,
+            "conditions": [],
+            "cumulativeFinalAmount": true
+          },
+          "availableFromEventId": "P2-04-decision"
+        }
+      ],
+      "events": [
+        {
+          "id": "P2-04-bill-ready",
+          "type": "bill-ready",
+          "occurredAt": "2026-10-01T10:00:00+05:30",
+          "recordedAt": "2026-10-01T10:00:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-04-bill-v1"
+          ]
+        },
+        {
+          "id": "P2-04-pack-ready",
+          "type": "pack-ready",
+          "occurredAt": "2026-10-01T10:20:00+05:30",
+          "recordedAt": "2026-10-01T10:20:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-04-bill-v1",
+            "P2-04-summary-v1"
+          ]
+        },
+        {
+          "id": "P2-04-submit-ack",
+          "type": "submission-acknowledged",
+          "occurredAt": "2026-10-01T10:25:00+05:30",
+          "recordedAt": "2026-10-01T10:25:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-SUBMIT-04"
+          ]
+        },
+        {
+          "id": "P2-04-decision",
+          "type": "final-decision-received",
+          "occurredAt": "2026-10-01T11:00:00+05:30",
+          "recordedAt": "2026-10-01T11:00:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-04-authorization-v1"
+          ]
+        },
+        {
+          "id": "P2-04-billing-signoff",
+          "type": "patient-amount-confirmed",
+          "occurredAt": "2026-10-01T11:30:00+05:30",
+          "recordedAt": "2026-10-01T11:30:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-04-authorization-v1",
+            "P2-04-deposit-v1"
+          ]
+        }
+      ],
+      "queries": [],
+      "checkpoints": [
+        {
+          "id": "P2-04-dispute-open",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 10000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 500000,
+            "payerAuthorizationPaise": 8200000,
+            "payerReceipts": []
+          },
+          "expected": {
+            "eligibleBasePaise": 8500000,
+            "deductibleAppliedPaise": 0,
+            "copayAppliedPaise": 0,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 8500000,
+            "estimatedPatientPaise": 800000,
+            "confirmedPatientPaise": 800000,
+            "confirmedHospitalReductionPaise": 700000,
+            "unresolvedDecisionPaise": 300000,
+            "patientCollectPaise": 300000,
+            "patientRefundOwedPaise": 0,
+            "netPayerReceivedPaise": 0,
+            "authorizedReceivablePaise": 8200000
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "open",
+            "settlement": "awaiting-receipt",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Investigate the separate 300000 paise deduction using policy/bill/decision evidence and the permitted payer channel."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Collect only 300000 paise after the 500000 paise deposit; patient total remains 800000 paise."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Track the authorized 8200000 paise separately from the open decision dispute."
+            }
+          ],
+          "asOfEventId": "P2-04-billing-signoff",
+          "availableDocumentIds": [
+            "P2-04-policy-v1",
+            "P2-04-preauth-v1",
+            "P2-04-tariff-v1",
+            "P2-04-bill-v1",
+            "P2-04-summary-v1",
+            "P2-04-deposit-v1",
+            "P2-04-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": 1,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-04",
+            "sourcePolicyId": "SYN-POLICY-P2-04",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        }
+      ],
+      "failureVariants": [
+        {
+          "input": "Staff proposes adding the unresolved 300000 paise to patient collection.",
+          "expected": "Require supported allocation evidence and a new Billing sign-off; never automatically increase patient debt."
+        },
+        {
+          "input": "A revised final authorization supersedes the existing one.",
+          "expected": "Preserve both decisions, reassess the affected allocation, and invalidate stale sign-off/explanation."
+        }
+      ],
+      "expectedTimingMinutes": {
+        "preparation": 20,
+        "submissionDelay": 5,
+        "payerWaitCycles": [
+          35
+        ],
+        "queryResponseCycles": [],
+        "billingReview": 30,
+        "deskResolution": 90
+      },
+      "decisionAllocationEvidence": {
+        "reference": "SYN-ALLOCATION-P2-04",
+        "approvedByRole": "Billing",
+        "confirmedPatientPaise": 800000,
+        "hospitalReductionPaise": 700000,
+        "unresolvedDecisionPaise": 300000,
+        "note": "The payer decision is 300000 paise below the estimate; no evidence reassigns this difference to the patient."
+      },
+      "defaultCheckpoint": "P2-04-dispute-open"
+    },
+    {
+      "id": "P2-05",
+      "title": "Partial settlement",
+      "fictional": true,
+      "hospitalId": "SYN-HOSPITAL-1",
+      "branchId": "SYN-BRANCH-1",
+      "sourceDocuments": [
+        {
+          "id": "P2-05-policy-v1",
+          "kind": "policy",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-05",
+            "patientId": "SYN-PATIENT-P2-05",
+            "policyId": "SYN-POLICY-P2-05",
+            "encounterId": "SYN-ENCOUNTER-P2-05"
+          },
+          "content": {
+            "ruleVersion": "SYN-DISCHARGE-1",
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "limitExcessAllocation": "patient"
+          },
+          "availableFromEventId": "P2-05-bill-ready"
+        },
+        {
+          "id": "P2-05-preauth-v1",
+          "kind": "preauthorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-05",
+            "patientId": "SYN-PATIENT-P2-05",
+            "policyId": "SYN-POLICY-P2-05",
+            "encounterId": "SYN-ENCOUNTER-P2-05"
+          },
+          "content": {
+            "reference": "SYN-PREAUTH-P2-05",
+            "contextOnly": true,
+            "note": "Initial approval is not final discharge authorization."
+          },
+          "availableFromEventId": "P2-05-bill-ready"
+        },
+        {
+          "id": "P2-05-tariff-v1",
+          "kind": "approved-hospital-reduction",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-05",
+            "patientId": "SYN-PATIENT-P2-05",
+            "policyId": "SYN-POLICY-P2-05",
+            "encounterId": "SYN-ENCOUNTER-P2-05"
+          },
+          "content": {
+            "hospitalReductionPaise": 700000,
+            "approvalRef": "SYN-REDUCTION-P2-05",
+            "authority": "Fictional Billing supervisor"
+          },
+          "availableFromEventId": "P2-05-bill-ready"
+        },
+        {
+          "id": "P2-05-bill-v1",
+          "kind": "final-bill",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-05",
+            "patientId": "SYN-PATIENT-P2-05",
+            "policyId": "SYN-POLICY-P2-05",
+            "encounterId": "SYN-ENCOUNTER-P2-05"
+          },
+          "content": {
+            "grossBillPaise": 10000000,
+            "lines": [
+              {
+                "id": "services",
+                "classification": "eligible-before-reduction",
+                "amountPaise": 9200000
+              },
+              {
+                "id": "patient-items",
+                "classification": "patient-excluded",
+                "amountPaise": 800000
+              }
+            ],
+            "approvedReductionPaise": 700000
+          },
+          "availableFromEventId": "P2-05-bill-ready"
+        },
+        {
+          "id": "P2-05-summary-v1",
+          "kind": "discharge-summary",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-05",
+            "patientId": "SYN-PATIENT-P2-05",
+            "policyId": "SYN-POLICY-P2-05",
+            "encounterId": "SYN-ENCOUNTER-P2-05"
+          },
+          "content": {
+            "description": "Fictional discharge summary supplied by hospital medical staff; no real clinical history."
+          },
+          "availableFromEventId": "P2-05-bill-ready"
+        },
+        {
+          "id": "P2-05-deposit-v1",
+          "kind": "patient-payment",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-05",
+            "patientId": "SYN-PATIENT-P2-05",
+            "policyId": "SYN-POLICY-P2-05",
+            "encounterId": "SYN-ENCOUNTER-P2-05"
+          },
+          "content": {
+            "reference": "SYN-DEPOSIT-P2-05",
+            "amountPaise": 500000
+          },
+          "availableFromEventId": "P2-05-bill-ready"
+        },
+        {
+          "id": "P2-05-authorization-v1",
+          "kind": "final-authorization",
+          "version": 1,
+          "page": 1,
+          "synthetic": true,
+          "links": {
+            "hospitalId": "SYN-HOSPITAL-1",
+            "branchId": "SYN-BRANCH-1",
+            "caseId": "P2-05",
+            "patientId": "SYN-PATIENT-P2-05",
+            "policyId": "SYN-POLICY-P2-05",
+            "encounterId": "SYN-ENCOUNTER-P2-05"
+          },
+          "content": {
+            "reference": "SYN-AUTH-P2-05",
+            "billVersion": 1,
+            "authorizedPaise": 8200000,
+            "conditions": [],
+            "cumulativeFinalAmount": true
+          },
+          "availableFromEventId": "P2-05-decision"
+        }
+      ],
+      "events": [
+        {
+          "id": "P2-05-bill-ready",
+          "type": "bill-ready",
+          "occurredAt": "2026-10-01T10:00:00+05:30",
+          "recordedAt": "2026-10-01T10:00:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-05-bill-v1"
+          ]
+        },
+        {
+          "id": "P2-05-pack-ready",
+          "type": "pack-ready",
+          "occurredAt": "2026-10-01T10:20:00+05:30",
+          "recordedAt": "2026-10-01T10:20:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-05-bill-v1",
+            "P2-05-summary-v1"
+          ]
+        },
+        {
+          "id": "P2-05-submit-ack",
+          "type": "submission-acknowledged",
+          "occurredAt": "2026-10-01T10:25:00+05:30",
+          "recordedAt": "2026-10-01T10:25:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "SYN-SUBMIT-05"
+          ]
+        },
+        {
+          "id": "P2-05-decision",
+          "type": "final-decision-received",
+          "occurredAt": "2026-10-01T11:00:00+05:30",
+          "recordedAt": "2026-10-01T11:00:00+05:30",
+          "actorRole": "Desk",
+          "evidenceRefs": [
+            "P2-05-authorization-v1"
+          ]
+        },
+        {
+          "id": "P2-05-billing-signoff",
+          "type": "patient-amount-confirmed",
+          "occurredAt": "2026-10-01T11:30:00+05:30",
+          "recordedAt": "2026-10-01T11:30:00+05:30",
+          "actorRole": "Billing",
+          "evidenceRefs": [
+            "P2-05-authorization-v1",
+            "P2-05-deposit-v1"
+          ]
+        },
+        {
+          "id": "P2-05-receipt-1",
+          "type": "payer-receipt-matched",
+          "occurredAt": "2026-10-02T10:00:00+05:30",
+          "recordedAt": "2026-10-02T10:00:00+05:30",
+          "actorRole": "Finance",
+          "evidenceRefs": [
+            "SYN-BANK-05-1",
+            "SYN-REMIT-05-1"
+          ]
+        },
+        {
+          "id": "P2-05-duplicate-import",
+          "type": "duplicate-receipt-import-ignored",
+          "occurredAt": "2026-10-02T10:05:00+05:30",
+          "recordedAt": "2026-10-02T10:05:00+05:30",
+          "actorRole": "Finance",
+          "evidenceRefs": [
+            "SYN-BANK-05-1",
+            "SYN-REMIT-05-1"
+          ]
+        },
+        {
+          "id": "P2-05-receipt-2",
+          "type": "payer-receipt-matched",
+          "occurredAt": "2026-10-03T10:00:00+05:30",
+          "recordedAt": "2026-10-03T10:00:00+05:30",
+          "actorRole": "Finance",
+          "evidenceRefs": [
+            "SYN-BANK-05-2",
+            "SYN-REMIT-05-2"
+          ]
+        },
+        {
+          "id": "P2-05-reversal-1",
+          "type": "payer-receipt-reversed",
+          "occurredAt": "2026-10-04T10:00:00+05:30",
+          "recordedAt": "2026-10-04T10:00:00+05:30",
+          "actorRole": "Finance",
+          "evidenceRefs": [
+            "SYN-REVERSAL-05-1"
+          ]
+        }
+      ],
+      "queries": [],
+      "checkpoints": [
+        {
+          "id": "P2-05-partial",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 10000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 500000,
+            "payerAuthorizationPaise": 8200000,
+            "payerReceipts": [
+              {
+                "reference": "SYN-RECEIPT-05-1",
+                "kind": "receipt",
+                "amountPaise": 8000000,
+                "evidenceRefs": [
+                  "SYN-BANK-05-1",
+                  "SYN-REMIT-05-1"
+                ]
+              }
+            ]
+          },
+          "expected": {
+            "eligibleBasePaise": 8500000,
+            "deductibleAppliedPaise": 0,
+            "copayAppliedPaise": 0,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 8500000,
+            "estimatedPatientPaise": 800000,
+            "confirmedPatientPaise": 800000,
+            "confirmedHospitalReductionPaise": 700000,
+            "unresolvedDecisionPaise": 300000,
+            "patientCollectPaise": 300000,
+            "patientRefundOwedPaise": 0,
+            "netPayerReceivedPaise": 8000000,
+            "authorizedReceivablePaise": 200000
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "open",
+            "settlement": "partial-receipt",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Continue the independent 300000 paise decision dispute."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Patient total remains 800000 paise; collect only the separately confirmed 300000 paise balance."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Follow up the authorized unpaid 200000 paise; keep the 300000 paise decision dispute separately assigned to Desk."
+            }
+          ],
+          "asOfEventId": "P2-05-receipt-1",
+          "availableDocumentIds": [
+            "P2-05-policy-v1",
+            "P2-05-preauth-v1",
+            "P2-05-tariff-v1",
+            "P2-05-bill-v1",
+            "P2-05-summary-v1",
+            "P2-05-deposit-v1",
+            "P2-05-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": 1,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-05",
+            "sourcePolicyId": "SYN-POLICY-P2-05",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        },
+        {
+          "id": "P2-05-duplicate-import",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 10000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 500000,
+            "payerAuthorizationPaise": 8200000,
+            "payerReceipts": [
+              {
+                "reference": "SYN-RECEIPT-05-1",
+                "kind": "receipt",
+                "amountPaise": 8000000,
+                "evidenceRefs": [
+                  "SYN-BANK-05-1",
+                  "SYN-REMIT-05-1"
+                ]
+              },
+              {
+                "reference": "SYN-RECEIPT-05-1",
+                "kind": "receipt",
+                "amountPaise": 8000000,
+                "evidenceRefs": [
+                  "SYN-BANK-05-1",
+                  "SYN-REMIT-05-1"
+                ]
+              }
+            ]
+          },
+          "expected": {
+            "eligibleBasePaise": 8500000,
+            "deductibleAppliedPaise": 0,
+            "copayAppliedPaise": 0,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 8500000,
+            "estimatedPatientPaise": 800000,
+            "confirmedPatientPaise": 800000,
+            "confirmedHospitalReductionPaise": 700000,
+            "unresolvedDecisionPaise": 300000,
+            "patientCollectPaise": 300000,
+            "patientRefundOwedPaise": 0,
+            "netPayerReceivedPaise": 8000000,
+            "authorizedReceivablePaise": 200000
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "open",
+            "settlement": "partial-receipt",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Continue the independent 300000 paise decision dispute."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Patient total remains 800000 paise; collect only the separately confirmed 300000 paise balance."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Deduplicate the identical receipt reference; do not increase money received."
+            }
+          ],
+          "asOfEventId": "P2-05-duplicate-import",
+          "availableDocumentIds": [
+            "P2-05-policy-v1",
+            "P2-05-preauth-v1",
+            "P2-05-tariff-v1",
+            "P2-05-bill-v1",
+            "P2-05-summary-v1",
+            "P2-05-deposit-v1",
+            "P2-05-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": 1,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-05",
+            "sourcePolicyId": "SYN-POLICY-P2-05",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        },
+        {
+          "id": "P2-05-authorized-paid",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 10000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 500000,
+            "payerAuthorizationPaise": 8200000,
+            "payerReceipts": [
+              {
+                "reference": "SYN-RECEIPT-05-1",
+                "kind": "receipt",
+                "amountPaise": 8000000,
+                "evidenceRefs": [
+                  "SYN-BANK-05-1",
+                  "SYN-REMIT-05-1"
+                ]
+              },
+              {
+                "reference": "SYN-RECEIPT-05-2",
+                "kind": "receipt",
+                "amountPaise": 200000,
+                "evidenceRefs": [
+                  "SYN-BANK-05-2",
+                  "SYN-REMIT-05-2"
+                ]
+              }
+            ]
+          },
+          "expected": {
+            "eligibleBasePaise": 8500000,
+            "deductibleAppliedPaise": 0,
+            "copayAppliedPaise": 0,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 8500000,
+            "estimatedPatientPaise": 800000,
+            "confirmedPatientPaise": 800000,
+            "confirmedHospitalReductionPaise": 700000,
+            "unresolvedDecisionPaise": 300000,
+            "patientCollectPaise": 300000,
+            "patientRefundOwedPaise": 0,
+            "netPayerReceivedPaise": 8200000,
+            "authorizedReceivablePaise": 0
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "open",
+            "settlement": "authorized-receipts-reconciled",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Continue the independent 300000 paise decision dispute."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Patient total remains 800000 paise; collect only the separately confirmed 300000 paise balance."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Authorized receipts now reconcile; keep whole-case closure blocked by the decision dispute and any patient balance."
+            }
+          ],
+          "asOfEventId": "P2-05-receipt-2",
+          "availableDocumentIds": [
+            "P2-05-policy-v1",
+            "P2-05-preauth-v1",
+            "P2-05-tariff-v1",
+            "P2-05-bill-v1",
+            "P2-05-summary-v1",
+            "P2-05-deposit-v1",
+            "P2-05-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": 1,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-05",
+            "sourcePolicyId": "SYN-POLICY-P2-05",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        },
+        {
+          "id": "P2-05-reversal",
+          "billVersion": 1,
+          "ruleVersion": "SYN-DISCHARGE-1",
+          "factsVerified": true,
+          "billingSignedOff": true,
+          "financialInputs": {
+            "grossBillPaise": 10000000,
+            "patientExcludedPaise": 800000,
+            "hospitalReductionPaise": 700000,
+            "deductiblePaise": 0,
+            "copayBps": 0,
+            "benefitLimitPaise": 20000000,
+            "netPatientPaymentsPaise": 500000,
+            "payerAuthorizationPaise": 8200000,
+            "payerReceipts": [
+              {
+                "reference": "SYN-RECEIPT-05-1",
+                "kind": "receipt",
+                "amountPaise": 8000000,
+                "evidenceRefs": [
+                  "SYN-BANK-05-1",
+                  "SYN-REMIT-05-1"
+                ]
+              },
+              {
+                "reference": "SYN-RECEIPT-05-2",
+                "kind": "receipt",
+                "amountPaise": 200000,
+                "evidenceRefs": [
+                  "SYN-BANK-05-2",
+                  "SYN-REMIT-05-2"
+                ]
+              },
+              {
+                "reference": "SYN-REVERSAL-05-1",
+                "kind": "reversal",
+                "reversesReference": "SYN-RECEIPT-05-1",
+                "amountPaise": 100000,
+                "evidenceRefs": [
+                  "SYN-REVERSAL-05-1"
+                ]
+              }
+            ]
+          },
+          "expected": {
+            "eligibleBasePaise": 8500000,
+            "deductibleAppliedPaise": 0,
+            "copayAppliedPaise": 0,
+            "benefitLimitExcessPaise": 0,
+            "estimatedInsurerPaise": 8500000,
+            "estimatedPatientPaise": 800000,
+            "confirmedPatientPaise": 800000,
+            "confirmedHospitalReductionPaise": 700000,
+            "unresolvedDecisionPaise": 300000,
+            "patientCollectPaise": 300000,
+            "patientRefundOwedPaise": 0,
+            "netPayerReceivedPaise": 8100000,
+            "authorizedReceivablePaise": 100000
+          },
+          "expectedState": {
+            "discharge": "patient-amount-confirmed",
+            "decisionDispute": "open",
+            "settlement": "partial-receipt",
+            "wholeCaseClosed": false
+          },
+          "reviewReasons": [],
+          "nextActions": [
+            {
+              "ownerRole": "Desk",
+              "action": "Continue the independent 300000 paise decision dispute."
+            },
+            {
+              "ownerRole": "Billing",
+              "action": "Patient total remains 800000 paise; collect only the separately confirmed 300000 paise balance."
+            },
+            {
+              "ownerRole": "Finance",
+              "action": "Record reversal evidence and reopen 100000 paise authorized receivable for Finance follow-up."
+            }
+          ],
+          "asOfEventId": "P2-05-reversal-1",
+          "availableDocumentIds": [
+            "P2-05-policy-v1",
+            "P2-05-preauth-v1",
+            "P2-05-tariff-v1",
+            "P2-05-bill-v1",
+            "P2-05-summary-v1",
+            "P2-05-deposit-v1",
+            "P2-05-authorization-v1"
+          ],
+          "activeQueryReferences": [],
+          "currentQueryStates": [],
+          "authoritativeBillVersion": 1,
+          "factSnapshot": {
+            "submittedPolicyId": "SYN-POLICY-P2-05",
+            "sourcePolicyId": "SYN-POLICY-P2-05",
+            "policyVerified": true,
+            "billAuthorityConfirmed": true
+          }
+        }
+      ],
+      "failureVariants": [
+        {
+          "input": "Staff proposes adding the unresolved 300000 paise to patient collection.",
+          "expected": "Require supported allocation evidence and a new Billing sign-off; never automatically increase patient debt."
+        },
+        {
+          "input": "A revised final authorization supersedes the existing one.",
+          "expected": "Preserve both decisions, reassess the affected allocation, and invalidate stale sign-off/explanation."
+        },
+        {
+          "input": "A remittance covers multiple claims or includes unmatched money.",
+          "expected": "Allocate only evidenced amounts to this case; keep unmatched amounts in Finance review."
+        },
+        {
+          "input": "Bank evidence arrives before final authorization.",
+          "expected": "Retain as unmatched evidence; do not fabricate authorization or a reconciled status."
+        },
+        {
+          "input": "The same transaction reference arrives with different money/content.",
+          "expected": "Flag a conflicting import for Finance review; do not silently deduplicate or double-count."
+        },
+        {
+          "input": "Matched receipts exceed actual authorization.",
+          "expected": "Show a Finance overpayment/credit review; do not hide the excess or change patient liability."
+        }
+      ],
+      "expectedTimingMinutes": {
+        "preparation": 20,
+        "submissionDelay": 5,
+        "payerWaitCycles": [
+          35
+        ],
+        "queryResponseCycles": [],
+        "billingReview": 30,
+        "deskResolution": 90
+      },
+      "decisionAllocationEvidence": {
+        "reference": "SYN-ALLOCATION-P2-05",
+        "approvedByRole": "Billing",
+        "confirmedPatientPaise": 800000,
+        "hospitalReductionPaise": 700000,
+        "unresolvedDecisionPaise": 300000,
+        "note": "The payer decision is 300000 paise below the estimate; no evidence reassigns this difference to the patient."
+      },
+      "defaultCheckpoint": "P2-05-partial",
+      "expectedSettlementMinutes": {
+        "firstPartialReceipt": 1380,
+        "authorizedReceiptsReconciled": 2820,
+        "reopenedAfterReversal": true
+      }
+    }
+  ],
+  "catalogSemantics": "Documents, queries, and events describe the complete fictional walkthrough, including future records. Render a checkpoint only from evidence available at its asOfEventId and its explicit availableDocumentIds; future decisions/responses cannot unblock an earlier view. Zero netPayerReceivedPaise means zero matched receipts recorded, not proof that no external payment exists."
+}

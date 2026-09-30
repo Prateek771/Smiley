@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0 and 1 are complete. The framework, contributor guide, and tracker are saved in the private [Prateek771/Smiley](https://github.com/Prateek771/Smiley) repository with passing GitHub checks. Phase 2 is next; later product implementation and service provisioning remain outside this setup task.
+**Current position:** Phases 0, 1, and 2 are complete. The framework is connected to private [Prateek771/Smiley](https://github.com/Prateek771/Smiley); Phase 1's application checks passed. Phase 2 now defines the [cashless-discharge workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md) and [five fictional acceptance packs](docs/fixtures/phase-2-cashless-discharge.json), with [independent validation evidence](docs/evidence/phase-2-validation.md). Phase 3 is next: the fictional work queue, case detail, and repeatable browser journey. Product workflows and services are still awaiting their implementation phases.
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -55,7 +55,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 2 — Define the first workflow and expected cases
 
-- [ ] Complete Phase 2 and record evidence.
+- [x] Complete Phase 2 and record evidence.
+- **Delivered:** [Workflow/roles/timers](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md), [five structured packs](docs/fixtures/phase-2-cashless-discharge.json), and [validation record](docs/evidence/phase-2-validation.md). Eleven checkpoints and five timelines passed independent checks; real hospital/policy validation remains at the later gates.
 - **Build:** Confirm the first cashless-discharge slice, staff roles, timer start/end, and human sign-offs. Prepare five fictional packs: clean approval, missing/conflicting evidence, repeated queries, disputed deduction, and partial settlement. Write independently checked expected amounts and actions.
 - **Test:** Walk each pack through Desk, Billing, and Finance; include cases where the correct action is staff review.
 - **Pass when:** Every pack has inputs, expected results, and a next action. Hospital interviews can run alongside synthetic development.
@@ -222,7 +223,7 @@ These are separate small build/test cycles after the core workflow is proven; th
 | Decision | Needed before | Current position |
 | --- | --- | --- |
 | GitHub owner/name and publishable history | Phase 1 publication | [Prateek771/Smiley](https://github.com/Prateek771/Smiley), private; clean root history published; main and codex branches connected |
-| First workflow details and synthetic expected results | Phase 2 | Cashless discharge first; details still need review |
+| First workflow details and synthetic expected results | Phase 2 | Synthetic workflow/roles/timers and five packs defined; 11 checkpoints independently checked; real hospital rules and role authority remain unvalidated |
 | Component library | Phase 3 | Tailwind installed; shadcn/ui recommendation awaits confirmation |
 | Identity/tenancy mapping and internal tables | Phases 4–7 | Review required; 42-domain-table inventory retained |
 | Private storage provider/region/access policy | Real storage integration; Phase 20 staging at latest | Unselected; synthetic test adapter can support Phase 10 |
@@ -241,6 +242,8 @@ Add one row for each completed phase or meaningful failed checkpoint. Store test
 | 2026-10-01 | 1: private GitHub and CI | `c0be1ce` | Local lint/typecheck/build passed; fresh GitHub checkout ran npm ci and all three checks successfully | [CI evidence](https://github.com/Prateek771/Smiley/actions/runs/36769233198); privacy/default branch verified; uploaded history and archives exclude removed PDFs/Word documents; both checkouts clean |
 
 | 2026-10-01 | Tooling: agent-browser | [e2919c8](https://github.com/Prateek771/Smiley/commit/e2919c8167fd7ecfc18ff41a2199b1425da18e64) | Fresh npm ci, browser version 0.38.1, lint, typecheck, and production build passed | Headless local starter opened; rendered text/snapshot verified; 1280×800 and 390×844 screenshots inspected; zero page errors; evidence in local ignored tmp/browser/; testing session/server closed. Contributor guide remains 397 words after dev restart. Regression journeys remain planned for Phase 3. |
+
+| 2026-10-01 | 2: synthetic discharge workflow | Phase 2 source checkpoint (see Git history) | Independent integer-paise audits: 5 packs, 11 checkpoints, 143 monetary/null outputs, 7 bill sums; 5 timing walkthroughs; current evidence/query/version scope reviewed | [Workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md), [fixtures](docs/fixtures/phase-2-cashless-discharge.json), [validation](docs/evidence/phase-2-validation.md). Synthetic assumptions only; Phase 3 UI journey next. |
 
 For later rows record: date, phase, commit/PR link, commands and outcomes, evidence location, unresolved issues, and next action. Reopen a phase if a later change invalidates its acceptance evidence.
 

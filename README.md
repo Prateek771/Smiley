@@ -75,6 +75,12 @@ configured by this installation.
 
 Use [BUILD_PLAN.md](BUILD_PLAN.md) for the phased build checklist, test checkpoints, decisions, and verification evidence. Update it after each completed phase.
 
+Phase 2 defines the [cashless-discharge workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md)
+and [five synthetic acceptance packs](docs/fixtures/phase-2-cashless-discharge.json).
+Their [validation record](docs/evidence/phase-2-validation.md) checks expected
+amounts, timing, role handoffs, and review blocks. These packs will guide later
+UI/rules tests; they are not real hospital policies or implemented workflows.
+
 ## Repository and automated checks
 
 The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley).
