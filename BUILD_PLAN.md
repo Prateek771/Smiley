@@ -6,6 +6,14 @@ Updated: 1 October 2026. This is the living progress record for the repository.
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
+## Branch workflow
+
+All future development uses `dev` in the managed worktree. Push phase work to
+`dev`; promote a checkpoint to `main` only after its applicable checks and
+GitHub checks pass. The original project checkout follows `main`. Preserve
+existing work; never force-push application branches or publish local recovery
+refs. `codex/saavantus-app` is retained as the earlier checkpoint branch.
+
 ## Agreed foundation
 
 - Next.js with TypeScript for the frontend and application backend.
@@ -251,7 +259,7 @@ For later rows record: date, phase, commit/PR link, commands and outcomes, evide
 
 The **private GitHub repository is connected** and Phase 1's publication checks passed. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting can be decided in Phase 20.
 
-Created `Prateek771/Smiley` privately under the owner's authorization. `main` and `codex/saavantus-app` track their remote branches. The managed worktree is preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions.
+Created `Prateek771/Smiley` privately under the owner's authorization. `main` and `dev` track their remote branches; `codex/saavantus-app` is retained as the earlier checkpoint branch. The managed worktree is preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions.
 
 - [GitHub: adding local code](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github)
 - [GitHub: continuous integration](https://docs.github.com/en/actions/get-started/continuous-integration)

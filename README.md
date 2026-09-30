@@ -85,4 +85,13 @@ UI/rules tests; they are not real hospital policies or implemented workflows.
 
 The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley).
 GitHub Actions checks the installed browser CLI, lint, TypeScript, and a production
-build on pushes to main or codex branches and on pull requests to main.
+build on pushes to `main`, `dev`, or codex branches and on pull requests to `main`.
+
+## Branch workflow
+
+Use `dev` in the managed development worktree for all future work. Commit and
+push focused changes there, run the checks appropriate to the phase, and verify
+GitHub checks before merging the tested checkpoint into `main`. `main` holds
+verified checkpoints; the original project checkout tracks it. Do not reset or
+force-push either branch. The older `codex/saavantus-app` branch is retained as
+history; local recovery refs stay off GitHub.

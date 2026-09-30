@@ -35,4 +35,4 @@ Use synthetic data; never commit secrets or identifiable patient data. `.env*` i
 
 ## Agent Workflow
 
-Use the active development worktree; preserve existing changes and document deletions. Push application branches; keep `refs/local-backups/` local. For substantial work (multiple files, behavior changes, data/security, or product tradeoffs), explain the goal, affected systems, approach, risks, and completion criteria, then proceed unless blocked. Verify proportionately, report limitations, and use diagrams only when helpful. Track phases and verification evidence in `BUILD_PLAN.md`; update it after each completed phase.
+Use `dev` in the worktree; preserve existing changes and deletions. Verify changes before merging into `main`; keep `refs/local-backups/` local. For substantial work (multiple files, behavior changes, data/security, or product tradeoffs), explain the goal, affected systems, approach, risks, and completion criteria, then proceed unless blocked. Verify proportionately, report limitations, and use diagrams only when helpful. Track phases and verification evidence in `BUILD_PLAN.md`; update it after each completed phase.
