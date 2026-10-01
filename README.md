@@ -1,97 +1,70 @@
 # Saavantus Hospital Claims Desk
 
-The Next.js foundation for the Smiley / Saavantus hospital insurance project.
-The public `/demo` implements the synthetic work queue and checkpoint-scoped case walkthrough. Protected database-backed staff workflows are being built through Phase 10; see the tracker.
+Smiley's local synthetic cashless-claims workspace for hospital staff. Phases 0–10 provide login, hospital/branch/role isolation, patient and insurance registration, persisted cases, controlled preparation actions, immutable history, and private document revisions.
+
+The protected `/desk` uses PostgreSQL. The public `/demo` walks through fixed fictional checkpoints; its role controls are previews. Financial assessment, payer submissions/authorization, bank settlement, and AI extraction are later phases in [BUILD_PLAN.md](BUILD_PLAN.md).
 
 ## Local development
 
-Use Node.js 24 or later (Node.js 24 is installed on the current computer)
-and npm. In the checkout or worktree where you are working, run:
+Use Node.js 24+ and Docker Desktop with Linux containers. Run from the managed `dev` worktree:
 
 ```powershell
 npm ci
+npm run db:start
+npm run db:migrate
+npm run db:seed
+npm run auth:seed
 npm run dev
 ```
 
-Open http://localhost:3000/demo. Application routes are under `src/app/`; synthetic view models/components are under `src/features/demo/`. Demo role controls are previews, not access authorization.
+Open `http://localhost:3000/login`. The seed command saves fictional staff credentials in ignored `tmp/synthetic-auth-sehospitaldb.json`; use `deskA` for the insurance desk, `adminA` for hospital administration, or `billingA` for a read-only case review. The other hospital and northern branch fixtures exercise isolation. Keep this credential file private and synthetic.
+
+The runtime creates ignored `.env.local` and `.env.test.local` with random local secrets and separate databases. Startup and migrations preserve existing data; domain seeds preserve registered rows. `auth:seed` reactivates known synthetic staff/grants and resets their fixture credentials. See [development-database.md](docs/development-database.md) for roles, paths, recovery, and stopping the runtime. Change `BETTER_AUTH_URL` in ignored configuration when using another origin.
 
 ## Verification
 
 ```powershell
+npm run db:migrate -- --test
+npm run db:seed -- --test
+npx playwright install chromium
+npm run test:integration
+npm run test:e2e
 npm run lint
 npm run typecheck
 npm run build
-npx playwright install chromium
-npm run test:e2e
 ```
 
-The starter uses Next.js 16.3.8, React, TypeScript, the App Router,
-Tailwind CSS, and ESLint. `package-lock.json` records the resolved dependencies.
-Each Git worktree needs its own dependency installation with `npm ci`.
+`npm test` runs both test suites. Server tests require the explicit local `sehospitaldb_test` connections; they never reset the development database. `npm run test:e2e` retains the isolated database/fixture preparation, builds the application, then serves production on port 3210 for desktop and Pixel 7 journeys. Do not run another server on that port, or a development server, production server or build sharing the same `.next` directory during these checks.
 
-## Browser checks with agent-browser
+CI repeats empty-database/additive migration preservation, seeds, server tests, browser tooling, lint, types, production build, and browser journeys against an ephemeral PostgreSQL 17 service. Only the CI Browser journeys step sets `PLAYWRIGHT_SKIP_BUILD=1` to reuse its fresh preceding Build step in the same job; the runner requires `.next/BUILD_ID` and still prepares isolated fixtures. Local checks build by default. Packages are locked in `package-lock.json`; each worktree needs its own `npm ci`.
 
-[agent-browser](https://github.com/vercel-labs/agent-browser) is pinned as a local
-development dependency. Use it for browser inspection, screenshots, and checking
-UI interactions during a phase. `npm run browser` always uses the project version.
+## Browser inspection
 
-Start the application with `npm run dev`. In a second terminal:
+[agent-browser](https://github.com/vercel-labs/agent-browser) is pinned locally. With the app running, use a separate synthetic session:
 
 ```powershell
-# First-time browser setup, if a compatible Chrome installation is unavailable.
 npm run browser:install
 New-Item -ItemType Directory -Force tmp/browser | Out-Null
 npm run browser -- --session smiley-local open http://localhost:3000
 npm run browser -- --session smiley-local snapshot
 npm run browser -- --session smiley-local screenshot tmp/browser/desktop.png
 npm run browser -- --session smiley-local set viewport 390 844
-npm run browser -- --session smiley-local screenshot tmp/browser/mobile.png
 npm run browser -- --session smiley-local errors
 npm run browser -- --session smiley-local close
 ```
 
-Use fresh snapshot references with `click` and `fill`; refresh the snapshot after
-navigation or UI changes. Use a distinct session name for concurrent worktrees.
-Raw screenshots and session state belong in ignored `tmp/browser/`; review
-synthetic evidence before copying it to `docs/evidence/`. Use isolated test
-sessions rather than a personal browser profile.
+Use current snapshot references for clicks and fills. Raw screenshots and session state belong in ignored `tmp/browser/`. Copy reviewed synthetic evidence into `docs/evidence/` intentionally. Playwright Test provides regression assertions; the optional Playwright MCP server is unnecessary for this scope.
 
-This CLI helps explore the UI; it does not provide regression assertions.
-Playwright Test runs desktop and Pixel 7 journeys under `tests/e2e/`. It starts an isolated server on port 3210. `npm run test:integration` runs Node/tsx server tests as those phases are introduced; `npm test` runs both suites. The demo reads fictional expected snapshots; it does not calculate coverage or record payer decisions.
+## Architecture and current limits
 
-## Existing reference material
+Next.js App Router pages/APIs are under `src/app/`, feature screens under `src/features/`, and scoped server services under `src/server/`. PostgreSQL/Drizzle preserve the 42 domain tables and four reporting views, with 10 internal identity/evidence tables. Better Auth handles identity; current hospital, branch, and role grants control operations. [access-model.md](docs/access-model.md) documents those boundaries.
 
-The `outputs/` and `prototype/` directories are preserved
-as project references. Older stack proposals in those documents are historical;
-the latest agreed application stack takes precedence.
+Private files live outside public assets in ignored local storage. Downloads recheck current staff access and file integrity; originals and source notes remain tied to exact revisions. The 5 MiB limit, supported formats, rollback cleanup, and local-host assumptions are recorded in Phase 10 evidence. PDF parsing uses a bounded local worker; keep `src/server/documents/pdf-validation-worker.mjs` and pinned dependencies available when serving the build. Standalone/cloud packaging, cloud storage, production backups, OCR/model providers, and hosting remain later decisions. Do not use identifiable patient data in this local build.
 
-The earlier `build-guide/` has a separate Git repository and stays in the original
-project folder. It is excluded from this application's Git repository.
-`tmp/` and `work/` contain local scratch artifacts and are also excluded.
+Amounts remain unknown until deterministic assessment and actual payer evidence are implemented. A locally prepared query response is never shown as payer acknowledgement. Graphile Worker and TypeScript LangGraph run in a separate persistent worker in later phases.
 
-Local PostgreSQL preparation is documented in [development-database.md](docs/development-database.md). No background worker or cloud deployment is configured; LangGraph belongs to the later worker/extraction phases.
+## Repository workflow
 
-## Build progress
+The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley). Work on `dev`; promote an exact tested checkpoint to `main` after GitHub checks pass. Preserve existing changes and local recovery refs; never force-push or publish backup refs. Track completed phases and evidence in [BUILD_PLAN.md](BUILD_PLAN.md) and the [execution ledger](docs/evidence/phases-3-10-progress.md).
 
-Use [BUILD_PLAN.md](BUILD_PLAN.md) for the phased build checklist, test checkpoints, decisions, and verification evidence. Update it after each completed phase.
-
-Phase 2 defines the [cashless-discharge workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md)
-and [five synthetic acceptance packs](docs/fixtures/phase-2-cashless-discharge.json).
-Their [validation record](docs/evidence/phase-2-validation.md) checks expected
-amounts, timing, role handoffs, and review blocks. These packs will guide later
-UI/rules tests; they are not real hospital policies or implemented workflows.
-
-## Repository and automated checks
-
-The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley).
-GitHub Actions checks the installed browser CLI, lint, TypeScript, and a production
-build and desktop/mobile browser journeys on pushes to `main`, `dev`, or codex branches and on pull requests to `main`.
-
-## Branch workflow
-
-Use `dev` in the managed development worktree for all future work. Commit and
-push focused changes there, run the checks appropriate to the phase, and verify
-GitHub checks before merging the tested checkpoint into `main`. `main` holds
-verified checkpoints; the original project checkout tracks it. Do not reset or
-force-push either branch. The older `codex/saavantus-app` branch is retained as
-history; local recovery refs stay off GitHub.
+`prototype/` and `outputs/` are historical references. The earlier `build-guide/` has its own repository in the original project folder and is excluded from this application. Scratch files, credentials, and private documents are excluded from Git.

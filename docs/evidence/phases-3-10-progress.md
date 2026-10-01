@@ -1,48 +1,56 @@
 # Execution ledger — Phases 3–10
 
-Plan: docs/superpowers/plans/2026-10-01-phases-3-10.md
-Start checkpoint: 7b443ae49402fd22c8908b7a91a96cbb92cee0f3 on dev.
-Owner authorization: proceed continuously through Phase 10; stop for a genuine issue needing owner attention.
+Updated: 1 October 2026. This records synthetic local implementation and exact checkpoint CI; it does not establish real-hospital or production readiness.
 
-Ruling: existing Tailwind/native accessible controls for Phase 3 — avoids an unnecessary UI dependency for this small first journey; can adopt shadcn later if justified.
-Ruling: public /demo uses only synthetic fixture snapshots; protected /desk uses PostgreSQL — prevents demonstration role controls from becoming a security boundary.
-Ruling: parallel bounded UI, schema review and local-runtime preparation; sequential backend integration — keeps independent work moving with explicit file ownership.
-Ruling: database providers/model/OCR/production permission are deferred — local synthetic PostgreSQL/private test storage can complete this authorized scope.
-Pre-flight: Phase 3 fixture view models feed demo only; Phase 4 source inventory feeds Phase 5 migration repairs; phases 6–10 share verified Actor/scoped transaction contracts. No worker/AI is introduced.
+[Execution plan](../superpowers/plans/2026-10-01-phases-3-10.md). Start checkpoint: `7b443ae49402fd22c8908b7a91a96cbb92cee0f3` on `dev`. The owner authorized continuous work through Phase 10, with genuinely missing decisions escalated when needed.
 
-## Phase status
+## Decisions used
 
-- Phase 3: local validation complete; 18 desktop/mobile browser tests GREEN after route-absence RED, screenshots reviewed, lint/types/build passed. Committed 51bdf978; source review 43f73244 inherits the same application. [Exact CI 43f73244 passed](https://github.com/Prateek771/Smiley/actions/runs/36837998840) and was promoted to main.
-- Phase 4: complete static inventory review; 42 tables/428 columns/69 FKs/4 views/52 enum sets rechecked, source hashes unchanged. No source SQL executed.
-- Phase 5: locally complete; 14 real PostgreSQL tests pass on both the working and restored synthetic database. All 52 tables/four views and additive data preservation verified. Independent review found two edge cases; additive 0002 fixes both with regression tests. Exact CI pending checkpoint push.
-- Phases 6–10: pending preceding interfaces and checks.
+- Tailwind and native accessible controls support the first desk flow.
+- Public `/demo` uses fixed fictional checkpoints; protected `/desk` uses PostgreSQL and current server-verified staff permissions.
+- The 42 supplied domain tables and four reporting views remain the business inventory. Four auth tables and six branch/invitation/event/revision/evidence tables bring the implemented database to 52 tables; dormant domain workflows are not presented as implemented.
+- PostgreSQL/Drizzle and Better Auth support the local build. Hosting, production private storage, OCR/model providers and real-data permissions remain later decisions.
+- Graphile Worker and TypeScript LangGraph remain planned in Phases 15–17; no background claims/AI workflow worker, extraction or AI approval flow is implemented here. Phase 10 uses bounded worker threads for PDF validation.
 
-## Continuing execution notes
+## Verified checkpoint history
 
-- Original checkout `main` is at 43f73244; worktree remains `dev`. Future SQL/identity code is uncommitted until relevant tests pass.
-- PostgreSQL 17.11 is loopback-only on 5442, separate non-owner app/migration roles; no source bootstrap executed. Disposable backup/restore passed; restore upgraded to three migrations, 463 constraints, and preserved numeric/version sentinel.
-- Phase 6 identity/lifecycle is staged and typechecked, held until Phase 5 passes. Cookie authorization re-reads staff/membership; platform gets no clinical scope.
-- Phase 7 policies/access helpers/tests are prepared under ignored original `tmp/phase7-stage`; publish after Phase 6 checkpoint, observe direct-SQL RED before policy application.
-- Phase 8 full protected registration/case/API/UI slice is staged independently and held until Phase 7 contracts pass.
-- Phase 9 action/history service/tests are staged under ignored original `tmp/phase9-stage`; publish after Phase 8, observe action tests RED before production implementation. Query responses remain locally prepared, never presumed payer acknowledgement.
-- Phase 10 private-file adapter has 9/9 real-filesystem checks, staged under worktree `tmp/phase-10-files`; DB/storage integration and routes follow sequentially.
-- Playwright MCP reviewed at owner's linked repository. Owner permits it if needed. Existing Playwright Test + agent-browser cover this scope, so no redundant configuration installed.
-- GitHub CI now prepares an ephemeral PostgreSQL service with random masked credentials and checks real migrations/seeds/integration; verify its first database checkpoint before promotion.
+Counts describe the checks at each checkpoint, not independent totals to add together. Exact CI links below are retained from the existing progress records.
 
-- Phase 5 independent review accepted finite NUMERIC and nullable log ownership fixes. Membership granted_by/granted_at/revoked_at fields are explicitly deferred to the Phase 7 additive grant-history migration.
+| Phase | Delivered and verified locally | Saved checkpoint and CI |
+| --- | --- | --- |
+| 0 | Next.js/TypeScript/Tailwind starter; lint/types/build passed | Local-only `fe35d53`; no separate published CI claim |
+| 1 | Private repository, clean publishable history and locked tooling; fresh checkout passed install/lint/types/build | `c0be1ce`; [CI passed](https://github.com/Prateek771/Smiley/actions/runs/36769233198), promoted to main |
+| 2 | Five synthetic packs, 11 checkpoints and five timelines; independent amount and timing review | [`9e2f78a`](https://github.com/Prateek771/Smiley/commit/9e2f78a153f2c70acb50b4b33b722620f2fe8f82); [fixture validation](phase-2-validation.md), no separate CI run recorded here |
+| 3–4 | Fictional desk demo: 18 desktop/mobile journeys and lint/types/build. Source review: 42 tables, 428 columns, 69 FKs, four views and 52 enum sets; source hashes retained | UI `51bdf978`, source review `43f73244`; [exact combined checkpoint CI passed](https://github.com/Prateek771/Smiley/actions/runs/36837998840), promoted to main |
+| 5 | Reviewed additive database/seed setup; 14 real PostgreSQL checks on working and restored synthetic databases | `c2b11ce97c3b9a352d9aabe787dc911c259a4558`; [CI passed](https://github.com/Prateek771/Smiley/actions/runs/36841333795), promoted to main |
+| 6 | Login, atomic invitations, expiry/logout/removal and protected routes; 31 server and 30 browser checks, lint/types/build | `5660fb70394c59805bcc7fb0ba301060ffd94c99`; [CI passed](https://github.com/Prateek771/Smiley/actions/runs/36843283585), promoted to main |
+| 7 | Hospital/branch/role scope, forced RLS and grant provenance; 44 server and 12 focused auth browser checks, lint/types/build | `4dfb97c5eb09ffc52e2bd821fa4d70fd387b2855`; [CI passed](https://github.com/Prateek771/Smiley/actions/runs/36844349111), promoted to main |
+| 8 | Patient/membership/encounter/case persistence; 59 server and 38 browser checks, lint/types/build. Active catalogs, malformed IDs and filtered queue cap covered | `2519452e48dfa3aa365eec5092f9ab4b78cc088d`; [CI passed](https://github.com/Prateek771/Smiley/actions/runs/36847642981), promoted to main |
+| 9 | Versioned preparation edits/statuses, deadlines, repeated payer queries and local response drafts; 69 server checks, 15 fresh migration-preservation checks, 46 browser checks, lint/types/build | `b1248b6e96c029f9644ba416ab6f7c63a0bbfad4`; [exact CI](https://github.com/Prateek771/Smiley/actions/runs/36849769943) passed and was promoted to main |
+| 10 | Private scoped files, immutable revisions and manual revision-pinned source notes; final verification: 107 unit/server checks and 15 fresh-migration checks passed with zero skips; 58 desktop/mobile browser journeys passed (3.7 minutes locally, 1.5 minutes in exact CI); lint, typecheck and production build passed; production dependency audit found zero vulnerabilities | Application checkpoint `d0ead55c450661f753ff1262062a3e139ee5f4d0`; [exact CI passed](https://github.com/Prateek771/Smiley/actions/runs/36859433632). Final evidence-only commit retains this application tree and is checked before main promotion |
 
-- Phase 5 exact checkpoint `c2b11ce97c3b9a352d9aabe787dc911c259a4558` passed [GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36841333795) and was promoted to main.
+Detailed evidence: [Phase 3](phase-3-validation.md), [source inventory](../schema/domain-inventory.json), [schema review](../schema/phase-4-review.md), [Phase 5](phase-5-database.md), [Phase 6](phase-6-auth.md), [Phase 7](phase-7-access.md), [Phase 8](phase-8-cases.md), [Phase 9](phase-9-actions.md), and [Phase 10](phase-10-documents.md).
 
-- Phase 6 locally complete: Login, atomic staff invitations, expiry/logout/removal and protected routes; 31 server checks and 30 desktop/mobile journeys pass, plus lint/types/build. [Evidence](phase-6-auth.md). Checkpoint push and exact CI promotion follow.
+## Historical checks and repairs
 
-- Phase 6 exact checkpoint `5660fb70394c59805bcc7fb0ba301060ffd94c99` passed [GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36843283585) and was promoted to main.
+- New slice assertions were run before production activation. Missing demo routes, persisted case services and controlled actions produced the expected failures, then passed after implementation.
+- The source bootstrap scripts were reviewed only and never executed. The migrations retained all domain tables/views, repaired UNIQUE/enum/index/timestamp behavior, enforced tenant/relationship consistency and rejected non-finite money/quantity values and branch-only audit ownership. No applied migration was edited.
+- Phase 5 backup/restore into a separate synthetic database preserved all 52 table counts and the numeric/version sentinel; the restored database passed the same constraint regressions. This is local restore evidence, not a production recovery certification.
+- Phase 7 added grantor/grant/revocation metadata and forced RLS using the non-owner application role. Current staff status and branch roles are checked on each scoped transaction; platform administration grants no clinical scope.
+- Phase 8 review regressions covered inactive insurer/TPA/category/subcategory, malformed decimal IDs, and older matching cases beyond the unfiltered queue cap. Search and branch filtering now precede the disclosed 500-result cap.
+- Phase 9 `0005` backfilled existing query references from the preserved globally unique internal query number before enforcing the hospital/case/reference UNIQUE. Fresh migration checks retained legacy query/response text and the case amount/version sentinel. Prior SQL/snapshot bytes `0000–0004` matched the frozen hashes.
+- Phase 9 review/browser regressions covered query responses before preparation readiness and stale tabs retaining old form fields; the server readiness guard and version-keyed edit form resolved them. Payer acknowledgement and approval remain separate, unimplemented facts.
+- Phase 10 storage fault tests reproduced post-open stat/close leaks before ownership-aware cleanup was repaired. The filesystem checks passed 14/14; final suite totals are recorded in the checkpoint table above. Exact upload/source-note retries are resolved before cancellation rejects new writes.
+- Phase 10 production-mode smoke reproduced valid compressed PDF uploads returning 415 although direct validator checks passed: Next.js bundling altered the raw Uint8Array worker payload. A `{ bytes: Uint8Array }` envelope and native `getBuiltinModule("module").createRequire` loader preserve transport and on-disk parser guards. The compressed-PDF API regression passed on desktop/mobile; native artifact inspection and production PDF smoke against the synthetic development database passed. Final suite totals are in the checkpoint table above.
+- The compressed-PDF API regression then passed on desktop/mobile, but the first full 54-check browser run had 52 passes and two failures (auth navigation and stale-tab refresh). A sign-in trace showed POST 200 followed by overlapping push/refresh RSC requests; one hard navigation to `/desk` replaces that pair, with a localized lint exception at the auth-cookie boundary. The stale trace showed a correct 409 while the refresh body was incomplete: the 60-second journey now waits at most 15 seconds for displayed version 2 before its unchanged exact-field, second-save and reload assertions. The case-action runtime and access checks are unchanged. The production browser rerun passed; totals are in the checkpoint table above.
+- A later development-mode failure stopped at the queue heading before case/document requests. The matched production control used the same synthetic test database, actor and 499-case queue without reset: queue body completed in 2.255s, heading appeared in 2.024s, cases API completed in 1.899s and registration confirmation appeared in 2.068s under its original 5s assertion. The captured patient-registration redirect body remained incomplete, so visible confirmation does not imply every redirect stream completed. There were no page errors. Default browser checks now retain fixture preparation but build and serve production on 3210; CI reuses its preceding fresh build only with the explicit skip flag. These measurements are local technical controls, not clinical timing guarantees.
+- The first full production 54-check run had 43 passes and 11 failures: parallel localhost journeys hit the shared sign-in rate limit (confirmed 429), and a failed login script exposed native credential GET before hydration. Login controls now remain disabled until hydration and the form declares POST. Test fixtures merge existing headers and assign one benchmark-range client address per journey, shared by browser/request contexts. Production limits remain enabled: three 401 attempts are followed by 429 with `X-Retry-After` between 1 and 10 seconds. The no-JavaScript and actual-throttling regressions passed on desktop/mobile. Credential-bearing URLs and raw failed traces are excluded from publication.
+- The fresh production build and complete browser suite passed with exit 0; local/CI totals and exact application checkpoint `d0ead55c450661f753ff1262062a3e139ee5f4d0` are in the table above. Final `npm start` smoke passed in 4.17s with zero client page errors; [Phase 10 evidence](phase-10-documents.md) records the scoped PDF/source/download, rejection and logout checks. Gzip drain-listener warnings and one destination-stream-closed observation occurred during production test navigations without a demonstrated incorrect result; listener limits and compression remain unchanged. Server observations are separate from client page-error checks.
 
-- Phase 7 locally complete: Hospital/branch/role isolation and grant provenance; 44 server checks, 12 focused auth browser journeys and lint/types/build pass. [Evidence](phase-7-access.md). Checkpoint push and exact CI promotion follow.
+## Limits and next work
 
-- Phase 7 exact checkpoint `4dfb97c5eb09ffc52e2bd821fa4d70fd387b2855` passed [GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36844349111) and was promoted to main.
+Only fictional local patients, staff, policies and files are used. Local PostgreSQL is bound to loopback with separate non-owner app and migration roles; secrets/credentials/private files remain ignored. CI provisions an ephemeral PostgreSQL service and runs fresh/additive migrations, seeds, server tests, lint, types, build and browser journeys. `test:e2e` builds and serves production on 3210 after unchanged isolated fixture preparation; CI alone sets `PLAYWRIGHT_SKIP_BUILD=1` on the browser step to reuse its fresh prior build, with `.next/BUILD_ID` required. Concurrent servers/builds must not share `.next`. Existing Playwright Test plus agent-browser cover this scope; no additional Playwright MCP configuration was installed.
 
-- Phase 8 locally complete: Patient, insurance, encounter and case persistence;59server checks and38desktop/mobile journeys pass, plus lint/types/build. Active catalog, filtered queue and malformed-ID regressions pass. [Evidence](phase-8-cases.md). Checkpoint push and exact CI promotion follow.
+Registration selectors return up to 500 recent records; the queue exposes its 500-match cap and supports SQL search/branch filtering. Private storage is a local adapter, pending a production provider. Clinical financial amounts remain unknown until versioned deterministic assessment and actual payer evidence exist; locally drafted query responses are never payer acknowledgement.
 
-- Phase 8 exact checkpoint `2519452e48dfa3aa365eec5092f9ab4b78cc088d` passed [GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36847642981) and was promoted to main.
-
-- Phase 9 locally complete: 69 server checks, 15 fresh migration-preservation checks, 16 desk/timeline browser checks plus 30 auth/demo checks, lint/types/build passed. [Evidence](phase-9-actions.md). Checkpoint push and exact CI promotion follow.
+[BUILD_PLAN.md](../../BUILD_PLAN.md) preserves Phases 11–23 and the reimbursement/corporate/government/integration extension lane. Deterministic financial rules, external submissions, actual payer decisions, settlement, workers/AI, deployment, recovery certification, historical validation and an identifiable-data pilot remain separate future deliverables and gates.

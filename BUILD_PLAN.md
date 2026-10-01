@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0–9 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
+**Current position:** Phases 0–10 are locally verified using synthetic data. Final verification: 107 unit/server checks and 15 fresh-migration checks passed with zero skips; 58 desktop/mobile browser journeys passed (3.7 minutes locally, 1.5 minutes in exact CI); lint, typecheck and production build passed; production dependency audit found zero vulnerabilities. Exact checkpoint promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md). Phases 11 onward remain planned; this checkpoint does not establish production or real-hospital readiness.
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -20,8 +20,8 @@ refs. `codex/saavantus-app` is retained as the earlier checkpoint branch.
 - PostgreSQL, database name `sehospitaldb`; Drizzle for queries and reviewed migrations.
 - The supplied **42 business/domain tables and four reporting views** are the starting inventory. Review all 42; implement their workflows incrementally.
 - Better Auth manages identities/sessions. Hospital, branch, and role authorization is enforced separately.
-- Graphile Worker runs durable jobs in a separate persistent Node.js process; LangGraph also runs there in TypeScript.
-- Tailwind CSS is installed. native accessible controls are used for the first desk journey; add a component dependency only when justified.
+- Graphile Worker and TypeScript LangGraph are planned for a separate persistent Node.js process in Phases 15–17; no background claims/AI workflow worker or AI runtime is implemented yet. Phase 10 uses bounded worker threads only for PDF validation.
+- Tailwind CSS and native accessible controls support the desk journey; add a component dependency only when justified.
 - Hosting, private document storage, and model/OCR providers remain undecided.
 
 These decisions supersede older stack proposals in `outputs/`. The existing prototype is a visual reference. Extra authentication, queue, or agent-persistence tables may be necessary; explain their purpose and placement before adding them. Do not silently add domain tables or promise 42 as the permanent total.
@@ -37,9 +37,9 @@ These decisions supersede older stack proposals in `outputs/`. The existing prot
 
 A completed phase needs its deliverable, passing checks, a short demo/review where relevant, and a recorded commit. Provider failures or missing facts should have usable fallback paths. Documentation-only work needs content/link verification rather than an application rebuild.
 
-**Existing commands:** `npm ci`, `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run start`, `npm run browser:install`, and `npm run browser -- <command>`. Use Node.js 24+. agent-browser supports exploratory UI checks and screenshots with isolated synthetic sessions; see `README.md`. `npm run test:e2e` runs Playwright desktop/mobile journeys; `npm run test:integration` runs Node/tsx server tests; `npm test` runs both. Database commands are enabled in Phase 5; worker commands remain later.
+**Existing commands:** Use Node.js 24+ and the locked dependencies. `npm run db:start`, `npm run db:migrate`, `npm run db:seed`, and `npm run auth:seed` prepare the synthetic local environment; append `-- --test` to migration/seeding commands for the isolated test database. `npm run dev` serves the app. `npm run test:integration` runs Node/tsx unit and PostgreSQL tests; `npm run test:e2e` prepares isolated fixtures, builds and serves production on port 3210 for desktop/mobile journeys; `npm test` runs both. `npm run lint`, `npm run typecheck`, and `npm run build` verify the application; `npm run start` serves the completed build. Do not share `.next` with another development/production server or build during browser checks. CI sets `PLAYWRIGHT_SKIP_BUILD=1` only to reuse its preceding fresh Build step in the same job. Use `npm run browser:install` and `npm run browser -- <command>` for exploratory synthetic browser checks. [README.md](README.md) documents setup and test isolation. Worker commands remain later.
 
-Planned code areas: `src/app/` for routes/screens; focused feature modules under `src/features/`; server access and storage adapters under `src/server/`; reviewed schema/migrations under `drizzle/`; worker entry points under `src/worker/`; browser journeys under `tests/e2e/`. These directories are introduced incrementally as their phase is implemented. Define each phase's precise file changes when it starts.
+Current code areas: `src/app/` for routes/screens, `src/features/` for focused UI modules, `src/server/` for identity/access/case/document/database services, `drizzle/` for reviewed migrations, and `tests/{unit,integration,e2e}/` for checks. A separate `src/worker/` remains planned for Phase 15. Define each later phase's precise file changes when it starts.
 
 ## Phase checklist
 
@@ -88,7 +88,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 5 — Create repeatable PostgreSQL migrations
 
 - [x] Complete Phase 5 and record evidence.
-- **Delivered:** 52 tables and four invoker views, additive migrations, isolated PostgreSQL runtime, synthetic seeds, and [database validation/restore evidence](docs/evidence/phase-5-database.md). Fourteen real database checks pass; independent review fixes reject non-finite numerics and branch-only audit ownership. GitHub promotion follows exact checkpoint CI.
+- **Delivered:** 52 tables and four invoker views, additive migrations, isolated PostgreSQL runtime, synthetic seeds, and [database validation/restore evidence](docs/evidence/phase-5-database.md). Fourteen real database checks passed at the Phase 5 checkpoint; independent review fixes reject non-finite numerics and branch-only audit ownership. Exact CI/promotion is recorded in the execution ledger.
 - **Build:** Establish a disposable synthetic development/test database. Implement the reviewed Drizzle schema and migrations, intended constraints/indexes, and approved synthetic seeds.
 - **Test:** Apply migrations to an empty database; apply subsequent changes without data loss; check the domain inventory, valid views, invalid enum values, duplicate records, and invalid relationships.
 - **Pass when:** Setup is reproducible and existing data survives migration tests. Recovery is documented. Never run the source DROP DATABASE scripts against an existing database.
@@ -112,7 +112,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 8 — Persist patients, insurance links, and cases
 
 - [x] Complete Phase 8 and record evidence.
-- **Delivered:** Patient, insurance, encounter and case persistence;59server checks and38desktop/mobile journeys pass, plus lint/types/build. Active catalog, filtered queue and malformed-ID regressions pass. [Validation](docs/evidence/phase-8-cases.md). Exact checkpoint CI is tracked in the execution ledger.
+- **Delivered:** Patient, insurance, encounter and case persistence; 59 server checks and 38 desktop/mobile journeys passed at the Phase 8 checkpoint, plus lint/types/build. Active catalog, filtered queue and malformed-ID regressions pass. [Validation](docs/evidence/phase-8-cases.md). Exact checkpoint CI is tracked in the execution ledger.
 - **Build:** Add patient/encounter registration, category/insurer/TPA/policy selection, and case creation with owner and next action.
 - **Test:** Create and reopen a case; reject mismatched patients, policies, encounters, hospitals, and duplicate actions.
 - **Pass when:** A real database-backed case survives refresh and appears in the correct staff queue.
@@ -120,14 +120,15 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 9 — Add the case timeline and controlled actions
 
 - [x] Complete Phase 9 and record evidence.
-- **Delivered:** 69 server checks, 15 fresh migration-preservation checks, 16 desk/timeline browser checks plus 30 auth/demo checks, lint/types/build passed. [Validation](docs/evidence/phase-9-actions.md). Exact checkpoint CI is tracked in the execution ledger.
+- **Delivered:** Controlled preparation edits/statuses, deadlines, repeated payer-query references and local response drafts, stale-version checks, and immutable history. 69 server checks, 15 fresh migration-preservation checks, and 46 browser checks passed with lint/types/build. [Validation](docs/evidence/phase-9-actions.md). Checkpoint: `b1248b6e96c029f9644ba416ab6f7c63a0bbfad4`; [exact CI](https://github.com/Prateek771/Smiley/actions/runs/36849769943). A locally prepared response is not payer acknowledgement.
 - **Build:** Record status/action history, assignments, deadlines, repeated query cycles, version checks, and protected audit events.
 - **Test:** Two staff members update the same case; invalid transitions and duplicate actions are rejected or safely handled; historical events cannot be silently overwritten.
 - **Pass when:** Staff can reconstruct who did what and why, and no update silently loses another staff member's work.
 
 ### Phase 10 — Add private documents and revisions
 
-- [ ] Complete Phase 10 and record evidence.
+- [x] Complete Phase 10 and record evidence.
+- **Delivered:** Private scoped uploads/downloads, immutable revisions, manual source notes pinned to exact revisions, content/size validation and rollback cleanup. Final checks: 107 unit/server checks and 15 fresh-migration checks passed with zero skips; 58 desktop/mobile browser journeys passed (3.7 minutes locally, 1.5 minutes in exact CI); lint, typecheck and production build passed; production dependency audit found zero vulnerabilities. [Validation](docs/evidence/phase-10-documents.md). Exact CI is checked before main promotion.
 - **Build:** Implement private upload/download authorization, metadata, document revisions, source evidence, and safe file handling. Use synthetic files and a test storage adapter until the provider decision is made.
 - **Test:** Forbidden downloads, invalid files/sizes, failed uploads, revised documents, and revoked access.
 - **Pass when:** Originals and revisions remain traceable; access is private and scoped. Stored files are never placed in the public asset directory.
@@ -240,8 +241,8 @@ These are separate small build/test cycles after the core workflow is proven; th
 | GitHub owner/name and publishable history | Phase 1 publication | [Prateek771/Smiley](https://github.com/Prateek771/Smiley), private; clean root history published; main and codex branches connected |
 | First workflow details and synthetic expected results | Phase 2 | Synthetic workflow/roles/timers and five packs defined; 11 checkpoints independently checked; real hospital rules and role authority remain unvalidated |
 | Component library | Phase 3 | Tailwind and native accessible controls implemented; add a library when justified |
-| Identity/tenancy mapping and internal tables | Phases 4–7 | Review required; 42-domain-table inventory retained |
-| Private storage provider/region/access policy | Real storage integration; Phase 20 staging at latest | Unselected; synthetic test adapter can support Phase 10 |
+| Identity/tenancy mapping and internal tables | Phases 4–7 | Implemented: separate Better Auth identity, hospital/branch/role grants and forced RLS; 42 domain tables plus 10 justified internal tables, four invoker views |
+| Private storage provider/region/access policy | Real storage integration; Phase 20 staging at latest | Production provider unselected; Phase 10 uses private local synthetic storage and reviewed access checks |
 | Actual model/OCR provider and agent persistence | Phase 16 | Evaluate synthetic documents first; LangGraph is orchestration |
 | Hosting provider/region/budget | Phase 20 | Unselected; persistent web/worker/database roles established |
 | Pilot, approved real rules, and integration permissions | Phases 22–23 or any real integration | Unresolved; does not block synthetic development |
@@ -256,11 +257,11 @@ Add one row for each completed phase or meaningful failed checkpoint. Store test
 | 2026-10-01 | Planning | `c0be1ce` | Tracker structure and current commands verified | Contributor guide and tracker included in the published checkpoint |
 | 2026-10-01 | 1: private GitHub and CI | `c0be1ce` | Local lint/typecheck/build passed; fresh GitHub checkout ran npm ci and all three checks successfully | [CI evidence](https://github.com/Prateek771/Smiley/actions/runs/36769233198); privacy/default branch verified; uploaded history and archives exclude removed PDFs/Word documents; both checkouts clean |
 
-| 2026-10-01 | Tooling: agent-browser | [e2919c8](https://github.com/Prateek771/Smiley/commit/e2919c8167fd7ecfc18ff41a2199b1425da18e64) | Fresh npm ci, browser version 0.38.1, lint, typecheck, and production build passed | Headless local starter opened; rendered text/snapshot verified; 1280×800 and 390×844 screenshots inspected; zero page errors; evidence in local ignored tmp/browser/; testing session/server closed. Contributor guide remains 397 words after dev restart. Regression journeys remain planned for Phase 3. |
+| 2026-10-01 | Tooling: agent-browser | [e2919c8](https://github.com/Prateek771/Smiley/commit/e2919c8167fd7ecfc18ff41a2199b1425da18e64) | Fresh npm ci, browser version 0.38.1, lint, typecheck, and production build passed | Headless local starter opened; rendered text/snapshot verified; 1280×800 and 390×844 screenshots inspected; zero page errors; evidence in local ignored tmp/browser/; testing session/server closed. Desktop/mobile regression journeys were introduced in Phase 3. |
 
-| 2026-10-01 | 2: synthetic discharge workflow | [9e2f78a](https://github.com/Prateek771/Smiley/commit/9e2f78a153f2c70acb50b4b33b722620f2fe8f82) | Independent integer-paise audits: 5 packs, 11 checkpoints, 143 monetary/null outputs, 7 bill sums; 5 timing walkthroughs; current evidence/query/version scope reviewed | [Workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md), [fixtures](docs/fixtures/phase-2-cashless-discharge.json), [validation](docs/evidence/phase-2-validation.md). Synthetic assumptions only; Phase 3 UI journey next. |
+| 2026-10-01 | 2: synthetic discharge workflow | [9e2f78a](https://github.com/Prateek771/Smiley/commit/9e2f78a153f2c70acb50b4b33b722620f2fe8f82) | Independent integer-paise audits: 5 packs, 11 checkpoints, 143 monetary/null outputs, 7 bill sums; 5 timing walkthroughs; current evidence/query/version scope reviewed | [Workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md), [fixtures](docs/fixtures/phase-2-cashless-discharge.json), [validation](docs/evidence/phase-2-validation.md). Synthetic assumptions only; subsequent application checkpoints are recorded in the execution ledger. |
 
-For later rows record: date, phase, commit/PR link, commands and outcomes, evidence location, unresolved issues, and next action. Reopen a phase if a later change invalidates its acceptance evidence.
+Phases 3–9: [execution ledger](docs/evidence/phases-3-10-progress.md) records exact checkpoint SHAs, CI runs and validation reports. Phase 10 final results: 107 unit/server checks and 15 fresh-migration checks passed with zero skips; 58 desktop/mobile browser journeys passed (3.7 minutes locally, 1.5 minutes in exact CI); lint, typecheck and production build passed; production dependency audit found zero vulnerabilities. Reopen a phase if a later change invalidates its acceptance evidence; keep future phase results and approval gates explicit.
 
 ## GitHub recommendation and references
 
@@ -272,3 +273,5 @@ Created `Prateek771/Smiley` privately under the owner's authorization. `main` an
 - [GitHub: continuous integration](https://docs.github.com/en/actions/get-started/continuous-integration)
 - [GitHub: repositories and visibility](https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories)
 - Domain findings: [source review](outputs/Smiley-source-review-2026-09-29.md). Older roadmaps remain reference material; use the agreed foundation above for current stack decisions.
+
+Phase 10 application checkpoint `d0ead55c450661f753ff1262062a3e139ee5f4d0` passed [exact GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36859433632); the final evidence-only commit retains its application code. Main promotion follows successful checks of that final commit.

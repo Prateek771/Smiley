@@ -2,37 +2,33 @@
 
 ## Project Structure & Module Organization
 
-`src/app/` holds App Router pages, layouts, and CSS; `@/*` maps to `src/*`. `prototype/` and `outputs/` are historical references; rebuild the standalone demo with `node prototype/build.js`. Add static assets under `public/` when needed. The separate `build-guide/` repository stays in the original checkout.
+`src/app/` holds pages/APIs; `src/features/{demo,desk}/` holds previews/protected staff screens. `src/server/` contains identity, access, case, document and database services. Migrations live in `drizzle/`, checks in `tests/{unit,integration,e2e}/`, public assets in `public/`, and private synthetic files in ignored `tmp/`. `docs/` records evidence; `prototype/` and `outputs/` are historical. The separate `build-guide/` repository stays in the original checkout.
 
 ## Build, Test, and Development Commands
 
-Use Node.js 24+ and npm from the worktree root.
+Use Node.js 24+ and npm from the `dev` worktree.
 
 - `npm ci`: install locked dependencies.
-- `npm run dev`: run locally at `http://localhost:3000`.
-- `npm run lint`: check application and configuration files with ESLint.
-- `npm run typecheck`: generate route types and check TypeScript.
-- `npm run build`: create a production build.
-- `npm run start`: serve the completed build.
-- `npm run browser:install`: install Chrome for browser checks.
-- `npm run browser -- <command>`: invoke agent-browser.
+- `npm run db:start`: start the synthetic PostgreSQL runtime.
+- `npm run db:migrate`, `npm run db:seed`, `npm run auth:seed`: prepare local schema and fictional staff; append `-- --test` for the isolated test database.
+- `npm run dev`: serve `http://localhost:3000`.
+- `npm run lint`, `npm run typecheck`, `npm run build`: verify style, route types, and production compilation.
+- `npm run test:e2e`: prepare isolated fixtures, build, and serve production on port 3210 for browser checks.
+- `npm test`: run server and desktop/mobile browser checks.
+- `npm run browser -- <command>`: inspect the UI with agent-browser.
 
 ## Coding Style & Naming Conventions
 
-Use strict TypeScript, two-space indentation, double quotes, and semicolons. Use PascalCase for components/types and camelCase for functions/variables. Keep Next.js filenames (`page.tsx`, `layout.tsx`, `route.ts`). Prefer Server Components; add `"use client"` for browser behavior. ESLint is configured; Prettier is not. Check unfamiliar Next.js APIs in `node_modules/next/dist/docs/`.
+Use strict TypeScript, two-space indentation, double quotes, and semicolons. Use PascalCase for components/types and camelCase for functions/variables. Retain `page.tsx` and `route.ts`. Prefer Server Components; use `"use client"` for browser behavior. ESLint is configured; Prettier is not. Consult `node_modules/next/dist/docs/` for unfamiliar APIs.
 
 ## Testing Guidelines
 
-Use agent-browser for interactive UI checks; `README.md` documents isolated sessions and screenshots. Playwright Test runs `tests/e2e/*.spec.ts` on desktop/mobile with `npm run test:e2e`. Node/tsx runs `tests/{unit,integration}/*.test.ts` with `npm run test:integration`; `npm test` runs both. No coverage threshold is set. Run lint/typecheck/build for application changes; CI repeats checks and browser journeys. Prioritize key journeys and hospital/branch/role isolation.
+Use `*.test.ts` for unit/database checks and `*.spec.ts` for Playwright. Run suites separately when useful; no coverage threshold is established. Test tenant/branch denials, stale updates, retries and recovery. Do not share `.next` with another dev/production server or build during browser checks. CI explicitly reuses its preceding fresh build with `PLAYWRIGHT_SKIP_BUILD=1`. Keep raw screenshots/session data in ignored `tmp/`; publish reviewed synthetic evidence intentionally.
 
 ## Commit & Pull Request Guidelines
 
-Use short, imperative commit messages, e.g. `Initialize Smiley Next.js foundation and build checkpoints`. No Conventional Commits convention is established. Keep commits focused. PRs should explain changes, verification, linked issues when available, and include screenshots for UI changes.
+Use focused, imperative commits; Conventional Commits are not required. PRs explain behavior, verification, linked issues and UI screenshots. Promote tested `dev` checkpoints to `main` after CI passes. Preserve existing changes and local recovery refs.
 
-## Security & Architecture
+## Security & Agent Workflow
 
-Use synthetic data; never commit secrets or identifiable patient data. `.env*` is ignored. PostgreSQL/Drizzle, Better Auth, Graphile Worker, and a separate TypeScript LangGraph worker are planned. Never execute destructive bootstrap SQL against an existing database. When implementing claims, use AI for extraction/explanation, versioned deterministic code for amounts, and insurer/TPA evidence for approval.
-
-## Agent Workflow
-
-Use `dev` in the worktree; preserve existing changes and deletions. Verify changes before merging into `main`; keep `refs/local-backups/` local. For substantial work (multiple files, behavior changes, data/security, or product tradeoffs), explain the goal, affected systems, approach, risks, and completion criteria, then proceed unless blocked. Verify proportionately, report limitations, and use diagrams only when helpful. Track phases and verification evidence in `BUILD_PLAN.md`; update it after each completed phase.
+Use synthetic data; never commit credentials or patient information. Enforce current staff, hospital, branch, and role checks on the server. Preserve applied migration bytes; add migrations instead of using `drizzle-kit push`. Explain substantial changes proportionately, then proceed unless blocked. Record completed phases in `BUILD_PLAN.md`. Deterministic financial rules and a separate TypeScript LangGraph worker belong to later phases; AI never grants payer approval.
