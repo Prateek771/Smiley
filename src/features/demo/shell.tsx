@@ -37,6 +37,7 @@ export function DemoShell({ context, path = "/demo", checkpoint, children }: { c
         </Link>
         <div className="workspace-label">FICTIONAL WORKSPACE</div>
         <div className="hospital-card"><span className="hospital-avatar">S</span><div><strong>Synthetic Hospital</strong><span>Branch 01 · India</span></div></div>
+        <Link href="/login" className="primary-link">Staff sign in<Icon kind="arrow" /></Link>
         <nav aria-label="Demo navigation">
           {nav.map((item) => <Link key={item.filter} href={demoUrl("/demo", { ...context, filter: item.filter })} className={`nav-item ${context.filter === item.filter ? "active" : ""}`} aria-current={path === "/demo" && context.filter === item.filter ? "page" : undefined}><Icon kind={item.icon} /><span>{item.label}</span></Link>)}
         </nav>

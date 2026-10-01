@@ -275,3 +275,8 @@ Created `Prateek771/Smiley` privately under the owner's authorization. `main` an
 - Domain findings: [source review](outputs/Smiley-source-review-2026-09-29.md). Older roadmaps remain reference material; use the agreed foundation above for current stack decisions.
 
 Phase 10 application checkpoint `d0ead55c450661f753ff1262062a3e139ee5f4d0` passed [exact GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36859433632); the final evidence-only commit retains its application code. Main promotion follows successful checks of that final commit.
+
+
+### Post-Phase 10 review: staff workspace entry
+
+Corrected the homepage to open the protected staff workspace and added a visible staff sign-in link to the public demo. Lint, type checking, production build, and agent-browser entry-path checks passed; the visible review browser contains signed-in queue, registration, and case tabs. [Review evidence](docs/evidence/staff-workspace-entry-review.md). This is a Phase 10 usability correction; later phases remain pending.
