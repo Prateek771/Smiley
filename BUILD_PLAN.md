@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0�8 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
+**Current position:** Phases 0–9 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -119,7 +119,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 9 — Add the case timeline and controlled actions
 
-- [ ] Complete Phase 9 and record evidence.
+- [x] Complete Phase 9 and record evidence.
+- **Delivered:** 69 server checks, 15 fresh migration-preservation checks, 16 desk/timeline browser checks plus 30 auth/demo checks, lint/types/build passed. [Validation](docs/evidence/phase-9-actions.md). Exact checkpoint CI is tracked in the execution ledger.
 - **Build:** Record status/action history, assignments, deadlines, repeated query cycles, version checks, and protected audit events.
 - **Test:** Two staff members update the same case; invalid transitions and duplicate actions are rejected or safely handled; historical events cannot be silently overwritten.
 - **Pass when:** Staff can reconstruct who did what and why, and no update silently loses another staff member's work.

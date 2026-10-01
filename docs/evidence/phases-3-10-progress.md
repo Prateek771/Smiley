@@ -42,3 +42,7 @@ Pre-flight: Phase 3 fixture view models feed demo only; Phase 4 source inventory
 - Phase 7 exact checkpoint `4dfb97c5eb09ffc52e2bd821fa4d70fd387b2855` passed [GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36844349111) and was promoted to main.
 
 - Phase 8 locally complete: Patient, insurance, encounter and case persistence;59server checks and38desktop/mobile journeys pass, plus lint/types/build. Active catalog, filtered queue and malformed-ID regressions pass. [Evidence](phase-8-cases.md). Checkpoint push and exact CI promotion follow.
+
+- Phase 8 exact checkpoint `2519452e48dfa3aa365eec5092f9ab4b78cc088d` passed [GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36847642981) and was promoted to main.
+
+- Phase 9 locally complete: 69 server checks, 15 fresh migration-preservation checks, 16 desk/timeline browser checks plus 30 auth/demo checks, lint/types/build passed. [Evidence](phase-9-actions.md). Checkpoint push and exact CI promotion follow.

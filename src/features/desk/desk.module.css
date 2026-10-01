@@ -48,3 +48,6 @@
 .timeline time { color: var(--muted); font-size: 12px; }
 @media (max-width: 1000px) { .shell { grid-template-columns: 190px minmax(0, 1fr); } .sidebar { padding: 24px 16px; } .content { padding: 26px 24px; } .grid { grid-template-columns: 1fr; } .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .shell { display: block; } .sidebar { border-right: 0; border-bottom: 1px solid var(--line); padding: 16px; gap: 14px; } .brand { font-size: 24px; } .nav { grid-template-columns: 1fr 1fr; } .identity { margin: 0; border-top: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; } .identity p { font-size: 11px; } .topbar { padding: 14px 16px; min-height: 60px; font-size: 12px; } .content { padding: 24px 16px 40px; } .heading { display: grid; } .heading h1 { font-size: 25px; } .heading .button { justify-self: start; } .filters { grid-template-columns: 1fr; padding: 16px; } .card { padding: 20px 16px; } .twoFields { grid-template-columns: 1fr; } .cardHeader { flex-direction: column; gap: 8px; } .facts { gap: 14px; } .context .facts { grid-template-columns: 1fr; } }
+
+.actionPanels { margin-top: 20px; }
+.timeline li { overflow-wrap: anywhere; }

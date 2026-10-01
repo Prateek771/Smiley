@@ -656,6 +656,7 @@ export const claimQueries = pgTable("claim_queries", {
   claimId: bigint("claim_id", { mode: "bigint" }).notNull(),
   submissionId: bigint("submission_id", { mode: "bigint" }),
   queryNo: varchar("query_no", { length: 80 }).notNull(),
+  externalReference: varchar("external_reference", { length: 150 }).notNull(),
   queryDate: timestamp("query_date", { withTimezone: true }).defaultNow(),
   queryFrom: varchar("query_from", { length: 150 }),
   queryText: text("query_text").notNull(),
@@ -668,6 +669,7 @@ export const claimQueries = pgTable("claim_queries", {
   branchId: bigint("branch_id", { mode: "bigint" }).notNull(),
 }, (table) => [
   unique("uq_claim_queries_query_no").on(table.queryNo),
+  unique("uq_claim_query_external_reference").on(table.hospitalId, table.claimId, table.externalReference),
   unique("uq_claim_queries_hospital_id_query_id").on(table.hospitalId, table.queryId),
   unique("uq_claim_queries_hospital_id_branch_id_query_id").on(table.hospitalId, table.branchId, table.queryId),
   index("ix_fk_cq_claim").on(table.hospitalId, table.branchId, table.claimId),

@@ -90,6 +90,7 @@ test("foundation/additive preservation or tracked migration repeat preserves an 
     }
     ids = await seedSynthetic(migrationPool);
     await migrationPool.query("INSERT INTO claims(hospital_id,branch_id,patient_id,patient_insurance_id,encounter_id,claim_no,claim_type,claimed_amount) VALUES($1,$2,$3,$4,$5,'SYN-MIGRATION-PRESERVATION','CASHLESS','123.45')", [ids.hospitals.a, ids.branches.aCentral, ids.patients.a, ids.memberships.a, ids.encounters.a]);
+    await migrationPool.query("INSERT INTO claim_queries(hospital_id,branch_id,claim_id,query_no,query_text,response_text) SELECT hospital_id,branch_id,claim_id,'SYN-QUERY-MIGRATION-PRESERVATION','Synthetic legacy question','Synthetic legacy response' FROM claims WHERE claim_no='SYN-MIGRATION-PRESERVATION'");
     const absent = await migrationPool.query("SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='claims' AND column_name='version'");
     assert.equal(absent.rowCount, 0, "The first checkpoint must precede the additive case version field");
     context.diagnostic("Fresh empty database: inserted claim before the additive migration and verified version was absent.");
@@ -103,6 +104,11 @@ test("foundation/additive preservation or tracked migration repeat preserves an 
   const preserved = await migrationPool.query("SELECT claimed_amount,version FROM claims WHERE claim_no='SYN-MIGRATION-PRESERVATION'");
   assert.equal(preserved.rows[0].claimed_amount, "123.45");
   assert.equal(preserved.rows[0].version, 1);
+  if (!applied || applied.rows[0].count === 0) {
+    const query = await migrationPool.query("SELECT query_no,external_reference,query_text,response_text FROM claim_queries WHERE query_no='SYN-QUERY-MIGRATION-PRESERVATION'");
+    assert.deepEqual(query.rows[0], { query_no: "SYN-QUERY-MIGRATION-PRESERVATION", external_reference: "SYN-QUERY-MIGRATION-PRESERVATION", query_text: "Synthetic legacy question", response_text: "Synthetic legacy response" });
+    context.diagnostic("Fresh additive query reference migration preserved the existing question, response and internal identity.");
+  }
   const role = await appPool.query("SELECT r.rolsuper,r.rolbypassrls,pg_get_userbyid(c.relowner)=current_user AS owns FROM pg_roles r CROSS JOIN pg_class c WHERE r.rolname=current_user AND c.oid='claims'::regclass");
   assert.deepEqual(role.rows[0], { rolsuper: false, rolbypassrls: false, owns: false });
 });
@@ -271,7 +277,7 @@ test("query submission and workflow patient must match the linked claim", async 
     const one = await claim(client);
     const two = await claim(client);
     const submission = await client.query("INSERT INTO claim_submissions(hospital_id,branch_id,claim_id,submission_no,submitted_to) VALUES($1,$2,$3,$4,'INSURER') RETURNING submission_id::text AS id", [ids.hospitals.a, ids.branches.aCentral, one, `SYN-SUB-${randomUUID()}`]);
-    await denied(client, "INSERT INTO claim_queries(hospital_id,branch_id,claim_id,submission_id,query_no,query_text) VALUES($1,$2,$3,$4,$5,'Synthetic question')", [ids.hospitals.a, ids.branches.aCentral, two, submission.rows[0].id, `SYN-QUERY-${randomUUID()}`], "23503");
+    await denied(client, "INSERT INTO claim_queries(hospital_id,branch_id,claim_id,submission_id,query_no,external_reference,query_text) VALUES($1,$2,$3,$4,$5,$5,'Synthetic question')", [ids.hospitals.a, ids.branches.aCentral, two, submission.rows[0].id, `SYN-QUERY-${randomUUID()}`], "23503");
     const workflow = await client.query("SELECT workflow_id::text AS id FROM workflow_definitions WHERE workflow_code='ELIGIBILITY_CHECK'");
     await denied(client, "INSERT INTO workflow_runs(hospital_id,branch_id,workflow_id,claim_id,patient_id) VALUES($1,$2,$3,$4,$5)", [ids.hospitals.a, ids.branches.aCentral, workflow.rows[0].id, one, ids.patients.aOther], "23503");
     await denied(client, "INSERT INTO workflow_runs(hospital_id,branch_id,workflow_id,claim_id) VALUES($1,$2,$3,$4)", [ids.hospitals.a, ids.branches.aCentral, workflow.rows[0].id, one], "23514");

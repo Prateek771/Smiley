@@ -36,6 +36,13 @@
       "when": 1790846189829,
       "tag": "0004_authenticated_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790847814411,
+      "tag": "0005_claim_query_reference",
+      "breakpoints": true
     }
   ]
 }
