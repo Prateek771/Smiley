@@ -9,9 +9,9 @@ let users: Awaited<ReturnType<typeof import("../../src/server/auth/seed.ts").see
 const password = "Synthetic-Auth-Test-Only-Password!42";
 
 before(async () => {
-  const module = await import("../../src/server/auth/index.ts").catch(() => null);
-  assert.ok(module, "The staff authentication module must provide database-backed sessions.");
-  authentication = module;
+  const authModule = await import("../../src/server/auth/index.ts").catch(() => null);
+  assert.ok(authModule, "The staff authentication module must provide database-backed sessions.");
+  authentication = authModule;
   staff = await import("../../src/server/auth/staff.ts");
   database = await import("../../src/server/db/client.ts");
   const result = await database.migrationPool.query("SELECT current_database() AS name");
@@ -96,6 +96,18 @@ test("single-use invitation links create one linked identity and reject replay",
   assert.equal(actor?.userId, accepted.userId);
   assert.equal(actor?.hospitalId, admin.hospitalId);
   assert.deepEqual(actor?.branchRoles, [{ branchId: users.deskA.branchId, role: "INSURANCE_EXECUTIVE" }]);
+  const grant = await database.migrationPool.query(
+    `SELECT m.granted_by::text,m.revoked_at,
+     (m.granted_at>=i.created_at AND m.granted_at<=clock_timestamp()) AS grant_time_valid
+     FROM user_branch_memberships m JOIN staff_invitations i
+     ON i.accepted_user_id=m.user_id AND i.hospital_id=m.hospital_id AND i.branch_id=m.branch_id AND i.role_id=m.role_id
+     WHERE i.id=$1`,
+    [invitation.id],
+  );
+  assert.equal(grant.rowCount, 1);
+  assert.equal(grant.rows[0].granted_by, admin.userId, "The accepted branch grant records the actual inviter.");
+  assert.equal(grant.rows[0].grant_time_valid, true);
+  assert.equal(grant.rows[0].revoked_at, null);
   await assert.rejects(staff.acceptInvitation(token(invitation.url), "Replay", password), { status: 409 });
 });
 test("expired invitations cannot create credentials", async () => {
@@ -137,6 +149,17 @@ test("removed staff cannot reuse an old session or obtain a trusted session agai
   const headers = new Headers({ cookie: response.headers.getSetCookie().map((value) => value.split(";")[0]).join("; ") });
   assert.ok(await authentication.getStaffSession(headers));
   await staff.disableStaff(admin, accepted.userId);
+  const revoked = await database.migrationPool.query(
+    `SELECT status,granted_by::text,revoked_at,
+     (revoked_at>=granted_at AND revoked_at<=clock_timestamp()) AS revocation_time_valid
+     FROM user_branch_memberships WHERE user_id=$1 AND hospital_id=$2`,
+    [accepted.userId, admin.hospitalId],
+  );
+  assert.equal(revoked.rowCount, 1);
+  assert.equal(revoked.rows[0].status, "REVOKED");
+  assert.ok(revoked.rows[0].revoked_at, "Removal records a revocation timestamp.");
+  assert.equal(revoked.rows[0].granted_by, admin.userId, "Removal preserves the original grantor.");
+  assert.equal(revoked.rows[0].revocation_time_valid, true);
   assert.equal(await authentication.getStaffSession(headers), null);
   const rejected = await authentication.handleAuthRequest(new Request(
     `${process.env.BETTER_AUTH_URL}/api/auth/sign-in/email`,

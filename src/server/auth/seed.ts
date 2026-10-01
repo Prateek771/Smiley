@@ -70,7 +70,7 @@ export async function seedAuthUsers(options: { pool?: Pool; password?: string } 
       await client.query("SELECT set_config('app.user_id',$1,true)", [userId]);
       await client.query("INSERT INTO user_roles(hospital_id,user_id,role_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING", [hospitalId, userId, roleId]);
       for (const branchId of branchIds) {
-        await client.query("INSERT INTO user_branch_memberships(hospital_id,user_id,branch_id,role_id,status) VALUES($1,$2,$3,$4,'ACTIVE') ON CONFLICT(hospital_id,user_id,branch_id,role_id) DO UPDATE SET status='ACTIVE'", [hospitalId, userId, branchId, roleId]);
+        await client.query("INSERT INTO user_branch_memberships(hospital_id,user_id,branch_id,role_id,status,granted_by,granted_at,revoked_at) VALUES($1,$2,$3,$4,'ACTIVE',NULL,now(),NULL) ON CONFLICT(hospital_id,user_id,branch_id,role_id) DO UPDATE SET status='ACTIVE',revoked_at=NULL", [hospitalId, userId, branchId, roleId]);
       }
       await client.query("COMMIT");
       results[definition.key] = {

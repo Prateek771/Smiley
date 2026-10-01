@@ -341,3 +341,33 @@ test("application role cannot delete clinical history or modify global catalogs"
   await assert.rejects(appPool.query("DELETE FROM claims WHERE claim_no='SYN-MIGRATION-PRESERVATION'"), (error: unknown) => (error as { code?: string }).code === "42501");
   await assert.rejects(appPool.query("UPDATE roles SET role_name='Overwrite' WHERE role_code='FINANCE_OFFICER'"), (error: unknown) => (error as { code?: string }).code === "42501");
 });
+
+test("branch grants record their hospital actor and grant/revocation timestamps", async () => {
+  const metadata = await migrationPool.query("SELECT column_name,data_type,is_nullable,column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='user_branch_memberships' AND column_name IN('granted_by','granted_at','revoked_at')");
+  assert.equal(metadata.rowCount, 3);
+  const fields = Object.fromEntries(metadata.rows.map((column) => [column.column_name, column]));
+  assert.equal(fields.granted_by.data_type, "bigint");
+  assert.equal(fields.granted_by.is_nullable, "YES");
+  assert.equal(fields.granted_at.data_type, "timestamp with time zone");
+  assert.equal(fields.granted_at.is_nullable, "NO");
+  assert.match(fields.granted_at.column_default, /now\(\)/);
+  assert.equal(fields.revoked_at.data_type, "timestamp with time zone");
+  assert.equal(fields.revoked_at.is_nullable, "YES");
+  await transaction(async (client) => {
+    const user = await actor(client);
+    const otherAuth = randomUUID();
+    await client.query("INSERT INTO auth_user(id,name,email) VALUES($1,'Synthetic other hospital grant actor',$2)", [otherAuth, `grant-${otherAuth}@example.invalid`]);
+    const other = await client.query("INSERT INTO users(hospital_id,auth_user_id,username) VALUES($1,$2,$3) RETURNING user_id::text AS id", [ids.hospitals.b, otherAuth, `SYN-GRANT-${otherAuth}`]);
+    await client.query("INSERT INTO user_roles(hospital_id,user_id,role_id) VALUES($1,$2,$3)", [ids.hospitals.a, user, ids.roles.INSURANCE_EXECUTIVE]);
+    const insert = "INSERT INTO user_branch_memberships(hospital_id,user_id,branch_id,role_id,granted_by) VALUES($1,$2,$3,$4,$5) RETURNING granted_by::text,granted_at,revoked_at";
+    const values = [ids.hospitals.a, user, ids.branches.aCentral, ids.roles.INSURANCE_EXECUTIVE];
+    await denied(client, insert, [...values, other.rows[0].id], "23503");
+    const granted = await client.query(insert, [...values, user]);
+    assert.equal(granted.rows[0].granted_by, user);
+    assert.ok(granted.rows[0].granted_at instanceof Date);
+    assert.equal(granted.rows[0].revoked_at, null);
+    await denied(client, "UPDATE user_branch_memberships SET revoked_at=now() WHERE hospital_id=$1 AND user_id=$2 AND branch_id=$3 AND role_id=$4", values, "23514");
+    await client.query("UPDATE user_branch_memberships SET status='REVOKED',revoked_at=now() WHERE hospital_id=$1 AND user_id=$2 AND branch_id=$3 AND role_id=$4", values);
+    await client.query("UPDATE user_branch_memberships SET revoked_at=NULL WHERE hospital_id=$1 AND user_id=$2 AND branch_id=$3 AND role_id=$4", values);
+  });
+});

@@ -22,6 +22,20 @@
       "when": 1790845825631,
       "tag": "0002_numeric_and_audit_constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790846189828,
+      "tag": "0003_grant_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790846189829,
+      "tag": "0004_authenticated_scope",
+      "breakpoints": true
     }
   ]
 }

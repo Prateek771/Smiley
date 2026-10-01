@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0–6 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
+**Current position:** Phases 0–7 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1â€“2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -103,7 +103,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 7 â€” Enforce hospital, branch, and role access
 
-- [ ] Complete Phase 7 and record evidence.
+- [x] Complete Phase 7 and record evidence.
+- **Delivered:** Hospital/branch/role isolation and grant provenance; 44 server checks, 12 focused auth browser journeys and lint/types/build pass. [Validation](docs/evidence/phase-7-access.md). Exact checkpoint CI is tracked in the execution ledger.
 - **Build:** Enforce server/database scope checks and separate hospital administration from platform administration. Define the permitted support-access process.
 - **Test:** Hospital A cannot read/change Hospital B records; unassigned branches and forbidden role actions are denied, including direct API calls.
 - **Pass when:** The permission matrix is enforced. Reuse these negative tests for documents, exports, and workers as they are added.

@@ -1103,15 +1103,21 @@ export const userBranchMemberships = pgTable("user_branch_memberships", {
   roleId: bigint("role_id", { mode: "bigint" }).notNull(),
   status: varchar("status", { length: 50 }).notNull().default("ACTIVE"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  grantedBy: bigint("granted_by", { mode: "bigint" }),
+  grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
 }, (table) => [
   primaryKey({ columns: [table.hospitalId, table.userId, table.branchId, table.roleId] }),
   index("ix_fk_user_branch_memberships_branch").on(table.hospitalId, table.branchId),
   index("ix_fk_membership_user_role").on(table.hospitalId, table.userId, table.roleId),
   index("ix_fk_membership_role").on(table.roleId),
+  index("ix_fk_membership_granted_by").on(table.hospitalId, table.grantedBy),
+  check("ck_membership_revocation_status", sql`${table.revokedAt} IS NULL OR ${table.status} = 'REVOKED'`),
   check("ck_user_branch_memberships_status", sql`${table.status} IN ('ACTIVE','REVOKED')`),
   foreignKey({ name: "fk_user_branch_memberships_hospital", columns: [table.hospitalId], foreignColumns: [hospitals.hospitalId] }).onDelete("restrict"),
   foreignKey({ name: "fk_user_branch_memberships_branch", columns: [table.hospitalId, table.branchId], foreignColumns: [branches.hospitalId, branches.branchId] }).onDelete("restrict"),
   foreignKey({ name: "fk_membership_user_role", columns: [table.hospitalId, table.userId, table.roleId], foreignColumns: [userRoles.hospitalId, userRoles.userId, userRoles.roleId] }).onDelete("restrict"),
+  foreignKey({ name: "fk_membership_granted_by", columns: [table.hospitalId, table.grantedBy], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
   foreignKey({ name: "fk_membership_role", columns: [table.roleId], foreignColumns: [roles.roleId] }).onDelete("restrict"),
 ]);
 

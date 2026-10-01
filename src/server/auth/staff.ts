@@ -73,7 +73,7 @@ export async function acceptInvitation(token: string, name: string, password: st
     await client.query("BEGIN");
     const tokenHash = createHash("sha256").update(token).digest("hex");
     await client.query("SELECT set_config('app.invitation_token_hash',$1,true)", [tokenHash]);
-    const result = await client.query("SELECT * FROM staff_invitations WHERE token_hash=$1 FOR UPDATE", [tokenHash]);
+    const result = await client.query("SELECT * FROM smiley_private.lock_invitation($1)", [tokenHash]);
     const invitation = result.rows[0];
     if (!invitation) throw new AuthError(404, "The invitation is unavailable.");
     if (invitation.status !== "PENDING") throw new AuthError(409, "The invitation has already been used or revoked.");
@@ -107,7 +107,7 @@ export async function acceptInvitation(token: string, name: string, password: st
     const userId = String(domain.rows[0].user_id);
     await client.query("SELECT set_config('app.user_id',$1,true)", [userId]);
     await client.query("INSERT INTO user_roles(hospital_id,user_id,role_id) VALUES($1,$2,$3)", [invitation.hospital_id, userId, invitation.role_id]);
-    await client.query("INSERT INTO user_branch_memberships(hospital_id,user_id,branch_id,role_id,status) VALUES($1,$2,$3,$4,'ACTIVE')", [invitation.hospital_id, userId, invitation.branch_id, invitation.role_id]);
+    await client.query("INSERT INTO user_branch_memberships(hospital_id,user_id,branch_id,role_id,status,granted_by,granted_at) VALUES($1,$2,$3,$4,'ACTIVE',$5,now())", [invitation.hospital_id, userId, invitation.branch_id, invitation.role_id, invitation.created_by]);
     await client.query("UPDATE staff_invitations SET status='ACCEPTED',accepted_user_id=$2 WHERE id=$1", [invitation.id, userId]);
     await client.query("COMMIT");
     return { userId, email: String(invitation.email) };
@@ -125,7 +125,7 @@ export async function disableStaff(actor: StaffSession, targetUserId: string) {
     if (target.rowCount !== 1) throw new AuthError(404, "The staff account is unavailable in your hospital.");
     await client.query("UPDATE users SET status='INACTIVE' WHERE user_id=$1 AND hospital_id=$2", [targetUserId, current.hospitalId]);
     await client.query("UPDATE staff SET status='INACTIVE' WHERE staff_id=$1 AND hospital_id=$2", [target.rows[0].staff_id, current.hospitalId]);
-    await client.query("UPDATE user_branch_memberships SET status='REVOKED' WHERE user_id=$1 AND hospital_id=$2", [targetUserId, current.hospitalId]);
+    await client.query("UPDATE user_branch_memberships SET status='REVOKED',revoked_at=now() WHERE user_id=$1 AND hospital_id=$2", [targetUserId, current.hospitalId]);
     await client.query("DELETE FROM auth_session WHERE user_id=$1", [target.rows[0].auth_user_id]);
     await client.query("UPDATE staff_invitations SET status='REVOKED' WHERE hospital_id=$1 AND email=(SELECT email FROM users WHERE user_id=$2) AND status='PENDING'", [current.hospitalId, targetUserId]);
   });

@@ -8,3 +8,6 @@
 *.jpeg binary
 *.zip binary
 *.gz binary
+
+# Migration hashes require identical bytes on Windows and Linux.
+drizzle/*.sql -text
