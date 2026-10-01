@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0–7 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
+**Current position:** Phases 0–8 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1â€“2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -111,7 +111,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 8 â€” Persist patients, insurance links, and cases
 
-- [ ] Complete Phase 8 and record evidence.
+- [x] Complete Phase 8 and record evidence.
+- **Delivered:** Patient, insurance, encounter and case persistence;59server checks and38desktop/mobile journeys pass, plus lint/types/build. Active catalog, filtered queue and malformed-ID regressions pass. [Validation](docs/evidence/phase-8-cases.md). Exact checkpoint CI is tracked in the execution ledger.
 - **Build:** Add patient/encounter registration, category/insurer/TPA/policy selection, and case creation with owner and next action.
 - **Test:** Create and reopen a case; reject mismatched patients, policies, encounters, hospitals, and duplicate actions.
 - **Pass when:** A real database-backed case survives refresh and appears in the correct staff queue.

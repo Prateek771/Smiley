@@ -12,8 +12,8 @@ test("protected desk redirects an anonymous visitor to staff login", async ({ pa
   await page.goto("/desk");
   await expect(page).toHaveURL(/\/login$/u);
   await expect(page.getByRole("heading", { name: "Sign in to your hospital" })).toBeVisible();
-  await mkdir("docs/evidence/phase-6", { recursive: true });
-  await page.screenshot({ path: `docs/evidence/phase-6/login-${testInfo.project.name}.png`, fullPage: true });
+  await mkdir("tmp/browser/auth", { recursive: true });
+  await page.screenshot({ path: `tmp/browser/auth/login-${testInfo.project.name}.png`, fullPage: true });
 });
 test("invalid staff credentials remain on login with a useful error", async ({ page }) => {
   await page.goto("/login");
@@ -32,8 +32,8 @@ test("invited staff sign in and logout invalidates protected access", async ({ p
   await expect(page).toHaveURL(/\/desk$/u);
   await page.reload();
   await expect(page.getByRole("button", { name: "Sign out", exact: true })).toBeVisible();
-  await mkdir("docs/evidence/phase-6", { recursive: true });
-  await page.screenshot({ path: `docs/evidence/phase-6/desk-${testInfo.project.name}.png`, fullPage: true });
+  await mkdir("tmp/browser/auth", { recursive: true });
+  await page.screenshot({ path: `tmp/browser/auth/desk-${testInfo.project.name}.png`, fullPage: true });
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/u);
   await page.goto("/desk");
