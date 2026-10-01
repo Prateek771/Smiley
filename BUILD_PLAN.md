@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0–2 are complete; Phase 3 now implements the public synthetic queue/detail journey and repeatable browser checks. Phase 4 has reviewed the complete source inventory; database-backed phases follow sequentially under the owner's authorization through Phase 10. [Execution ledger](docs/evidence/phases-3-10-progress.md) records checks and rulings.
+**Current position:** Phases 0–5 are locally complete, including reviewed migrations, synthetic seeds, and backup/restore. Login, access, case actions, and private documents follow sequentially through Phase 10. [Execution ledger](docs/evidence/phases-3-10-progress.md) records checks and rulings.
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -87,7 +87,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 5 — Create repeatable PostgreSQL migrations
 
-- [ ] Complete Phase 5 and record evidence.
+- [x] Complete Phase 5 and record evidence.
+- **Delivered:** 52 tables and four invoker views, additive migrations, isolated PostgreSQL runtime, synthetic seeds, and [database validation/restore evidence](docs/evidence/phase-5-database.md). Fourteen real database checks pass; independent review fixes reject non-finite numerics and branch-only audit ownership. GitHub promotion follows exact checkpoint CI.
 - **Build:** Establish a disposable synthetic development/test database. Implement the reviewed Drizzle schema and migrations, intended constraints/indexes, and approved synthetic seeds.
 - **Test:** Apply migrations to an empty database; apply subsequent changes without data loss; check the domain inventory, valid views, invalid enum values, duplicate records, and invalid relationships.
 - **Pass when:** Setup is reproducible and existing data survives migration tests. Recovery is documented. Never run the source DROP DATABASE scripts against an existing database.
@@ -234,7 +235,7 @@ These are separate small build/test cycles after the core workflow is proven; th
 | --- | --- | --- |
 | GitHub owner/name and publishable history | Phase 1 publication | [Prateek771/Smiley](https://github.com/Prateek771/Smiley), private; clean root history published; main and codex branches connected |
 | First workflow details and synthetic expected results | Phase 2 | Synthetic workflow/roles/timers and five packs defined; 11 checkpoints independently checked; real hospital rules and role authority remain unvalidated |
-| Component library | Phase 3 | Tailwind installed; shadcn/ui recommendation awaits confirmation |
+| Component library | Phase 3 | Tailwind and native accessible controls implemented; add a library when justified |
 | Identity/tenancy mapping and internal tables | Phases 4–7 | Review required; 42-domain-table inventory retained |
 | Private storage provider/region/access policy | Real storage integration; Phase 20 staging at latest | Unselected; synthetic test adapter can support Phase 10 |
 | Actual model/OCR provider and agent persistence | Phase 16 | Evaluate synthetic documents first; LangGraph is orchestration |

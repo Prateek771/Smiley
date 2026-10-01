@@ -16,11 +16,22 @@ concurrency:
 
 jobs:
   verify:
-    name: Lint, types, and production build
+    name: Application, database, and browser checks
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       NEXT_TELEMETRY_DISABLED: '1'
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-ci-bootstrap-only
+          POSTGRES_DB: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 12
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -33,6 +44,20 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Provision isolated database roles
+        run: node scripts/ci-database.mjs
+        env:
+          CI_BOOTSTRAP_DATABASE_URL: postgresql://postgres:synthetic-ci-bootstrap-only@127.0.0.1:5432/postgres
+      - name: Fresh foundation and additive migration regression
+        run: node --import tsx --test tests/integration/database.test.ts
+        env:
+          NODE_ENV: test
+      - name: Apply reviewed migrations
+        run: npm run db:migrate
+      - name: Seed fictional database records
+        run: npm run db:seed
+      - name: Server integration tests
+        run: npm run test:integration
       - name: Verify browser CLI
         run: npm run browser -- --version
       - name: Lint

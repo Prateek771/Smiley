@@ -12,7 +12,21 @@ Pre-flight: Phase 3 fixture view models feed demo only; Phase 4 source inventory
 
 ## Phase status
 
-- Phase 3: local validation complete; 18 desktop/mobile browser tests GREEN after route-absence RED, screenshots reviewed, lint/types/build passed. Commit/CI promotion follows.
+- Phase 3: local validation complete; 18 desktop/mobile browser tests GREEN after route-absence RED, screenshots reviewed, lint/types/build passed. Committed 51bdf978; source review 43f73244 inherits the same application. [Exact CI 43f73244 passed](https://github.com/Prateek771/Smiley/actions/runs/36837998840) and was promoted to main.
 - Phase 4: complete static inventory review; 42 tables/428 columns/69 FKs/4 views/52 enum sets rechecked, source hashes unchanged. No source SQL executed.
-- Phase 5: local synthetic PostgreSQL available; migrations not applied.
+- Phase 5: locally complete; 14 real PostgreSQL tests pass on both the working and restored synthetic database. All 52 tables/four views and additive data preservation verified. Independent review found two edge cases; additive 0002 fixes both with regression tests. Exact CI pending checkpoint push.
 - Phases 6–10: pending preceding interfaces and checks.
+
+## Continuing execution notes
+
+- Original checkout `main` is at 43f73244; worktree remains `dev`. Future SQL/identity code is uncommitted until relevant tests pass.
+- PostgreSQL 17.11 is loopback-only on 5442, separate non-owner app/migration roles; no source bootstrap executed. Disposable backup/restore passed; restore upgraded to three migrations, 463 constraints, and preserved numeric/version sentinel.
+- Phase 6 identity/lifecycle is staged and typechecked, held until Phase 5 passes. Cookie authorization re-reads staff/membership; platform gets no clinical scope.
+- Phase 7 policies/access helpers/tests are prepared under ignored original `tmp/phase7-stage`; publish after Phase 6 checkpoint, observe direct-SQL RED before policy application.
+- Phase 8 full protected registration/case/API/UI slice is staged independently and held until Phase 7 contracts pass.
+- Phase 9 action/history service/tests are staged under ignored original `tmp/phase9-stage`; publish after Phase 8, observe action tests RED before production implementation. Query responses remain locally prepared, never presumed payer acknowledgement.
+- Phase 10 private-file adapter has 9/9 real-filesystem checks, staged under worktree `tmp/phase-10-files`; DB/storage integration and routes follow sequentially.
+- Playwright MCP reviewed at owner's linked repository. Owner permits it if needed. Existing Playwright Test + agent-browser cover this scope, so no redundant configuration installed.
+- GitHub CI now prepares an ephemeral PostgreSQL service with random masked credentials and checks real migrations/seeds/integration; verify its first database checkpoint before promotion.
+
+- Phase 5 independent review accepted finite NUMERIC and nullable log ownership fixes. Membership granted_by/granted_at/revoked_at fields are explicitly deferred to the Phase 7 additive grant-history migration.
