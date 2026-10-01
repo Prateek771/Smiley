@@ -33,7 +33,8 @@ test("invited staff sign in and logout invalidates protected access", async ({ p
   await page.reload();
   await expect(page.getByRole("button", { name: "Sign out", exact: true })).toBeVisible();
   await mkdir("tmp/browser/auth", { recursive: true });
-  await page.screenshot({ path: `tmp/browser/auth/desk-${testInfo.project.name}.png`, fullPage: true });
+  // The queue may contain 500 cards; capture the staff viewport, not a huge full-page image.
+  await page.screenshot({ path: `tmp/browser/auth/desk-${testInfo.project.name}.png`, fullPage: false });
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/u);
   await page.goto("/desk");

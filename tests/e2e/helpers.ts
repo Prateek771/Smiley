@@ -12,6 +12,8 @@ export async function signIn(page: Page, key = "deskA") {
   await page.getByLabel("Password", { exact: true }).fill(user.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/desk$/u);
+  // App Router can update the URL while its scoped server data is still streaming.
+  await expect(page.getByRole("heading", { name: "Hospital work queue" })).toBeVisible({ timeout: 15_000 });
   return user;
 }
 export async function createDraft(page: Page, user: Credential) {

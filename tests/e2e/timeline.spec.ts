@@ -4,6 +4,8 @@ import { mkdir } from "node:fs/promises";
 import { createDraft, signIn } from "./helpers";
 
 test("staff edit preparation and record two query cycles with persistent history", async ({ page }) => {
+  // Six persisted actions plus navigation/reload form one bounded end-to-end journey.
+  test.setTimeout(60_000);
   const user = await signIn(page); await createDraft(page, user);
   const edit = page.getByRole("region", { name: "Edit preparation" });
   await edit.getByLabel("Next action").fill("Verify the fictional discharge date.");

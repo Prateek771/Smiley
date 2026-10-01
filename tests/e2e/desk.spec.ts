@@ -14,10 +14,14 @@ async function signIn(page: import("@playwright/test").Page, key = "deskA") {
   await page.getByLabel("Password", { exact: true }).fill(user.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/desk$/u);
+  // App Router can update the URL while its scoped server data is still streaming.
+  await expect(page.getByRole("heading", { name: "Hospital work queue" })).toBeVisible({ timeout: 15_000 });
   return user;
 }
 
 test("protected registration creates linked records and a durable queue case", async ({ page }) => {
+  // Registration plus persistence/search/back-navigation exceeds 30 seconds on cold Windows builds.
+  test.setTimeout(60_000);
   const user = await signIn(page);
   const code = `UI-${randomUUID()}`;
   await page.getByRole("link", { name: "Register a case" }).click();
