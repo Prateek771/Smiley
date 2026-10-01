@@ -1,0 +1,18 @@
+# Execution ledger — Phases 3–10
+
+Plan: docs/superpowers/plans/2026-10-01-phases-3-10.md
+Start checkpoint: 7b443ae49402fd22c8908b7a91a96cbb92cee0f3 on dev.
+Owner authorization: proceed continuously through Phase 10; stop for a genuine issue needing owner attention.
+
+Ruling: existing Tailwind/native accessible controls for Phase 3 — avoids an unnecessary UI dependency for this small first journey; can adopt shadcn later if justified.
+Ruling: public /demo uses only synthetic fixture snapshots; protected /desk uses PostgreSQL — prevents demonstration role controls from becoming a security boundary.
+Ruling: parallel bounded UI, schema review and local-runtime preparation; sequential backend integration — keeps independent work moving with explicit file ownership.
+Ruling: database providers/model/OCR/production permission are deferred — local synthetic PostgreSQL/private test storage can complete this authorized scope.
+Pre-flight: Phase 3 fixture view models feed demo only; Phase 4 source inventory feeds Phase 5 migration repairs; phases 6–10 share verified Actor/scoped transaction contracts. No worker/AI is introduced.
+
+## Phase status
+
+- Phase 3: local validation complete; 18 desktop/mobile browser tests GREEN after route-absence RED, screenshots reviewed, lint/types/build passed. Commit/CI promotion follows.
+- Phase 4: complete static inventory review; 42 tables/428 columns/69 FKs/4 views/52 enum sets rechecked, source hashes unchanged. No source SQL executed.
+- Phase 5: local synthetic PostgreSQL available; migrations not applied.
+- Phases 6–10: pending preceding interfaces and checks.

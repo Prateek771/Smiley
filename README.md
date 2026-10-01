@@ -1,7 +1,7 @@
 # Saavantus Hospital Claims Desk
 
 The Next.js foundation for the Smiley / Saavantus hospital insurance project.
-This starter contains an empty home page; hospital workflows are not implemented yet.
+The public `/demo` implements the synthetic work queue and checkpoint-scoped case walkthrough. Protected database-backed staff workflows are being built through Phase 10; see the tracker.
 
 ## Local development
 
@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Application source is under `src/app/`.
+Open http://localhost:3000/demo. Application routes are under `src/app/`; synthetic view models/components are under `src/features/demo/`. Demo role controls are previews, not access authorization.
 
 ## Verification
 
@@ -21,6 +21,8 @@ Open http://localhost:3000. Application source is under `src/app/`.
 npm run lint
 npm run typecheck
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
 The starter uses Next.js 16.3.8, React, TypeScript, the App Router,
@@ -55,8 +57,7 @@ synthetic evidence before copying it to `docs/evidence/`. Use isolated test
 sessions rather than a personal browser profile.
 
 This CLI helps explore the UI; it does not provide regression assertions.
-Playwright Test remains planned for repeatable journeys in Phase 3. The starter
-currently displays only `Hello world!`; there is no claims workflow to test yet.
+Playwright Test runs desktop and Pixel 7 journeys under `tests/e2e/`. It starts an isolated server on port 3210. `npm run test:integration` runs Node/tsx server tests as those phases are introduced; `npm test` runs both suites. The demo reads fictional expected snapshots; it does not calculate coverage or record payer decisions.
 
 ## Existing reference material
 
@@ -68,8 +69,7 @@ The earlier `build-guide/` has a separate Git repository and stays in the origin
 project folder. It is excluded from this application's Git repository.
 `tmp/` and `work/` contain local scratch artifacts and are also excluded.
 
-No database, authentication system, background worker, or cloud deployment is
-configured by this installation.
+Local PostgreSQL preparation is documented in [development-database.md](docs/development-database.md). No background worker or cloud deployment is configured; LangGraph belongs to the later worker/extraction phases.
 
 ## Build progress
 
@@ -85,7 +85,7 @@ UI/rules tests; they are not real hospital policies or implemented workflows.
 
 The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley).
 GitHub Actions checks the installed browser CLI, lint, TypeScript, and a production
-build on pushes to `main`, `dev`, or codex branches and on pull requests to `main`.
+build and desktop/mobile browser journeys on pushes to `main`, `dev`, or codex branches and on pull requests to `main`.
 
 ## Branch workflow
 

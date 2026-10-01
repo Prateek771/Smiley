@@ -48,3 +48,10 @@ next-env.d.ts
 
 # The earlier planning guide has its own Git repository.
 /build-guide/
+
+# Share placeholders only; runtime credentials/files remain private.
+!.env.example
+/private-storage/
+/test-results/
+/playwright-report/
+/.superpowers/

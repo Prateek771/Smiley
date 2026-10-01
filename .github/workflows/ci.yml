@@ -41,3 +41,7 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+      - name: Install browser for journeys
+        run: npx playwright install --with-deps chromium
+      - name: Browser journeys
+        run: npm run test:e2e

@@ -23,7 +23,7 @@ Use strict TypeScript, two-space indentation, double quotes, and semicolons. Use
 
 ## Testing Guidelines
 
-Use agent-browser for interactive UI checks; `README.md` documents isolated sessions and screenshots. No regression runner, `npm test`, or coverage threshold exists yet. Run lint/typecheck/build for application changes; CI repeats them. Add Playwright Test under `tests/e2e/*.spec.ts` in Phase 3; prioritize key journeys and hospital/branch/role isolation.
+Use agent-browser for interactive UI checks; `README.md` documents isolated sessions and screenshots. Playwright Test runs `tests/e2e/*.spec.ts` on desktop/mobile with `npm run test:e2e`. Node/tsx runs `tests/{unit,integration}/*.test.ts` with `npm run test:integration`; `npm test` runs both. No coverage threshold is set. Run lint/typecheck/build for application changes; CI repeats checks and browser journeys. Prioritize key journeys and hospital/branch/role isolation.
 
 ## Commit & Pull Request Guidelines
 

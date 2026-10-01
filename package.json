@@ -9,28 +9,48 @@
     "lint": "eslint src next.config.ts postcss.config.mjs eslint.config.mjs",
     "typecheck": "next typegen && tsc --noEmit",
     "browser": "agent-browser",
-    "browser:install": "agent-browser install"
+    "browser:install": "agent-browser install",
+    "test": "npm run test:integration && npm run test:e2e",
+    "test:integration": "node scripts/run-tests.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "db:seed": "tsx scripts/db-seed.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-runtime.ps1 -Action start",
+    "db:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-runtime.ps1 -Action status"
   },
   "engines": {
     "node": ">=24.0.0"
   },
   "dependencies": {
+    "better-auth": "1.7.7",
+    "drizzle-orm": "0.45.3",
     "next": "16.3.8",
+    "pg": "8.23.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "agent-browser": "0.38.1",
+    "drizzle-kit": "0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
+    "tsx": "4.23.15",
     "typescript": "^5"
   },
   "allowScripts": {
     "agent-browser@0.38.1": true
+  },
+  "overrides": {
+    "esbuild": "0.28.2"
   }
 }

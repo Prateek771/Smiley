@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0, 1, and 2 are complete. The framework is connected to private [Prateek771/Smiley](https://github.com/Prateek771/Smiley); Phase 1's application checks passed. Phase 2 now defines the [cashless-discharge workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md) and [five fictional acceptance packs](docs/fixtures/phase-2-cashless-discharge.json), with [independent validation evidence](docs/evidence/phase-2-validation.md). Phase 3 is next: the fictional work queue, case detail, and repeatable browser journey. Product workflows and services are still awaiting their implementation phases.
+**Current position:** Phases 0–2 are complete; Phase 3 now implements the public synthetic queue/detail journey and repeatable browser checks. Phase 4 has reviewed the complete source inventory; database-backed phases follow sequentially under the owner's authorization through Phase 10. [Execution ledger](docs/evidence/phases-3-10-progress.md) records checks and rulings.
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -21,7 +21,7 @@ refs. `codex/saavantus-app` is retained as the earlier checkpoint branch.
 - The supplied **42 business/domain tables and four reporting views** are the starting inventory. Review all 42; implement their workflows incrementally.
 - Better Auth manages identities/sessions. Hospital, branch, and role authorization is enforced separately.
 - Graphile Worker runs durable jobs in a separate persistent Node.js process; LangGraph also runs there in TypeScript.
-- Tailwind CSS is installed. shadcn/ui is the carried-forward component recommendation and still needs confirmation.
+- Tailwind CSS is installed. native accessible controls are used for the first desk journey; add a component dependency only when justified.
 - Hosting, private document storage, and model/OCR providers remain undecided.
 
 These decisions supersede older stack proposals in `outputs/`. The existing prototype is a visual reference. Extra authentication, queue, or agent-persistence tables may be necessary; explain their purpose and placement before adding them. Do not silently add domain tables or promise 42 as the permanent total.
@@ -37,9 +37,9 @@ These decisions supersede older stack proposals in `outputs/`. The existing prot
 
 A completed phase needs its deliverable, passing checks, a short demo/review where relevant, and a recorded commit. Provider failures or missing facts should have usable fallback paths. Documentation-only work needs content/link verification rather than an application rebuild.
 
-**Existing commands:** `npm ci`, `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run start`, `npm run browser:install`, and `npm run browser -- <command>`. Use Node.js 24+. agent-browser supports exploratory UI checks and screenshots with isolated synthetic sessions; see `README.md`. There is currently no regression test runner or `npm test`. Add and document test/database/worker commands when those capabilities are implemented.
+**Existing commands:** `npm ci`, `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run start`, `npm run browser:install`, and `npm run browser -- <command>`. Use Node.js 24+. agent-browser supports exploratory UI checks and screenshots with isolated synthetic sessions; see `README.md`. `npm run test:e2e` runs Playwright desktop/mobile journeys; `npm run test:integration` runs Node/tsx server tests; `npm test` runs both. Database commands are enabled in Phase 5; worker commands remain later.
 
-Planned code areas: `src/app/` for routes/screens; focused feature modules under `src/features/`; server access and storage adapters under `src/server/`; reviewed schema/migrations under `drizzle/`; worker entry points under `src/worker/`; browser journeys under `tests/e2e/`. These additional directories do not exist yet. Define each phase's precise file changes when it starts.
+Planned code areas: `src/app/` for routes/screens; focused feature modules under `src/features/`; server access and storage adapters under `src/server/`; reviewed schema/migrations under `drizzle/`; worker entry points under `src/worker/`; browser journeys under `tests/e2e/`. These directories are introduced incrementally as their phase is implemented. Define each phase's precise file changes when it starts.
 
 ## Phase checklist
 
@@ -71,7 +71,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 3 — Build the desk shell and first browser journey
 
-- [ ] Complete Phase 3 and record evidence.
+- [x] Complete Phase 3 and record evidence.
+- **Delivered:** Public synthetic queue/detail, checkpoint cutoffs and recovery states. [Validation](docs/evidence/phase-3-validation.md): 18 desktop/mobile journeys, browser screenshot review, lint/types/build; exact CI/promotion in the execution ledger.
 - **Build:** Confirm the component approach; create navigation, a fictional work queue, and case detail screens with clear owner/next action and empty/error states. Introduce Playwright Test and documented scripts. Use agent-browser to inspect each UI slice and capture desktop/mobile evidence.
 - **Test:** Open the queue, select a case, return without losing context, and exercise loading/empty/error states. Mocked role views are labelled as demonstrations.
 - **Pass when:** This small journey works locally and in CI. Test tools are installed and reproducible.
