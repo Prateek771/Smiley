@@ -79,7 +79,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 4 — Review the 42-table schema before database setup
 
-- [ ] Complete Phase 4 and record evidence.
+- [x] Complete Phase 4 and record evidence.
+- **Delivered:** [Full source inventory](docs/schema/domain-inventory.json) and [migration review](docs/schema/phase-4-review.md), including ownership/link repairs and 10 justified identity/evidence structures. Source hashes preserved; no bootstrap SQL executed.
 - **Build:** Inventory all 42 tables/four views, relationships, ownership, and required amendments. Review the five invalid UNIQUE clauses, lost ENUM validation, eight missing secondary indexes, and five updated_at behaviors. Resolve how Better Auth maps to existing users/roles; document internal queue/persistence storage.
 - **Test:** Check the inventory against both supplied SQL files and challenge mixed patient/policy/encounter/hospital references.
 - **Pass when:** Repairs, identity mapping, tenancy strategy, and any extra tables are explained and reviewable. Neither destructive bootstrap script has been executed.
