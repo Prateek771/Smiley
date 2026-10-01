@@ -16,11 +16,11 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: `npm run dev -- --hostname 127.0.0.1 --port ${port}`,
+    command: `npm run start -- --hostname 127.0.0.1 --port ${port}`,
     url: baseURL,
     reuseExistingServer: false,
     env: {
-      NODE_ENV: "development",
+      NODE_ENV: "production",
       DATABASE_URL: process.env.TEST_DATABASE_URL ?? "",
       MIGRATION_DATABASE_URL: process.env.TEST_MIGRATION_DATABASE_URL ?? "",
       BETTER_AUTH_URL: `http://127.0.0.1:${port}`,

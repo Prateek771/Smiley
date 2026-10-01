@@ -72,7 +72,7 @@ async function validPdf(bytes: Buffer): Promise<boolean> {
   try {
     const payload = Uint8Array.from(bytes);
     const worker = new Worker(resolve(process.cwd(), "src/server/documents/pdf-validation-worker.mjs"), {
-      workerData: payload, transferList: [payload.buffer], execArgv: [], stdout: true, stderr: true,
+      workerData: { bytes: payload }, transferList: [payload.buffer], execArgv: [], stdout: true, stderr: true,
       resourceLimits: { maxOldGenerationSizeMb: 96, maxYoungGenerationSizeMb: 16, stackSizeMb: 4 },
     });
     // Parser warnings must not reach logs or accumulate in parent memory.

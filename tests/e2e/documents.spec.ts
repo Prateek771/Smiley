@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
+import { PDFDocument } from "pdf-lib";
 import { createDraft, signIn } from "./helpers";
 
 test("staff upload private revisions, pin a source note and retain original downloads", async ({ page }) => {
@@ -45,6 +46,7 @@ test("staff upload private revisions, pin a source note and retain original down
   await expect(page.getByRole("region", { name: "Private documents", exact: true })).toContainText("Fictional date needs staff verification.");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await mkdir("tmp/browser", { recursive: true });
+  await page.evaluate(() => { if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); });
   await page.screenshot({ path: `tmp/browser/phase-10-${test.info().project.name}.png`, fullPage: true });
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/u);
@@ -110,4 +112,34 @@ test("upload retry preserves an acknowledged file and accepts changed bytes with
   expect(listing.revisions).toHaveLength(3);
   const downloaded = await Promise.all(listing.revisions.map(async (revision) => (await (await page.request.get(`/api/documents/${revision.id}/download`)).body()).toString()));
   expect(downloaded).toEqual(expect.arrayContaining(["Fictional original note A", "Fictional revised note B!", "Fictional revised note C!"]));
+});
+
+test("a valid compressed PDF survives the document API and exact download", async ({ page }) => {
+  test.setTimeout(60_000);
+  const user = await signIn(page);
+  const id = await createDraft(page, user);
+  const document = await PDFDocument.create();
+  document.addPage([300, 300]).drawText("Fictional compressed discharge evidence");
+  const original = Buffer.from(await document.save({ useObjectStreams: true }));
+  expect(original.includes(Buffer.from("/ObjStm")), "The valid fixture must exercise compressed object streams.").toBe(true);
+  const filename = "fictional-compressed-discharge.pdf";
+  const uploaded = await page.request.post("/api/cases/" + id + "/documents", {
+    headers: { origin: new URL(page.url()).origin },
+    multipart: {
+      file: { name: filename, mimeType: "application/pdf", buffer: original },
+      documentType: "DISCHARGE_SUMMARY",
+      idempotencyKey: randomUUID(),
+    },
+  });
+  expect(uploaded.status(), "A real compressed PDF must pass the routed validator.").toBe(201);
+  const result = await uploaded.json() as { revisionId: string; revisionNumber: number; idempotent: boolean };
+  expect(result.revisionNumber).toBe(1);
+  expect(result.idempotent).toBe(false);
+  const downloaded = await page.request.get("/api/documents/" + result.revisionId + "/download");
+  expect(downloaded.status()).toBe(200);
+  expect(downloaded.headers()["content-type"]).toBe("application/pdf");
+  expect(downloaded.headers()["cache-control"]).toBe("no-store");
+  expect(await downloaded.body()).toEqual(original);
+  await page.reload();
+  await expect(page.getByRole("link", { name: "Download " + filename + " revision 1", exact: true })).toBeVisible();
 });

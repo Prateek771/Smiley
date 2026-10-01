@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -68,4 +68,35 @@ test("a hospital invitation creates an account through the acceptance screen", a
   await page.getByLabel("Choose a password").fill("Synthetic-Browser-Test-Only!42");
   await page.getByRole("button", { name: "Accept invitation" }).click();
   await expect(page.getByRole("status")).toContainText("Your staff account is ready");
+});
+
+test.describe("login before hydration", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("login controls stay disabled without JavaScript and never submit credential GET fields", async ({ page }) => {
+    const nativeCredentialGets: string[][] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (request.method() === "GET" && url.pathname === "/login" && (url.searchParams.has("email") || url.searchParams.has("password"))) {
+        // Capture field names only; never print values or a raw credential-bearing URL.
+        nativeCredentialGets.push([...url.searchParams.keys()]);
+      }
+    });
+    await page.goto("/login");
+    const email = page.getByLabel("Work email");
+    const password = page.getByLabel("Password", { exact: true });
+    const submit = page.getByRole("button", { name: "Sign in", exact: true });
+    // Exercise the unsafe SSR fallback if it is exposed; these are deliberately invalid sentinel values.
+    if (await email.isEnabled() && await password.isEnabled()) {
+      await email.fill("fictional-no-js@smiley.test");
+      await password.fill("Fictional-Only-Not-A-Real-Credential!");
+    }
+    await submit.click({ force: true });
+    expect(nativeCredentialGets, "An unhydrated form must not send credential fields in a native GET").toEqual([]);
+    await expect(email).toBeDisabled();
+    await expect(password).toBeDisabled();
+    await expect(submit).toBeDisabled();
+    await expect(page.locator("form").filter({ has: email })).toHaveAttribute("method", "post");
+    expect([...new URL(page.url()).searchParams.keys()]).toEqual([]);
+  });
 });

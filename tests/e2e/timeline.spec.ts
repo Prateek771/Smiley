@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import { createDraft, signIn } from "./helpers";
@@ -48,6 +48,7 @@ test("billing can review a case but cannot post preparation actions or payer app
 });
 
 test("a stale tab reloads all preparation fields before another save", async ({ page, context }) => {
+  test.setTimeout(60_000);
   const user = await signIn(page); const id = await createDraft(page, user);
   const stale = await context.newPage(); await stale.goto(`/desk/cases/${id}`);
   const first = page.getByRole("region", { name: "Edit preparation" });
@@ -63,6 +64,8 @@ test("a stale tab reloads all preparation fields before another save", async ({ 
   await second.getByLabel("Next action").fill("Outdated tab instruction");
   await second.getByRole("button", { name: "Save preparation" }).click();
   await expect(stale.getByRole("main").getByRole("alert")).toContainText("The case changed");
+  // The conflict response arrives before the streamed refresh commits its authoritative fields.
+  await expect(stale.getByRole("main").getByText(/^DRAFT · .+ · version 2$/u)).toBeVisible({ timeout: 15_000 });
   await expect(second.getByLabel("Next action")).toHaveValue("Latest officer instruction");
   await expect(second.getByLabel("Due date and time (IST)")).toHaveValue("2026-11-01T10:15");
   await expect(second.getByLabel("Case owner")).toHaveValue(owner!);

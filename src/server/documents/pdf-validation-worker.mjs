@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import { parentPort, workerData } from "node:worker_threads";
 
-const require = createRequire(import.meta.url);
+// Keep CJS loading/resolution native: bundler rewrites would defeat the exact
+// on-disk source hash guards below. Node 24 provides this builtin accessor.
+const nativeRequire = process.getBuiltinModule("module").createRequire(import.meta.url);
 const MAX_INPUT_BYTES = 5 * 1024 * 1024;
 const MAX_STREAM_BYTES = 16 * 1024 * 1024;
 const MAX_ALLOCATED_BYTES = 32 * 1024 * 1024;
@@ -31,16 +32,16 @@ const reviewedSources = {
 };
 
 function installAllocationGuards(PDFArray, PDFName, PDFNumber) {
-  if (require("pdf-lib/package.json").version !== "1.17.1") throw new Error("Unreviewed PDF parser version.");
+  if (nativeRequire("pdf-lib/package.json").version !== "1.17.1") throw new Error("Unreviewed PDF parser version.");
   for (const [path, expected] of Object.entries(reviewedSources)) {
-    const source = readFileSync(require.resolve("pdf-lib/cjs/core/" + path));
+    const source = readFileSync(nativeRequire.resolve("pdf-lib/cjs/core/" + path));
     if (createHash("sha256").update(source).digest("hex") !== expected) throw new Error("Unreviewed PDF parser internals.");
   }
-  const DecodeStream = require("pdf-lib/cjs/core/streams/DecodeStream.js").default;
-  const ObjectStreamParser = require("pdf-lib/cjs/core/parser/PDFObjectStreamParser.js").default;
+  const DecodeStream = nativeRequire("pdf-lib/cjs/core/streams/DecodeStream.js").default;
+  const ObjectStreamParser = nativeRequire("pdf-lib/cjs/core/parser/PDFObjectStreamParser.js").default;
   const ensureBuffer = DecodeStream.prototype.ensureBuffer;
   const forStream = ObjectStreamParser.forStream;
-  const decoder = require("pdf-lib/cjs/core/streams/decode.js");
+  const decoder = nativeRequire("pdf-lib/cjs/core/streams/decode.js");
   const decodeRawStream = decoder.decodePDFRawStream;
   if (typeof decodeRawStream !== "function" || typeof ensureBuffer !== "function" || typeof forStream !== "function") throw new Error("Unsupported PDF parser shape.");
   // ByteStream calls this exported property dynamically for both ObjStm and XRef.
@@ -72,7 +73,7 @@ function installAllocationGuards(PDFArray, PDFName, PDFNumber) {
 
 async function validatePdf(bytes) {
   if (!(bytes instanceof Uint8Array) || !bytes.byteLength || bytes.byteLength > MAX_INPUT_BYTES) return false;
-  const { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber } = require("pdf-lib");
+  const { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber } = nativeRequire("pdf-lib");
   installAllocationGuards(PDFArray, PDFName, PDFNumber);
   const document = await PDFDocument.load(bytes, { throwOnInvalidObject: true, ignoreEncryption: false, updateMetadata: false });
   const root = document.catalog.lookup(PDFName.of("Pages"), PDFDict);
@@ -105,5 +106,5 @@ async function validatePdf(bytes) {
 }
 
 let valid = false;
-try { valid = await validatePdf(workerData); } catch { valid = false; }
+try { valid = await validatePdf(workerData?.bytes); } catch { valid = false; }
 parentPort?.postMessage(valid);

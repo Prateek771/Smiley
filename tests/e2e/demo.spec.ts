@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("queue search and ownership filter survive case navigation and reload", async ({ page }) => {
   await page.goto("/demo");
