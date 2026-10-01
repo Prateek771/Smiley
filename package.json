@@ -12,13 +12,14 @@
     "browser:install": "agent-browser install",
     "test": "npm run test:integration && npm run test:e2e",
     "test:integration": "node scripts/run-tests.mjs",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
+    "test:e2e": "node --import tsx scripts/run-e2e.mjs test",
+    "test:e2e:ui": "node --import tsx scripts/run-e2e.mjs test --ui",
     "db:migrate": "tsx scripts/db-migrate.ts",
     "db:seed": "tsx scripts/db-seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-runtime.ps1 -Action start",
-    "db:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-runtime.ps1 -Action status"
+    "db:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-runtime.ps1 -Action status",
+    "auth:seed": "tsx scripts/auth-seed.ts"
   },
   "engines": {
     "node": ">=24.0.0"

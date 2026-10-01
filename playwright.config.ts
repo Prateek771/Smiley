@@ -18,7 +18,14 @@ export default defineConfig({
   webServer: {
     command: `npm run dev -- --hostname 127.0.0.1 --port ${port}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
+    env: {
+      NODE_ENV: "development",
+      DATABASE_URL: process.env.TEST_DATABASE_URL ?? "",
+      MIGRATION_DATABASE_URL: process.env.TEST_MIGRATION_DATABASE_URL ?? "",
+      BETTER_AUTH_URL: `http://127.0.0.1:${port}`,
+      PRIVATE_STORAGE_DIR: "./tmp/private-storage-test",
+    },
     timeout: 120_000,
   },
 });

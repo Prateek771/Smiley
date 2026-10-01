@@ -30,3 +30,7 @@ Pre-flight: Phase 3 fixture view models feed demo only; Phase 4 source inventory
 - GitHub CI now prepares an ephemeral PostgreSQL service with random masked credentials and checks real migrations/seeds/integration; verify its first database checkpoint before promotion.
 
 - Phase 5 independent review accepted finite NUMERIC and nullable log ownership fixes. Membership granted_by/granted_at/revoked_at fields are explicitly deferred to the Phase 7 additive grant-history migration.
+
+- Phase 5 exact checkpoint `c2b11ce97c3b9a352d9aabe787dc911c259a4558` passed [GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/36841333795) and was promoted to main.
+
+- Phase 6 locally complete: Login, atomic staff invitations, expiry/logout/removal and protected routes; 31 server checks and 30 desktop/mobile journeys pass, plus lint/types/build. [Evidence](phase-6-auth.md). Checkpoint push and exact CI promotion follow.

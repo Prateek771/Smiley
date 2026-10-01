@@ -2,7 +2,7 @@
 
 Updated: 1 October 2026. This is the living progress record for the repository.
 
-**Current position:** Phases 0–5 are locally complete, including reviewed migrations, synthetic seeds, and backup/restore. Login, access, case actions, and private documents follow sequentially through Phase 10. [Execution ledger](docs/evidence/phases-3-10-progress.md) records checks and rulings.
+**Current position:** Phases 0�6 are locally complete. Continue the tested, synthetic build through Phase 10; exact CI promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md).
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -95,7 +95,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 6 — Implement login and staff sessions
 
-- [ ] Complete Phase 6 and record evidence.
+- [x] Complete Phase 6 and record evidence.
+- **Delivered:** Login, atomic staff invitations, expiry/logout/removal and protected routes; 31 server checks and 30 desktop/mobile journeys pass, plus lint/types/build. [Validation](docs/evidence/phase-6-auth.md). Exact checkpoint CI is tracked in the execution ledger.
 - **Build:** Integrate Better Auth with the reviewed identity model; add sign-in/out, staff invitation, removal, and session expiry.
 - **Test:** Valid/invalid login, expired sessions, logout, removed staff, and identity-link consistency.
 - **Pass when:** Protected routes reject invalid sessions and there is one authoritative identity model.
