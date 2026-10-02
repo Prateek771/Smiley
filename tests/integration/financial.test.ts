@@ -11,7 +11,7 @@ import { uploadDocument } from "../../src/server/documents";
 let financial: typeof import("../../src/server/financial");
 let users: Awaited<ReturnType<typeof seedAuthUsers>>;
 const staff: Record<string, Headers> = {};
-let caseId: string; let revisionId: string;
+let caseId: string; let revisionId: string; let policyRevisionId: string; let reductionRevisionId: string;
 const bill = { serviceDate: "2026-10-02", lines: [{ description: "Synthetic treatment", grossPaise: 10000000, excludedPaise: 800000, reductionPaise: 700000 }] };
 const rule = { version: "SYN-DISCHARGE-1", validFrom: "2026-01-01", validTo: "2026-12-31", deductiblePaise: 0, copayBps: 0, benefitLimitPaise: 20000000, tariffCapsPaise: [] };
 async function login(key: keyof typeof users) {
@@ -33,16 +33,18 @@ before(async () => {
   caseId = (await createCase(staff.deskA, { branchId: encounter.branchId, patientId: encounter.patientId, patientInsuranceId: membership.id, encounterId: encounter.id, ownerId: users.deskA.userId, nextAction: "Review synthetic discharge", creationKey: randomUUID() })).id;
   const upload = await uploadDocument(staff.deskA, caseId, { bytes: Buffer.from("Fictional reviewed bill and reduction evidence"), name: "synthetic-financial-source.txt", mimeType: "text/plain", documentType: "final-bill", idempotencyKey: randomUUID() });
   revisionId = upload.revisionId;
+  policyRevisionId = (await uploadDocument(staff.deskA, caseId, { bytes: Buffer.from("Fictional policy evidence"), name: "policy.txt", mimeType: "text/plain", documentType: "policy", idempotencyKey: randomUUID() })).revisionId;
+  reductionRevisionId = (await uploadDocument(staff.deskA, caseId, { bytes: Buffer.from("Fictional reduction approval evidence"), name: "reduction.txt", mimeType: "text/plain", documentType: "approved-hospital-reduction", idempotencyKey: randomUUID() })).revisionId;
   const implementation = await import("../../src/server/financial").catch(() => null);
   assert.ok(implementation, "Implement versioned scoped financial case actions."); financial = implementation;
 });
 after(closePools);
 
 test("Billing stores a bill revision and assessment; Desk cannot write financial estimates", async () => {
-  const action = { type: "bill", bill, sourceRevisionId: revisionId, reductionRevisionId: revisionId, verified: true };
+  const action = { type: "bill", bill, sourceRevisionId: revisionId, reductionRevisionId, verified: true };
   await assert.rejects(act("deskA", action), { status: 403 });
   const saved = await act("billingA", action);
-  const estimate = await act("billingA", { type: "assess", billId: saved.recordId, rule, policyRevisionId: revisionId, verified: true });
+  const estimate = await act("billingA", { type: "assess", billId: saved.recordId, rule, policyRevisionId, verified: true });
   const detail = await financial.getFinancialCase(staff.deskA, caseId);
   assert.equal(detail.bill?.id, saved.recordId); assert.equal(detail.assessment?.id, estimate.recordId);
   assert.equal(detail.assessment?.payload.result.insurerPaise, 8500000);
@@ -52,7 +54,7 @@ test("Billing stores a bill revision and assessment; Desk cannot write financial
 
 test("financial retries preserve one immutable record and reject changed keys and stale versions", async () => {
   const version = (await getCase(staff.deskA, caseId)).version; const key = randomUUID();
-  const action = { type: "bill", bill, sourceRevisionId: revisionId, reductionRevisionId: revisionId, verified: true };
+  const action = { type: "bill", bill, sourceRevisionId: revisionId, reductionRevisionId, verified: true };
   const first = await act("billingA", action, key, version); const retry = await act("billingA", action, key, version);
   assert.equal(first.recordId, retry.recordId); assert.equal(retry.idempotent, true);
   await assert.rejects(act("billingA", { ...action, bill: { ...bill, serviceDate: "2026-10-03" } }, key, version), { status: 409 });
@@ -65,4 +67,10 @@ test("financial evidence and records cannot cross assigned branch or hospital", 
   await assert.rejects(financial.getFinancialCase(staff.deskB, caseId), { status: 404 });
   await assert.rejects(financial.getFinancialCase(staff.deskNorthA, caseId), { status: 404 });
   await assert.rejects(act("billingA", { type: "bill", bill, sourceRevisionId: randomUUID(), reductionRevisionId: revisionId, verified: true }), { status: 400 });
+});
+
+test("a bill source cannot stand in for policy or hospital reduction evidence", async () => {
+  await assert.rejects(act("billingA", { type: "bill", bill, sourceRevisionId: policyRevisionId, reductionRevisionId, verified: true }), { status: 400 });
+  const detail = await financial.getFinancialCase(staff.deskA, caseId);
+  await assert.rejects(act("billingA", { type: "assess", billId: detail.bill!.id, rule, policyRevisionId: revisionId, verified: true }), { status: 400 });
 });

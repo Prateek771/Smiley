@@ -8,7 +8,8 @@ import styles from "./desk.module.css";
 export function DocumentPanel({ listing, canUpload }: { listing: DocumentListing; canUpload: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [documentPurpose, setDocumentPurpose] = useState("DISCHARGE_SUMMARY");
+  const [documentPurpose, setDocumentPurpose] = useState("discharge-summary");
+  const purposes = ["policy", "preauthorization", "final-bill", "approved-hospital-reduction", "discharge-summary", "payer-decision", "patient-payment", "bank-remittance", "submission-acknowledgement", "query-response", "query-resolution", "other"];
   const [notice, setNotice] = useState<{ error: boolean; text: string } | null>(null);
   const uploadRetry = useRef<{ content: string; key: string } | null>(null);
   const sourceRetry = useRef<{ content: string; key: string } | null>(null);
@@ -62,7 +63,7 @@ export function DocumentPanel({ listing, canUpload }: { listing: DocumentListing
     </li>)}</ul> : <p className={styles.action}>No documents uploaded yet.</p>}
     {canUpload && <div className={styles.grid}>
       <section aria-label="Upload private document"><h3>Upload a document or revision</h3><form className={styles.form} onSubmit={(event) => void upload(event)}>
-        <label className={styles.field}>Document purpose<input name="documentType" maxLength={100} value={documentPurpose} onChange={(event) => setDocumentPurpose(event.target.value)} required /></label>
+        <label className={styles.field}>Document purpose<select name="documentType" value={documentPurpose} onChange={(event) => setDocumentPurpose(event.target.value)} required>{[...new Set([...purposes, ...listing.documents.map((document) => document.type)])].map((purpose) => <option key={purpose} value={purpose}>{purpose.replaceAll("-", " ")}</option>)}</select></label>
         <label className={styles.field}>Existing document<select name="documentId" defaultValue="" onChange={(event) => { const original = listing.documents.find((document) => document.id === event.target.value); if (original) setDocumentPurpose(original.type); }}><option value="">Create a new document</option>{listing.documents.map((document) => <option key={document.id} value={document.id}>{document.name} · {document.type}</option>)}</select></label>
         <label className={styles.field}>Document file<input name="file" type="file" accept="application/pdf,image/png,image/jpeg,text/plain" required /></label>
         <button className={styles.button} disabled={pending}>Upload private document</button>

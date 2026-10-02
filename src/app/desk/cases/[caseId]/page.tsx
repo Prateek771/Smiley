@@ -17,6 +17,8 @@ const eventLabels: Record<string, string> = {
   PREPARATION_STATUS_CHANGED: "Preparation status changed", PAYER_QUERY_RECORDED: "Payer query recorded",
   QUERY_RESPONSE_PREPARED: "Query response prepared", DOCUMENT_UPLOADED: "Document revision uploaded",
   SOURCE_EVIDENCE_ADDED: "Source note recorded",
+  FINANCIAL_BILL: "Bill revision recorded", FINANCIAL_ASSESS: "Rule assessment recorded", FINANCIAL_PACK: "Claim pack reviewed",
+  FINANCIAL_SUBMISSION: "External submission acknowledged", FINANCIAL_QUERY_ACK: "Query response acknowledged", FINANCIAL_QUERY_RESOLVE: "Query resolution recorded",
 };
 const indiaDate = (value: string) => new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 function historyText(payload: Record<string, unknown>): string {
