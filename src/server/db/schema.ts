@@ -1254,3 +1254,33 @@ export const documentEvidence = pgTable("document_evidence", {
   foreignKey({ name: "fk_document_evidence_revision", columns: [table.hospitalId, table.branchId, table.claimId, table.revisionId], foreignColumns: [documentRevisions.hospitalId, documentRevisions.branchId, documentRevisions.claimId, documentRevisions.revisionId] }).onDelete("restrict"),
   foreignKey({ name: "fk_document_evidence_recorder", columns: [table.hospitalId, table.recordedBy], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
 ]);
+
+export const remittanceReceipts = pgTable("remittance_receipts", {
+  id: uuid("id").primaryKey(), hospitalId: bigint("hospital_id", { mode: "bigint" }).notNull(), branchId: bigint("branch_id", { mode: "bigint" }).notNull(),
+  evidenceCaseId: bigint("evidence_case_id", { mode: "bigint" }).notNull(), evidenceRevisionId: text("evidence_revision_id").notNull(), actorUserId: bigint("actor_user_id", { mode: "bigint" }).notNull(),
+  amountPaise: bigint("amount_paise", { mode: "bigint" }).notNull(), reference: text("reference").notNull(), idempotencyKey: text("idempotency_key").notNull(), fingerprint: text("fingerprint").notNull(),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(), recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [unique("uq_remittance_scope").on(t.hospitalId, t.branchId, t.id), unique("uq_remittance_reference").on(t.hospitalId, t.branchId, t.reference), unique("uq_remittance_key").on(t.hospitalId, t.branchId, t.idempotencyKey),
+  check("ck_remittance_amount", sql`${t.amountPaise} > 0 AND ${t.amountPaise} <= 9007199254740991`),
+  index("ix_remittance_evidence").on(t.hospitalId, t.branchId, t.evidenceCaseId), index("ix_remittance_actor").on(t.hospitalId, t.actorUserId),
+  foreignKey({ name: "fk_remittance_evidence", columns: [t.hospitalId, t.branchId, t.evidenceCaseId, t.evidenceRevisionId], foreignColumns: [documentRevisions.hospitalId, documentRevisions.branchId, documentRevisions.claimId, documentRevisions.revisionId] }).onDelete("restrict"),
+  foreignKey({ name: "fk_remittance_actor", columns: [t.hospitalId, t.actorUserId], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
+]);
+export const remittanceAllocations = pgTable("remittance_allocations", {
+  id: uuid("id").primaryKey(), hospitalId: bigint("hospital_id", { mode: "bigint" }).notNull(), branchId: bigint("branch_id", { mode: "bigint" }).notNull(),
+  receiptId: uuid("receipt_id").notNull(), claimId: bigint("claim_id", { mode: "bigint" }).notNull(), decisionId: uuid("decision_id").notNull(), amountPaise: bigint("amount_paise", { mode: "bigint" }).notNull(),
+}, (t) => [unique("uq_remittance_claim").on(t.receiptId, t.claimId), check("ck_allocation_amount", sql`${t.amountPaise} > 0 AND ${t.amountPaise} <= 9007199254740991`),
+  index("ix_allocation_claim").on(t.hospitalId, t.branchId, t.claimId), index("ix_allocation_decision").on(t.hospitalId, t.branchId, t.claimId, t.decisionId),
+  foreignKey({ name: "fk_allocation_receipt", columns: [t.hospitalId, t.branchId, t.receiptId], foreignColumns: [remittanceReceipts.hospitalId, remittanceReceipts.branchId, remittanceReceipts.id] }).onDelete("restrict"),
+  foreignKey({ name: "fk_allocation_decision", columns: [t.hospitalId, t.branchId, t.claimId, t.decisionId], foreignColumns: [claimRecords.hospitalId, claimRecords.branchId, claimRecords.claimId, claimRecords.id] }).onDelete("restrict"),
+]);
+export const remittanceReversals = pgTable("remittance_reversals", {
+  id: uuid("id").primaryKey(), hospitalId: bigint("hospital_id", { mode: "bigint" }).notNull(), branchId: bigint("branch_id", { mode: "bigint" }).notNull(), receiptId: uuid("receipt_id").notNull(),
+  evidenceCaseId: bigint("evidence_case_id", { mode: "bigint" }).notNull(), evidenceRevisionId: text("evidence_revision_id").notNull(), actorUserId: bigint("actor_user_id", { mode: "bigint" }).notNull(),
+  reference: text("reference").notNull(), idempotencyKey: text("idempotency_key").notNull(), fingerprint: text("fingerprint").notNull(), occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(), recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [unique("uq_reversal_receipt").on(t.receiptId), unique("uq_reversal_key").on(t.hospitalId, t.branchId, t.idempotencyKey), unique("uq_reversal_reference").on(t.hospitalId, t.branchId, t.reference),
+  index("ix_reversal_receipt").on(t.hospitalId, t.branchId, t.receiptId), index("ix_reversal_evidence").on(t.hospitalId, t.branchId, t.evidenceCaseId), index("ix_reversal_actor").on(t.hospitalId, t.actorUserId),
+  foreignKey({ name: "fk_reversal_receipt", columns: [t.hospitalId, t.branchId, t.receiptId], foreignColumns: [remittanceReceipts.hospitalId, remittanceReceipts.branchId, remittanceReceipts.id] }).onDelete("restrict"),
+  foreignKey({ name: "fk_reversal_evidence", columns: [t.hospitalId, t.branchId, t.evidenceCaseId, t.evidenceRevisionId], foreignColumns: [documentRevisions.hospitalId, documentRevisions.branchId, documentRevisions.claimId, documentRevisions.revisionId] }).onDelete("restrict"),
+  foreignKey({ name: "fk_reversal_actor", columns: [t.hospitalId, t.actorUserId], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
+]);

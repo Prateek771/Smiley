@@ -8,6 +8,7 @@ import { listDocuments } from "@/server/documents";
 import { DocumentPanel } from "@/features/desk/document-panel";
 import { CaseActions } from "@/features/desk/case-actions";
 import { FinancialPanel } from "@/features/desk/financial-panel";
+import { SettlementPanel } from "@/features/desk/settlement-panel";
 import { getFinancialCase } from "@/server/financial";
 import styles from "@/features/desk/desk.module.css";
 
@@ -62,5 +63,6 @@ export default async function PersistedCase({ params, searchParams }: { params: 
     {canAct && <CaseActions caseId={caseId} version={record.version} status={record.status} ownerId={record.ownerId} nextAction={record.nextAction} dueAt={record.dueAt} owners={workspace.owners.filter((owner) => owner.branchId === record.branchId)} queries={timeline.queries.map((query) => ({ reference: String(query.external_reference), status: String(query.status) }))} />}
     <DocumentPanel listing={documents} canUpload={record.status !== "CANCELLED" && workspace.branches.some((branch) => branch.id === record.branchId && branch.canUpload)} />
     <FinancialPanel key={financial.version} data={financial} documents={documents} />
+    <SettlementPanel key={`settlement-${financial.version}`} data={financial} documents={documents} cases={workspace.cases.filter((item) => item.branchId === record.branchId).map((item) => ({ id: item.id, claimNo: item.claimNo }))} />
   </>;
 }

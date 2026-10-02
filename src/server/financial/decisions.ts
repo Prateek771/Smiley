@@ -1,7 +1,7 @@
 import type { PoolClient } from "pg";
 import { z } from "zod";
 import { AccessError } from "../access";
-import { currentFinancial, requireRevision, type FinancialRecord } from "./index";
+import { currentFinancial, requireRevision, type FinancialRecord } from "./records";
 import { packState } from "./submissions";
 import { money, sumPaise } from "./rules";
 const receipt = { reference: z.string().trim().min(1).max(150), evidenceRevisionId: z.uuid(), occurredAt: z.iso.datetime({ offset: true }).refine((value) => new Date(value).getTime() <= Date.now() + 300000), verified: z.literal(true) };

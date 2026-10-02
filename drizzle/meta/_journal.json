@@ -50,6 +50,13 @@
       "when": 1790939722541,
       "tag": "0006_claim_records",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790942042698,
+      "tag": "0007_remittances",
+      "breakpoints": true
     }
   ]
 }

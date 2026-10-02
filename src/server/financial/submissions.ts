@@ -1,7 +1,7 @@
 import type { PoolClient } from "pg";
 import { z } from "zod";
 import { AccessError } from "../access";
-import { currentFinancial, requireRevision, type FinancialRecord } from "./index";
+import { currentFinancial, requireRevision, type FinancialRecord } from "./records";
 
 const reference = z.string().trim().min(1).max(150);
 const occurrence = z.iso.datetime({ offset: true }).refine((value) => new Date(value).getTime() <= Date.now() + 300000);

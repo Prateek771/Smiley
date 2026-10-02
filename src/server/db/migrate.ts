@@ -16,7 +16,7 @@ async function grantApplicationAccess(client: PoolClient): Promise<void> {
   }
   const role = quoteIdentifier(decodeURIComponent(new URL(url).username));
   const catalogs = ["roles", "permissions", "role_permissions", "insurance_categories", "insurance_subcategories", "insurance_companies", "tpas", "insurance_company_tpas", "insurance_policies", "treatment_services", "workflow_definitions", "coverage_rules", "government_schemes"];
-  const immutable = ["claim_events", "audit_logs", "document_revisions", "document_evidence", "claim_records"];
+  const immutable = ["claim_events", "audit_logs", "document_revisions", "document_evidence", "claim_records", "remittance_receipts", "remittance_allocations", "remittance_reversals"];
   const auth = ["auth_user", "auth_account", "auth_session", "auth_verification"];
   await client.query("BEGIN");
   try {

@@ -1,14 +1,12 @@
-import { createHash, randomUUID } from "node:crypto";
-import type { PoolClient } from "pg";
 import { z } from "zod";
-import { AccessError, withActorTransaction, type Actor } from "../access";
+import { AccessError, withActorTransaction } from "../access";
 import { branchScope, type Permission } from "../access/permissions";
-import { writeAudit } from "../audit";
-import { assessBill, billSchema, ruleSchema, type BillInput, type Assessment, type RuleInput } from "./rules";
+import { assessBill, billSchema, ruleSchema, type Assessment } from "./rules";
 import { submissionActions, prepareSubmission, packState, type PackRecord } from "./submissions";
 import { decisionActions, prepareDecision, patientState } from "./decisions";
-
-export const caseIdSchema = z.string().regex(/^[1-9][0-9]{0,18}$/u).refine((id) => BigInt(id) <= 9223372036854775807n);
+import { settlementState } from "./settlement";
+import { caseIdSchema, scopedCase, recordsForCase, currentFinancial, requireRevision, usableRecords, policyContext, fingerprint, appendFinancialRecord, type RecordResult, type FinancialRecord, type BillRecord, type AssessmentRecord } from "./records";
+export type { FinancialRecord, RecordResult } from "./records";
 const verified = z.literal(true);
 const actionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("bill"), bill: billSchema, sourceRevisionId: z.uuid(), reductionRevisionId: z.uuid().nullable(), verified }).strict(),
@@ -17,66 +15,20 @@ const actionSchema = z.discriminatedUnion("type", [
   ...decisionActions,
 ]);
 const requestSchema = z.object({ expectedVersion: z.number().int().positive().max(2147483646), idempotencyKey: z.string().min(8).max(100), action: actionSchema }).strict();
-export type FinancialRecord<T = Record<string, unknown>> = { id: string; kind: string; caseVersion: number; actorId: string; occurredAt: string; recordedAt: string; payload: T };
-type BillRecord = FinancialRecord<{ bill: BillInput; sourceRevisionId: string; reductionRevisionId: string | null }>;
-type AssessmentRecord = FinancialRecord<{ billId: string; rule: RuleInput | null; result: Assessment; policyRevisionId: string; contextFingerprint: string }>;
-export type FinancialCase = Awaited<ReturnType<typeof patientState>> & { caseId: string; version: number; bill: BillRecord | null; assessment: AssessmentRecord | null; records: FinancialRecord[];
+export type FinancialCase = Awaited<ReturnType<typeof patientState>> & Awaited<ReturnType<typeof settlementState>> & { caseId: string; version: number; bill: BillRecord | null; assessment: AssessmentRecord | null; records: FinancialRecord[];
   canBill: boolean; canDesk: boolean; canFinance: boolean; patientConfirmedPaise: number | null; pack: PackRecord | null; packCurrent: boolean;
   queries: { reference: string; status: string; responseEventId: string | null; responseAckCurrent: boolean }[] };
-export type RecordResult = { caseId: string; version: number; recordId: string; idempotent: boolean };
-export const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-
-export async function scopedCase(client: PoolClient, actor: Actor, caseId: string, lock = false) {
-  const result = await client.query(`SELECT c.*,pi.valid_from,pi.valid_to,pi.policy_id FROM claims c JOIN patient_insurance pi ON pi.patient_insurance_id=c.patient_insurance_id AND pi.hospital_id=c.hospital_id WHERE c.claim_id=$1 AND c.hospital_id=$2 ${lock ? "FOR UPDATE OF c" : ""}`, [caseId, actor.hospitalId]);
-  if (!result.rowCount) throw new AccessError(404, "The case is unavailable in your hospital or assigned branches.");
-  return result.rows[0];
-}
-export async function recordsForCase(client: PoolClient, caseId: string): Promise<FinancialRecord[]> {
-  const result = await client.query(`SELECT id,kind,case_version AS "caseVersion",actor_user_id::text AS "actorId",occurred_at AS "occurredAt",recorded_at AS "recordedAt",payload FROM claim_records WHERE claim_id=$1 ORDER BY case_version DESC`, [caseId]);
-  return result.rows.map((row) => ({ ...row, occurredAt: row.occurredAt.toISOString(), recordedAt: row.recordedAt.toISOString() }));
-}
-export function currentFinancial(records: FinancialRecord[]) {
-  const bill = (records.find((row) => row.kind === "bill") ?? null) as BillRecord | null;
-  const assessment = (records.find((row) => row.kind === "assess" && row.payload.billId === bill?.id) ?? null) as AssessmentRecord | null;
-  return { bill, assessment };
-}
-export async function requireRevision(client: PoolClient, caseId: string, revisionId: string, documentType?: string): Promise<{ document_id: string; document_type: string }> {
-  const revision = await client.query(`SELECT r.claim_document_id::text AS document_id, d.document_type FROM document_revisions r JOIN claim_documents d ON d.claim_document_id=r.claim_document_id AND d.hospital_id=r.hospital_id AND d.branch_id=r.branch_id AND d.claim_id=r.claim_id WHERE r.revision_id=$1 AND r.claim_id=$2`, [revisionId, caseId]);
-  if (!revision.rowCount) throw new AccessError(400, "Choose an evidence revision belonging to this case and branch.");
-  if (documentType && revision.rows[0].document_type !== documentType) throw new AccessError(400, `Choose evidence with purpose ${documentType}.`);
-  return revision.rows[0];
-}
-export const policyContext = (current: Record<string, unknown>) => fingerprint([current.patient_insurance_id, current.policy_id, current.valid_from, current.valid_to]);
-export async function usableRecords(client: PoolClient, caseId: string, current: Record<string, unknown>, records: FinancialRecord[]) {
-  const { bill, assessment } = currentFinancial(records);
-  let valid = !!assessment && assessment.payload.contextFingerprint === policyContext(current);
-  if (valid && bill && assessment) {
-    for (const id of [bill.payload.sourceRevisionId, assessment.payload.policyRevisionId, ...(bill.payload.reductionRevisionId ? [bill.payload.reductionRevisionId] : [])]) {
-      const latest = await client.query("SELECT revision_id FROM document_revisions WHERE claim_id=$1 AND claim_document_id=(SELECT claim_document_id FROM document_revisions WHERE revision_id=$2) ORDER BY revision_number DESC LIMIT 1", [caseId, id]);
-      if (latest.rows[0]?.revision_id !== id) { valid = false; break; }
-    }
-  }
-  return valid ? records : records.filter((row) => row.kind !== "assess");
-}
 export async function getFinancialCase(headers: Headers, caseId: string): Promise<FinancialCase> {
   if (!caseIdSchema.safeParse(caseId).success) throw new AccessError(400, "Provide a valid case ID.");
   return withActorTransaction(headers, "case:read", undefined, async (client, actor) => {
     const current = await scopedCase(client, actor, caseId); const records = await recordsForCase(client, caseId);
     const usable = await usableRecords(client, caseId, current, records);
+    const patient = await patientState(client, caseId, usable);
     const queries = await client.query(`SELECT q.external_reference AS reference,q.status,(SELECT e.event_id FROM claim_events e WHERE e.claim_id=q.claim_id AND e.event_type='QUERY_RESPONSE_PREPARED' AND e.payload->'action'->>'reference'=q.external_reference ORDER BY e.case_version DESC LIMIT 1) AS "responseEventId" FROM claim_queries q WHERE q.claim_id=$1 ORDER BY q.query_id`, [caseId]);
-    return { caseId, version: current.version, ...currentFinancial(usable), ...await packState(client, caseId, usable), ...await patientState(client, caseId, usable), records,
+    return { caseId, version: current.version, ...currentFinancial(usable), ...await packState(client, caseId, usable), ...patient, ...await settlementState(client, caseId, patient.authorizedPaise), records,
       queries: queries.rows.map((query) => ({ ...query, responseAckCurrent: records.find((row) => row.kind === "query-ack" && row.payload.queryReference === query.reference)?.payload.responseEventId === query.responseEventId && !!query.responseEventId })),
       canBill: branchScope(actor, "billing:write").includes(String(current.branch_id)), canDesk: branchScope(actor, "case:act").includes(String(current.branch_id)), canFinance: branchScope(actor, "finance:write").includes(String(current.branch_id)) };
   });
-}
-export async function appendFinancialRecord(client: PoolClient, actor: Actor, current: { claim_id: string; branch_id: string; version: number }, kind: string,
-  payload: unknown, key: string, hash: string, occurredAt = new Date().toISOString()): Promise<RecordResult> {
-  const recordId = randomUUID(); const version = current.version + 1; const caseId = String(current.claim_id);
-  await client.query("INSERT INTO claim_records(id,hospital_id,branch_id,claim_id,actor_user_id,kind,case_version,occurred_at,payload) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)", [recordId, actor.hospitalId, current.branch_id, caseId, actor.userId, kind, version, occurredAt, JSON.stringify(payload)]);
-  await client.query("UPDATE claims SET version=$1 WHERE claim_id=$2", [version, caseId]);
-  await client.query("INSERT INTO claim_events(event_id,hospital_id,branch_id,claim_id,actor_user_id,event_type,occurred_at,payload,idempotency_key,fingerprint,case_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)", [recordId, actor.hospitalId, current.branch_id, caseId, actor.userId, `FINANCIAL_${kind.toUpperCase().replaceAll("-", "_")}`, occurredAt, JSON.stringify({ recordId, kind }), key, hash, version]);
-  await writeAudit(client, actor, String(current.branch_id), "claims", kind.toUpperCase(), caseId, null, { recordId, version });
-  return { caseId, version, recordId, idempotent: false };
 }
 export async function applyFinancialAction(headers: Headers, caseId: string, input: unknown): Promise<RecordResult> {
   const parsed = requestSchema.safeParse(input);
