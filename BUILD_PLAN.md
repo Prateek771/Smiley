@@ -1,6 +1,8 @@
 # Smiley / Saavantus Build Tracker
 
-Updated: 1 October 2026. This is the living progress record for the repository.
+Updated: 2 October 2026. This is the living progress record for the repository.
+
+**Native database transfer:** Both databases were restored and verified against their saved data/security snapshots, and all app/test connections now use installed PostgreSQL 18.6 on port 5432. The Docker runtime, Compose configuration and container-based CI service have been replaced. 112 unit/server checks and 15 fresh migration checks pass; lint, types and production build pass. All 58 desktop/mobile checks pass, and preserved staff sign-in, queue, case details and document download work on localhost:3000. See [transfer evidence](docs/evidence/native-postgresql-transfer.md).
 
 **Current position:** Phases 0–10 are locally verified using synthetic data. Final verification: 107 unit/server checks and 15 fresh-migration checks passed with zero skips; 58 desktop/mobile browser journeys passed (3.7 minutes locally, 1.5 minutes in exact CI); lint, typecheck and production build passed; production dependency audit found zero vulnerabilities. Exact checkpoint promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md). Phases 11 onward remain planned; this checkpoint does not establish production or real-hospital readiness.
 

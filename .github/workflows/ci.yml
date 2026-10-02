@@ -17,21 +17,10 @@ concurrency:
 jobs:
   verify:
     name: Application, database, and browser checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       NEXT_TELEMETRY_DISABLED: '1'
-    services:
-      postgres:
-        image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: synthetic-ci-bootstrap-only
-          POSTGRES_DB: postgres
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s --health-timeout 5s --health-retries 12
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,10 +33,26 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Start native isolated PostgreSQL 18
+        shell: bash
+        run: |
+          if [ ! -x /usr/lib/postgresql/18/bin/initdb ]; then
+            if ! apt-cache show postgresql-18 > /dev/null 2>&1; then
+              sudo install -d /usr/share/postgresql-common/pgdg
+              sudo curl --fail --silent --show-error -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+              printf '%s\n' 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main' | sudo tee /etc/apt/sources.list.d/smiley-pgdg.list > /dev/null
+            fi
+            sudo apt-get update
+            sudo apt-get install -y postgresql-18
+          fi
+          printf '%s\n' 'synthetic-ci-bootstrap-only' > "$RUNNER_TEMP/smiley-pg-password"
+          chmod 600 "$RUNNER_TEMP/smiley-pg-password"
+          /usr/lib/postgresql/18/bin/initdb -D "$RUNNER_TEMP/smiley-pg-data" --username=postgres --pwfile="$RUNNER_TEMP/smiley-pg-password" --auth=scram-sha-256
+          /usr/lib/postgresql/18/bin/pg_ctl -D "$RUNNER_TEMP/smiley-pg-data" -l "$RUNNER_TEMP/smiley-pg.log" -o "-h 127.0.0.1 -p 55432 -k $RUNNER_TEMP" -w start
       - name: Provision isolated database roles
         run: node scripts/ci-database.mjs
         env:
-          CI_BOOTSTRAP_DATABASE_URL: postgresql://postgres:synthetic-ci-bootstrap-only@127.0.0.1:5432/postgres
+          CI_BOOTSTRAP_DATABASE_URL: postgresql://postgres:synthetic-ci-bootstrap-only@127.0.0.1:55432/postgres
       - name: Fresh foundation and additive migration regression
         run: node --import tsx --test tests/integration/database.test.ts
         env:

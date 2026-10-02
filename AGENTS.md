@@ -9,7 +9,8 @@
 Use Node.js 24+ and npm from the `dev` worktree.
 
 - `npm ci`: install locked dependencies.
-- `npm run db:start`: start the synthetic PostgreSQL runtime.
+- `npm run db:setup`: provision unused native PostgreSQL databases with an explicit private administrator connection.
+- `npm run db:start`, `npm run db:status`: start/check the native Windows service and verify restricted development/test connections.
 - `npm run db:migrate`, `npm run db:seed`, `npm run auth:seed`: prepare local schema and fictional staff; append `-- --test` for the isolated test database.
 - `npm run dev`: serve `http://localhost:3000`.
 - `npm run lint`, `npm run typecheck`, `npm run build`: verify style, route types, and production compilation.

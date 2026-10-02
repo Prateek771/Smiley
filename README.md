@@ -6,7 +6,7 @@ The protected `/desk` uses PostgreSQL. The public `/demo` walks through fixed fi
 
 ## Local development
 
-Use Node.js 24+ and Docker Desktop with Linux containers. Run from the managed `dev` worktree:
+Use Node.js 24+ and locally installed PostgreSQL 18 (17+ is supported). Docker is not required. Run from the managed `dev` worktree. For a new installation, privately set `LOCAL_POSTGRES_ADMIN_URL` to your existing loopback `postgres` administration database and run `npm run db:setup` once; see [database setup](docs/development-database.md). Migrated installations already have configuration and should not rerun seeds just to start the app.
 
 ```powershell
 npm ci
@@ -19,7 +19,7 @@ npm run dev
 
 Open `http://localhost:3000/login`. The seed command saves fictional staff credentials in ignored `tmp/synthetic-auth-sehospitaldb.json`; use `deskA` for the insurance desk, `adminA` for hospital administration, or `billingA` for a read-only case review. The other hospital and northern branch fixtures exercise isolation. Keep this credential file private and synthetic.
 
-The runtime creates ignored `.env.local` and `.env.test.local` with random local secrets and separate databases. Startup and migrations preserve existing data; domain seeds preserve registered rows. `auth:seed` reactivates known synthetic staff/grants and resets their fixture credentials. See [development-database.md](docs/development-database.md) for roles, paths, recovery, and stopping the runtime. Change `BETTER_AUTH_URL` in ignored configuration when using another origin.
+Native setup creates ignored `.env.local` and `.env.test.local` with random local secrets and separate databases, and refuses existing database/role name conflicts. Startup checks preserve existing data; domain seeds preserve registered rows. `auth:seed` reactivates known synthetic staff/grants and resets their fixture credentials. The shared Windows PostgreSQL service runs independently of Next.js. See [development-database.md](docs/development-database.md) for roles, paths and recovery. Change `BETTER_AUTH_URL` in ignored configuration when using another origin.
 
 ## Verification
 
@@ -36,7 +36,7 @@ npm run build
 
 `npm test` runs both test suites. Server tests require the explicit local `sehospitaldb_test` connections; they never reset the development database. `npm run test:e2e` retains the isolated database/fixture preparation, builds the application, then serves production on port 3210 for desktop and Pixel 7 journeys. Do not run another server on that port, or a development server, production server or build sharing the same `.next` directory during these checks.
 
-CI repeats empty-database/additive migration preservation, seeds, server tests, browser tooling, lint, types, production build, and browser journeys against an ephemeral PostgreSQL 17 service. Only the CI Browser journeys step sets `PLAYWRIGHT_SKIP_BUILD=1` to reuse its fresh preceding Build step in the same job; the runner requires `.next/BUILD_ID` and still prepares isolated fixtures. Local checks build by default. Packages are locked in `package-lock.json`; each worktree needs its own `npm ci`.
+CI repeats empty-database/additive migration preservation, seeds, server tests, browser tooling, lint, types, production build, and browser journeys against an isolated native PostgreSQL 18 cluster on port 55432. Only the CI Browser journeys step sets `PLAYWRIGHT_SKIP_BUILD=1` to reuse its fresh preceding Build step in the same job; the runner requires `.next/BUILD_ID` and still prepares isolated fixtures. Local checks build by default. Packages are locked in `package-lock.json`; each worktree needs its own `npm ci`.
 
 ## Browser inspection
 

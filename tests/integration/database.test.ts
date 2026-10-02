@@ -45,7 +45,7 @@ async function transaction(action: (client: PoolClient) => Promise<void>): Promi
   }
 }
 
-async function denied(client: PoolClient, statement: string, parameters: unknown[], code: string): Promise<void> {
+async function denied(client: PoolClient, statement: string, parameters: unknown[], code: string | readonly string[]): Promise<void> {
   await client.query("SAVEPOINT expected_denial");
   let caught: unknown;
   try {
@@ -55,7 +55,9 @@ async function denied(client: PoolClient, statement: string, parameters: unknown
   }
   await client.query("ROLLBACK TO SAVEPOINT expected_denial");
   assert.ok(caught, "Invalid database write unexpectedly succeeded");
-  assert.equal((caught as { code?: string }).code, code);
+  const actual = (caught as { code?: string }).code;
+  if (typeof code === "string") assert.equal(actual, code);
+  else assert.ok(actual && code.includes(actual), `Unexpected denial code: ${actual}`);
 }
 
 async function claim(client: PoolClient, suffix = randomUUID()): Promise<string> {
@@ -317,7 +319,10 @@ test("history is immutable, duplicate event keys fail and deleting a parent reta
     await denied(client, insert, [randomUUID(), ids.hospitals.a, ids.branches.aCentral, id, user], "23505");
     await denied(client, "UPDATE claim_events SET event_type='REWRITTEN' WHERE event_id=$1", [event], "42501");
     await denied(client, "DELETE FROM claim_events WHERE event_id=$1", [event], "42501");
-    await denied(client, "DELETE FROM claims WHERE claim_id=$1", [id], "23503");
+    // PostgreSQL 18 reports RESTRICT as 23001; PostgreSQL 17 used 23503 for this denial.
+    await denied(client, "DELETE FROM claims WHERE claim_id=$1", [id], ["23503", "23001"]);
+    assert.equal((await client.query("SELECT 1 FROM claims WHERE claim_id=$1", [id])).rowCount, 1);
+    assert.equal((await client.query("SELECT 1 FROM claim_events WHERE event_id=$1", [event])).rowCount, 1);
     const audit = await client.query("INSERT INTO audit_logs(hospital_id,user_id,module_name,action_name) VALUES($1,$2,'Synthetic','TEST') RETURNING audit_id::text AS id", [ids.hospitals.a, user]);
     await denied(client, "UPDATE audit_logs SET action_name='REWRITE' WHERE audit_id=$1", [audit.rows[0].id], "42501");
   });

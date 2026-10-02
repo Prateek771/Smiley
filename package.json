@@ -17,8 +17,9 @@
     "db:migrate": "tsx scripts/db-migrate.ts",
     "db:seed": "tsx scripts/db-seed.ts",
     "db:generate": "drizzle-kit generate",
-    "db:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-runtime.ps1 -Action start",
-    "db:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/db-runtime.ps1 -Action status",
+    "db:setup": "node scripts/db-runtime.mjs setup",
+    "db:start": "node scripts/db-runtime.mjs start",
+    "db:status": "node scripts/db-runtime.mjs status",
     "auth:seed": "tsx scripts/auth-seed.ts"
   },
   "engines": {
