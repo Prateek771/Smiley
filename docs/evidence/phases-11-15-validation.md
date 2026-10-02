@@ -8,7 +8,7 @@
 | 12 | Frozen claim packs, actual external acknowledgements and repeat-query resolution | `0ef2833` |
 | 13 | Evidenced payer decisions, Billing confirmation, patient payments/refunds/reversals | `b42975b` |
 | 14 | Immutable remittances, shared allocations, residual/partial/overpayment follow-up | `62b2726` |
-| 15 | Separate durable worker, live-context checks, bounded retries and owner recovery | Commit containing this report |
+| 15 | Separate durable worker, live-context checks, bounded retries and owner recovery | `25e3cf9` |
 
 The final Phase 15 commit also includes independent-review corrections: higher approval can reduce patient responsibility, a revised decision source invalidates downstream facts, and hard worker crashes preserve attempts/recovery across the queue's fetch-to-handler gap. Applied migration bytes were preserved; migrations 0006–0009 are additive. There are 57 public tables, with Graphile internals in its separate private schema.
 
@@ -28,4 +28,10 @@ Ponytail's Markdown core was inspected and installed for Codex at pinned upstrea
 
 Docker, Vercel agent-browser and Playwright were not invoked in this build or its CI workflow. Historical browser suites remain in the repository but were not rerun; the current proof combines Node HTTP checks and focused Codex desktop/mobile review, not equivalent exhaustive browser coverage.
 
-Rules and evidence are synthetic. Payer submissions, decisions and receipts are manually recorded facts, not provider integrations. LangGraph/model/OCR work begins at Phase 16. Real hospital validation, hosting and multi-host worker operations remain later gates. GitHub CI must pass the exact pushed checkpoint before main promotion; its run is recorded in the execution ledger below after completion.
+Rules and evidence are synthetic. Payer submissions, decisions and receipts are manually recorded facts, not provider integrations. LangGraph/model/OCR work begins at Phase 16. Real hospital validation, hosting and multi-host worker operations remain later gates.
+
+## GitHub checkpoint
+
+Application commit `25e3cf919f9bf6936732bf7377b8bc871313901f` passed [exact native GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/37009596206), including fresh/additive migrations, private queue setup, server checks, lint, types, build and production HTTP. It was fast-forwarded from `dev` to `main` without force-pushing. The managed dev worktree and local recovery refs remain preserved. This subsequent evidence-only update retains the identical application/migration/package code.
+
+The preserved development account successfully signed in on `http://localhost:3000/desk` and displayed its original four cases. The web server and separate native worker were left running for review; test review processes were stopped.
