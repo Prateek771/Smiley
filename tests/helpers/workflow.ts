@@ -33,5 +33,14 @@ export async function workflowFixture() {
     const assessment = await act("billingA", { type: "assess", billId: bill.recordId, rule: syntheticRule, policyRevisionId: sources.policy, verified: true });
     return { caseId, sources, bill, assessment, act };
   }
-  return { users, headers, newCase };
+  async function approvedCase(authorizedPaise = 8200000) {
+    const item = await newCase();
+    const occurredAt = new Date().toISOString();
+    const pack = await item.act("deskA", { type: "pack", assessmentId: item.assessment.recordId, revisionIds: Object.values(item.sources), verified: true });
+    await item.act("deskA", { type: "submission", packId: pack.recordId, reference: randomUUID(), evidenceRevisionId: item.sources.preauthorization, occurredAt });
+    const decision = await item.act("deskA", { type: "decision", packId: pack.recordId, status: "APPROVED", authorizedPaise, conditions: "", reference: randomUUID(), evidenceRevisionId: item.sources["payer-decision"], occurredAt, verified: true });
+    await item.act("billingA", { type: "confirm", decisionId: decision.recordId, patientPaise: 800000, disputePaise: 8500000 - authorizedPaise, evidenceRevisionId: item.sources.policy, reason: "Synthetic verified allocation", verified: true });
+    return { ...item, pack, decision };
+  }
+  return { users, headers, newCase, approvedCase };
 }

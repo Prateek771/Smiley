@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { FinancialCase } from "@/server/financial";
 import type { DocumentListing } from "@/server/documents";
@@ -19,12 +19,15 @@ function valueForm(event: FormEvent<HTMLFormElement>) { event.preventDefault(); 
 export function FinancialPanel({ data, documents }: { data: FinancialCase; documents: DocumentListing }) {
   const router = useRouter(); const [pending, setPending] = useState(false); const [error, setError] = useState(""); const [message, setMessage] = useState("");
   const [lines, setLines] = useState(data.bill?.payload.bill.lines ?? [{ description: "", grossPaise: 0, excludedPaise: 0, reductionPaise: 0 }]);
+  const retry = useRef<{ content: string; key: string } | null>(null);
   async function submit(action: unknown) {
     setPending(true); setError(""); setMessage("");
     try {
-      const response = await fetch(`/api/cases/${data.caseId}/financial`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: data.version, idempotencyKey: crypto.randomUUID(), action }) });
+      const content = JSON.stringify({ expectedVersion: data.version, action });
+      if (retry.current?.content !== content) retry.current = { content, key: crypto.randomUUID() };
+      const response = await fetch(`/api/cases/${data.caseId}/financial`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: data.version, idempotencyKey: retry.current.key, action }) });
       const result = await response.json(); if (!response.ok) throw new Error(result.error || "This action could not be saved.");
-      setMessage("Saved. The case history retains this reviewed version."); router.refresh();
+      retry.current = null; setMessage("Saved. The case history retains this reviewed version."); router.refresh();
     } catch (failure) { setError(failure instanceof Error ? failure.message : "The action failed. Reload and retry."); }
     finally { setPending(false); }
   }
@@ -73,6 +76,23 @@ export function FinancialPanel({ data, documents }: { data: FinancialCase; docum
         {referenceFields("Payer query resolution evidence")}<button className={styles.secondary} disabled={pending || !query.responseAckCurrent}>Record evidenced query resolution</button>
       </form></section>)}
     </div>}
+    <section className={styles.card} aria-label="Decision and patient reconciliation"><h2>Payer decision and patient reconciliation</h2><dl className={styles.facts}>
+      <div><dt>Final payer authorization</dt><dd>{formatMoney(data.authorizedPaise)}</dd></div><div><dt>Decision dispute</dt><dd>{formatMoney(data.disputePaise)}</dd></div><div><dt>Patient payments less refunds</dt><dd>{formatMoney(data.patientNetPaise)}</dd></div><div><dt>Collect from patient</dt><dd>{formatMoney(data.collectPaise)}</dd></div><div><dt>Refund still owed</dt><dd>{formatMoney(data.refundPaise)}</dd></div>
+    </dl>{data.decision && <p>{data.decision.payload.status} · {data.decision.payload.reference} {data.decision.payload.conditions}</p>}<p className={styles.muted}>Billing confirms the patient share. Payer deductions remain a dispute until explained by reviewed bill and rule evidence. An estimate is not an approval or a receipt.</p></section>
+    <div className={styles.grid}>
+      {data.canDesk && <section className={styles.card} aria-label="Record payer decision"><h2>Record payer decision</h2><form className={styles.form} onSubmit={(event) => { const form = valueForm(event); guarded(() => ({ type: "decision", packId: data.pack?.id, status: form.get("status"), authorizedPaise: paise(form.get("authorized")), conditions: form.get("conditions"), reference: form.get("reference"), evidenceRevisionId: form.get("evidence"), occurredAt: occurrence(form), verified: form.get("verified") === "on" })); }}>
+        <label className={styles.field}>Decision<select name="status"><option>APPROVED</option><option>REJECTED</option><option>CONDITIONAL</option></select></label>{amount("authorized", "Payer authorized amount")}<label className={styles.field}>Payer conditions<textarea name="conditions" maxLength={2000} /></label>{referenceFields("Payer decision evidence")}<label><input name="verified" type="checkbox" required /> I reviewed the actual payer decision.</label><button className={styles.button} disabled={pending || !data.packCurrent}>Record evidenced decision</button>
+      </form></section>}
+      {data.canBill && <section className={styles.card} aria-label="Billing confirmation"><h2>Billing confirmation</h2><form className={styles.form} onSubmit={(event) => { const form = valueForm(event); guarded(() => ({ type: "confirm", decisionId: data.decision?.id, patientPaise: paise(form.get("patient")), disputePaise: paise(form.get("dispute")), evidenceRevisionId: form.get("evidence"), reason: form.get("reason"), verified: form.get("verified") === "on" })); }}>
+        {amount("patient", "Verified patient responsibility", result?.patientPaise ?? 0)}{amount("dispute", "Unresolved payer decision dispute", Math.max((result?.insurerPaise ?? 0) - (data.authorizedPaise ?? 0), 0))}{source("evidence", "Billing allocation evidence")}<label className={styles.field}>Allocation explanation<textarea name="reason" required maxLength={2000} /></label><label><input name="verified" type="checkbox" required /> I verified the current bill, rule and final payer decision.</label><button className={styles.button} disabled={pending || data.authorizedPaise === null}>Confirm patient allocation</button>
+      </form></section>}
+      {(data.canBill || data.canFinance) && <section className={styles.card} aria-label="Record patient payment"><h2>{data.canBill ? "Record patient receipt" : "Execute patient refund"}</h2><form className={styles.form} onSubmit={(event) => { const form = valueForm(event); guarded(() => ({ type: form.get("type"), amountPaise: paise(form.get("amount")), reference: form.get("reference"), evidenceRevisionId: form.get("evidence"), occurredAt: occurrence(form), verified: form.get("verified") === "on" })); }}>
+        <label className={styles.field}>Payment action<select name="type">{data.canBill && <option value="patient-receipt">Verified receipt / deposit</option>}{data.canFinance && <option value="patient-refund">Actual refund execution</option>}</select></label>{amount("amount", "Actual amount")}{referenceFields("Patient payment evidence")}<label><input name="verified" type="checkbox" required /> I verified the actual payment evidence.</label><button className={styles.button} disabled={pending}>Record actual patient payment</button>
+      </form></section>}
+      {data.canBill && <section className={styles.card} aria-label="Reverse patient receipt"><h2>Reverse erroneous patient receipt</h2><form className={styles.form} onSubmit={(event) => { const form = valueForm(event); guarded(() => ({ type: "patient-reversal", receiptId: form.get("receipt"), reference: form.get("reference"), evidenceRevisionId: form.get("evidence"), occurredAt: occurrence(form), verified: form.get("verified") === "on" })); }}>
+        <label className={styles.field}>Original receipt<select name="receipt" required><option value="">Choose original receipt</option>{data.records.filter((row) => row.kind === "patient-receipt" && !data.records.some((reversal) => reversal.kind === "patient-reversal" && reversal.payload.receiptId === row.id)).map((row) => <option key={row.id} value={row.id}>{String(row.payload.reference)} · {formatMoney(Number(row.payload.amountPaise))}</option>)}</select></label>{referenceFields("Receipt reversal evidence")}<label><input name="verified" type="checkbox" required /> I verified the reversal evidence.</label><button className={styles.secondary} disabled={pending}>Record receipt reversal</button>
+      </form></section>}
+    </div>
     {data.records.length > 0 && <section className={styles.card} aria-label="Financial record history"><h2>Financial record history</h2><ol className={styles.timeline}>{data.records.map((record) => <li key={record.id}><strong>{({ bill: "Bill revision", assess: "Rule assessment", pack: "Reviewed claim pack", submission: "External submission acknowledged", "query-ack": "Query response acknowledged", "query-resolve": "Query resolved" } as Record<string, string>)[record.kind] ?? record.kind}</strong><p className={styles.muted}>Case version {record.caseVersion} · staff {record.actorId} · {new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }).format(new Date(record.recordedAt))} IST</p>{typeof record.payload.reference === "string" && <p>External reference: {record.payload.reference}</p>}</li>)}</ol></section>}
   </section>;
 }

@@ -6,6 +6,7 @@ import { branchScope, type Permission } from "../access/permissions";
 import { writeAudit } from "../audit";
 import { assessBill, billSchema, ruleSchema, type BillInput, type Assessment, type RuleInput } from "./rules";
 import { submissionActions, prepareSubmission, packState, type PackRecord } from "./submissions";
+import { decisionActions, prepareDecision, patientState } from "./decisions";
 
 export const caseIdSchema = z.string().regex(/^[1-9][0-9]{0,18}$/u).refine((id) => BigInt(id) <= 9223372036854775807n);
 const verified = z.literal(true);
@@ -13,12 +14,13 @@ const actionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("bill"), bill: billSchema, sourceRevisionId: z.uuid(), reductionRevisionId: z.uuid().nullable(), verified }).strict(),
   z.object({ type: z.literal("assess"), billId: z.uuid(), rule: ruleSchema.nullable(), policyRevisionId: z.uuid(), verified }).strict(),
   ...submissionActions,
+  ...decisionActions,
 ]);
 const requestSchema = z.object({ expectedVersion: z.number().int().positive().max(2147483646), idempotencyKey: z.string().min(8).max(100), action: actionSchema }).strict();
 export type FinancialRecord<T = Record<string, unknown>> = { id: string; kind: string; caseVersion: number; actorId: string; occurredAt: string; recordedAt: string; payload: T };
 type BillRecord = FinancialRecord<{ bill: BillInput; sourceRevisionId: string; reductionRevisionId: string | null }>;
 type AssessmentRecord = FinancialRecord<{ billId: string; rule: RuleInput | null; result: Assessment; policyRevisionId: string; contextFingerprint: string }>;
-export type FinancialCase = { caseId: string; version: number; bill: BillRecord | null; assessment: AssessmentRecord | null; records: FinancialRecord[];
+export type FinancialCase = Awaited<ReturnType<typeof patientState>> & { caseId: string; version: number; bill: BillRecord | null; assessment: AssessmentRecord | null; records: FinancialRecord[];
   canBill: boolean; canDesk: boolean; canFinance: boolean; patientConfirmedPaise: number | null; pack: PackRecord | null; packCurrent: boolean;
   queries: { reference: string; status: string; responseEventId: string | null; responseAckCurrent: boolean }[] };
 export type RecordResult = { caseId: string; version: number; recordId: string; idempotent: boolean };
@@ -62,7 +64,7 @@ export async function getFinancialCase(headers: Headers, caseId: string): Promis
     const current = await scopedCase(client, actor, caseId); const records = await recordsForCase(client, caseId);
     const usable = await usableRecords(client, caseId, current, records);
     const queries = await client.query(`SELECT q.external_reference AS reference,q.status,(SELECT e.event_id FROM claim_events e WHERE e.claim_id=q.claim_id AND e.event_type='QUERY_RESPONSE_PREPARED' AND e.payload->'action'->>'reference'=q.external_reference ORDER BY e.case_version DESC LIMIT 1) AS "responseEventId" FROM claim_queries q WHERE q.claim_id=$1 ORDER BY q.query_id`, [caseId]);
-    return { caseId, version: current.version, ...currentFinancial(usable), ...await packState(client, caseId, usable), records, patientConfirmedPaise: null,
+    return { caseId, version: current.version, ...currentFinancial(usable), ...await packState(client, caseId, usable), ...await patientState(client, caseId, usable), records,
       queries: queries.rows.map((query) => ({ ...query, responseAckCurrent: records.find((row) => row.kind === "query-ack" && row.payload.queryReference === query.reference)?.payload.responseEventId === query.responseEventId && !!query.responseEventId })),
       canBill: branchScope(actor, "billing:write").includes(String(current.branch_id)), canDesk: branchScope(actor, "case:act").includes(String(current.branch_id)), canFinance: branchScope(actor, "finance:write").includes(String(current.branch_id)) };
   });
@@ -80,7 +82,7 @@ export async function applyFinancialAction(headers: Headers, caseId: string, inp
   const parsed = requestSchema.safeParse(input);
   if (!caseIdSchema.safeParse(caseId).success || !parsed.success) throw new AccessError(400, "Provide a supported financial action, evidence, current version and request key.");
   const value = parsed.data; const action = value.action; const hash = fingerprint(value);
-  const permission: Permission = ["bill", "assess"].includes(action.type) ? "billing:write" : "case:act";
+  const permission: Permission = ["bill", "assess", "confirm", "patient-receipt", "patient-reversal"].includes(action.type) ? "billing:write" : action.type === "patient-refund" ? "finance:write" : "case:act";
   return withActorTransaction(headers, permission, undefined, async (client, actor) => {
     const current = await scopedCase(client, actor, caseId, true);
     if (!branchScope(actor, permission).includes(String(current.branch_id))) throw new AccessError(403, "This financial action is outside your branch permissions.");
@@ -110,8 +112,10 @@ export async function applyFinancialAction(headers: Headers, caseId: string, inp
         result = { ...result, status: "NEEDS_REVIEW", blocks: [...result.blocks, "The registered policy coverage dates do not cover this service date."], insurerPaise: null, patientPaise: null };
       }
       payload = { ...action, result, contextFingerprint: policyContext(current) };
+    } else if (["decision", "confirm", "patient-receipt", "patient-reversal", "patient-refund"].includes(action.type)) {
+      payload = await prepareDecision(client, caseId, action as Parameters<typeof prepareDecision>[2], await usableRecords(client, caseId, current, await recordsForCase(client, caseId)));
     } else {
-      payload = await prepareSubmission(client, caseId, action, await usableRecords(client, caseId, current, await recordsForCase(client, caseId)));
+      payload = await prepareSubmission(client, caseId, action as Parameters<typeof prepareSubmission>[2], await usableRecords(client, caseId, current, await recordsForCase(client, caseId)));
     }
     return appendFinancialRecord(client, actor, current, action.type, payload, value.idempotencyKey, hash, "occurredAt" in action ? action.occurredAt : undefined);
   });
