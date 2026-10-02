@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`src/app/` holds pages/APIs; `src/features/{demo,desk}/` holds previews/protected staff screens. `src/server/` contains identity, access, case, document and database services. Migrations live in `drizzle/`, checks in `tests/{unit,integration,e2e}/`, public assets in `public/`, and private synthetic files in ignored `tmp/`. `docs/` records evidence; `prototype/` and `outputs/` are historical. The separate `build-guide/` repository stays in the original checkout.
+`src/app/` holds pages/APIs; `src/features/{demo,desk}/` holds previews/protected staff screens. `src/server/` contains scoped identity, case, document, financial and database services; `src/worker/` runs persistent jobs. Migrations live in `drizzle/`, checks in `tests/{unit,integration,http}/`, assets in `public/`, and private synthetic files in ignored `tmp/`. `docs/` records evidence; `prototype/` and `outputs/` are historical. The separate `build-guide/` stays in the original checkout.
 
 ## Build, Test, and Development Commands
 
@@ -14,9 +14,9 @@ Use Node.js 24+ and npm from the `dev` worktree.
 - `npm run db:migrate`, `npm run db:seed`, `npm run auth:seed`: prepare local schema and fictional staff; append `-- --test` for the isolated test database.
 - `npm run dev`: serve `http://localhost:3000`.
 - `npm run lint`, `npm run typecheck`, `npm run build`: verify style, route types, and production compilation.
-- `npm run test:e2e`: prepare isolated fixtures, build, and serve production on port 3210 for browser checks.
-- `npm test`: run server and desktop/mobile browser checks.
-- `npm run browser -- <command>`: inspect the UI with agent-browser.
+- `npm run worker:setup`: explicitly install the pinned private queue; append `-- --test` for isolation.
+- `npm run worker`: run the persistent pack-review process separately.
+- `npm test`: run serial server/database/API checks, build and serve HTTP checks on port 3216.
 
 ## Coding Style & Naming Conventions
 
@@ -24,7 +24,7 @@ Use strict TypeScript, two-space indentation, double quotes, and semicolons. Use
 
 ## Testing Guidelines
 
-Use `*.test.ts` for unit/database checks and `*.spec.ts` for Playwright. Run suites separately when useful; no coverage threshold is established. Test tenant/branch denials, stale updates, retries and recovery. Do not share `.next` with another dev/production server or build during browser checks. CI explicitly reuses its preceding fresh build with `PLAYWRIGHT_SKIP_BUILD=1`. Keep raw screenshots/session data in ignored `tmp/`; publish reviewed synthetic evidence intentionally.
+Use `*.test.ts` for Node/database/HTTP checks; no coverage threshold is established. Test scope denials, stale inputs, exact money, retries and crash recovery. Use Codex's in-app browser for UI review; do not invoke Vercel agent-browser or Playwright. Avoid sharing `.next` with another server/build during checks. CI uses `HTTP_SKIP_BUILD=1` after its fresh build. Keep raw screenshots private in `tmp/`; publish reviewed synthetic evidence intentionally.
 
 ## Commit & Pull Request Guidelines
 
@@ -32,4 +32,4 @@ Use focused, imperative commits; Conventional Commits are not required. PRs expl
 
 ## Security & Agent Workflow
 
-Use synthetic data; never commit credentials or patient information. Enforce current staff, hospital, branch, and role checks on the server. Preserve applied migration bytes; add migrations instead of using `drizzle-kit push`. Explain substantial changes proportionately, then proceed unless blocked. Record completed phases in `BUILD_PLAN.md`. Deterministic financial rules and a separate TypeScript LangGraph worker belong to later phases; AI never grants payer approval.
+Use synthetic data; never commit credentials or patient information. Enforce current staff, hospital, branch and role checks on the server. Preserve applied migration bytes; add migrations instead of `drizzle-kit push`. Explain substantial changes proportionately, then proceed unless blocked. Record evidence in `BUILD_PLAN.md`. Keep assessments, approvals, patient confirmation, disputes and receipts separate. LangGraph/OCR belongs to Phases 16–17; AI never grants payer approval.

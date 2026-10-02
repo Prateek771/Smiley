@@ -59,6 +59,8 @@ jobs:
           NODE_ENV: test
       - name: Apply reviewed migrations
         run: npm run db:migrate
+      - name: Install pinned private queues
+        run: npm run worker:setup && npm run worker:setup -- --test
       - name: Seed fictional database records
         run: npm run db:seed
       - name: Server integration tests
@@ -69,3 +71,7 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+      - name: Production HTTP checks
+        run: npm run test:http
+        env:
+          HTTP_SKIP_BUILD: '1'

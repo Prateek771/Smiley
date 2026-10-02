@@ -4,7 +4,7 @@ Updated: 2 October 2026. This is the living progress record for the repository.
 
 **Native database transfer:** Both databases were restored and verified against their saved data/security snapshots, and all app/test connections now use installed PostgreSQL 18.6 on port 5432. The Docker runtime, Compose configuration and container-based CI service have been replaced. 112 unit/server checks and 15 fresh migration checks pass; lint, types and production build pass. All 58 desktop/mobile checks pass, and preserved staff sign-in, queue, case details and document download work on localhost:3000. See [transfer evidence](docs/evidence/native-postgresql-transfer.md).
 
-**Current position:** Phases 0–10 are locally verified using synthetic data. Final verification: 107 unit/server checks and 15 fresh-migration checks passed with zero skips; 58 desktop/mobile browser journeys passed (3.7 minutes locally, 1.5 minutes in exact CI); lint, typecheck and production build passed; production dependency audit found zero vulnerabilities. Exact checkpoint promotions are recorded in the [execution ledger](docs/evidence/phases-3-10-progress.md). Phases 11 onward remain planned; this checkpoint does not establish production or real-hospital readiness.
+**Current position:** Phases 0–15 are implemented and locally verified with synthetic data. The current checkpoint passes 133 unit/server/database/API checks, two production HTTP scenarios including sign-in throttling, lint, TypeScript and production build. Codex browser review covers the staff roles and responsive job status. See [Phases 11–15 validation](docs/evidence/phases-11-15-validation.md); GitHub CI must pass before main promotion. Earlier 58-browser-journey results are historical: Playwright and agent-browser are not invoked in this build. This checkpoint does not establish production or real-hospital readiness.
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -22,7 +22,7 @@ refs. `codex/saavantus-app` is retained as the earlier checkpoint branch.
 - PostgreSQL, database name `sehospitaldb`; Drizzle for queries and reviewed migrations.
 - The supplied **42 business/domain tables and four reporting views** are the starting inventory. Review all 42; implement their workflows incrementally.
 - Better Auth manages identities/sessions. Hospital, branch, and role authorization is enforced separately.
-- Graphile Worker and TypeScript LangGraph are planned for a separate persistent Node.js process in Phases 15–17; no background claims/AI workflow worker or AI runtime is implemented yet. Phase 10 uses bounded worker threads only for PDF validation.
+- Graphile Worker runs in a separate persistent Node.js process from Phase 15. It performs deterministic synthetic pack review with bounded retries and owner recovery. TypeScript LangGraph and model/OCR evaluation remain Phases 16–17; no AI runtime or payer integration is implemented. Phase 10's bounded PDF-validation threads remain separate.
 - Tailwind CSS and native accessible controls support the desk journey; add a component dependency only when justified.
 - Hosting, private document storage, and model/OCR providers remain undecided.
 
@@ -39,9 +39,9 @@ These decisions supersede older stack proposals in `outputs/`. The existing prot
 
 A completed phase needs its deliverable, passing checks, a short demo/review where relevant, and a recorded commit. Provider failures or missing facts should have usable fallback paths. Documentation-only work needs content/link verification rather than an application rebuild.
 
-**Existing commands:** Use Node.js 24+ and the locked dependencies. `npm run db:start`, `npm run db:migrate`, `npm run db:seed`, and `npm run auth:seed` prepare the synthetic local environment; append `-- --test` to migration/seeding commands for the isolated test database. `npm run dev` serves the app. `npm run test:integration` runs Node/tsx unit and PostgreSQL tests; `npm run test:e2e` prepares isolated fixtures, builds and serves production on port 3210 for desktop/mobile journeys; `npm test` runs both. `npm run lint`, `npm run typecheck`, and `npm run build` verify the application; `npm run start` serves the completed build. Do not share `.next` with another development/production server or build during browser checks. CI sets `PLAYWRIGHT_SKIP_BUILD=1` only to reuse its preceding fresh Build step in the same job. Use `npm run browser:install` and `npm run browser -- <command>` for exploratory synthetic browser checks. [README.md](README.md) documents setup and test isolation. Worker commands remain later.
+**Existing commands:** Use Node.js 24+ and locked dependencies. `npm run db:start` checks native PostgreSQL; `npm run db:migrate` applies reviewed migrations. `npm run worker:setup` explicitly installs the pinned private queue, and `npm run worker` starts its separate process. Append `-- --test` to migration/queue setup commands for the isolated database. Seed only fresh synthetic installations. `npm run dev` serves development; `npm run start` serves a completed build. `npm test` runs serial server/database checks, builds production and runs isolated HTTP checks on 3216. Lint, typecheck and build verify the application. Stop servers sharing `.next` before builds. Only CI uses `HTTP_SKIP_BUILD=1` after its fresh Build step. Review visible screens through Codex's browser; do not invoke Docker, agent-browser or Playwright. [README.md](README.md) documents setup and isolation.
 
-Current code areas: `src/app/` for routes/screens, `src/features/` for focused UI modules, `src/server/` for identity/access/case/document/database services, `drizzle/` for reviewed migrations, and `tests/{unit,integration,e2e}/` for checks. A separate `src/worker/` remains planned for Phase 15. Define each later phase's precise file changes when it starts.
+Current code areas: `src/app/` for routes/screens, `src/features/` for focused UI, `src/server/` for scoped services, `src/worker/` for durable background work, `drizzle/` for reviewed migrations, and `tests/{unit,integration,http}/` for active checks. Legacy `tests/e2e/` remains historical. Define each later phase's precise changes when it starts.
 
 ## Phase checklist
 
@@ -138,21 +138,23 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 11 — Add deterministic bill and rule assessment
 
 - [x] Complete Phase 11 and record evidence.
-- **Delivered:** Versioned Billing bill/assessment snapshots, exact paise arithmetic and protected native forms. 116 server checks, lint, fresh types and build pass; reviewed in Codex's browser. [Evidence](docs/evidence/phase-11-financial.md). Phases 12–15 are now being implemented continuously.
+- **Delivered:** Versioned Billing bill/assessment snapshots, exact paise arithmetic and protected native forms. [Evidence](docs/evidence/phase-11-financial.md). Final combined verification is recorded in the Phases 11–15 report.
 - **Build:** Capture/revise bill lines; apply versioned synthetic policy/tariff rules and preserve calculation snapshots, rounding choices, and line explanations.
 - **Test:** Independently expected totals, co-pay/deductibles/caps, revised bills, missing rules, conflicting dates, and rounding cases.
 - **Pass when:** Supported calculations match expected results and reproduce from their versions; uncertainty requests review instead of inventing coverage.
 
 ### Phase 12 — Prepare submissions and handle repeated queries
 
-- [ ] Complete Phase 12 and record evidence.
+- [x] Complete Phase 12 and record evidence.
+- **Delivered:** Frozen source revisions, evidenced external submission/query acknowledgement and resolution, with stale-source invalidation. [Evidence](docs/evidence/phase-12-submission.md).
 - **Build:** Assemble a versioned, staff-reviewed claim pack. Support staff-assisted external submission, actual acknowledgements, repeat queries, revised responses, and ownership.
 - **Test:** Missing evidence blocks pack readiness; changed inputs invalidate an old pack; repeated queries and duplicate acknowledgements remain traceable.
 - **Pass when:** One fictional submission/query/resubmission loop works without assuming permitted payer APIs or automatic sending.
 
 ### Phase 13 — Record payer decisions and confirm patient payable
 
-- [ ] Complete Phase 13 and record evidence.
+- [x] Complete Phase 13 and record evidence.
+- **Delivered:** Final/conditional/rejected decisions, exact Billing allocation, actual patient payments/refunds and reversals. Higher approvals can reduce liability; unexplained deductions remain disputes. [Evidence](docs/evidence/phase-13-patient.md).
 - **Build:** Record actual authorization/rejection evidence; compare estimates with payer decisions. Let Billing reconcile deposits, concessions, deductions, outstanding amounts, and refunds before confirmation.
 - **Test:** Clean approval, unexplained shortfall, disputed deduction, deposit/refund, unauthorized confirmation, and a revised bill after sign-off.
 - **Pass when:** Estimated coverage, payer approval, and staff-confirmed patient payable are separate facts; changed inputs require renewed review. An insurer shortfall never automatically becomes patient debt.
@@ -160,14 +162,16 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 14 — Reconcile settlement and remittance
 
-- [ ] Complete Phase 14 and record evidence.
+- [x] Complete Phase 14 and record evidence.
+- **Delivered:** Immutable remittances, split allocations, unmatched/partial/overpayment follow-up and reversals, protected by database constraints/RLS. [Evidence](docs/evidence/phase-14-settlement.md).
 - **Build:** Record payment evidence, split allocations, partial/short payments, reversals, and finance follow-up.
 - **Test:** A remittance covering multiple claims, unmatched amounts, duplicate imports, partial settlement, and reversals.
 - **Pass when:** Allocated plus unallocated amounts reconcile to evidence, and approved money is distinguishable from received money.
 
 ### Phase 15 — Introduce the persistent job worker
 
-- [ ] Complete Phase 15 and record evidence.
+- [x] Complete Phase 15 and record evidence.
+- **Delivered:** Separate pinned Graphile process, durable requests, current identity/input checks, bounded retries, safe local crash recovery and visible owner recovery. [Evidence](docs/evidence/phase-15-worker.md).
 - **Build:** Add Graphile Worker in a separate Node.js process, reviewed queue storage, bounded retries, duplicate protection, and job status visibility.
 - **Test:** Stop/restart the worker mid-job; repeat a job/event; submit stale or wrong-hospital context; simulate provider failure.
 - **Pass when:** Work resumes safely without duplicate consequential actions, and failed jobs have an owner/recovery path.
@@ -282,4 +286,4 @@ Phase 10 application checkpoint `d0ead55c450661f753ff1262062a3e139ee5f4d0` passe
 
 ### Post-Phase 10 review: staff workspace entry
 
-Corrected the homepage to open the protected staff workspace and added a visible staff sign-in link to the public demo. Lint, type checking, production build, and agent-browser entry-path checks passed; the visible review browser contains signed-in queue, registration, and case tabs. [Review evidence](docs/evidence/staff-workspace-entry-review.md). This is a Phase 10 usability correction; later phases remain pending.
+Corrected the homepage to open the protected staff workspace and added a visible staff sign-in link to the public demo. Lint, type checking, production build, and agent-browser entry-path checks passed at that historical checkpoint. [Review evidence](docs/evidence/staff-workspace-entry-review.md). Phases 11–15 now extend that workspace; current browser review uses Codex only.

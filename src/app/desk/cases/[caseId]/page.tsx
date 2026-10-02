@@ -9,6 +9,8 @@ import { DocumentPanel } from "@/features/desk/document-panel";
 import { CaseActions } from "@/features/desk/case-actions";
 import { FinancialPanel } from "@/features/desk/financial-panel";
 import { SettlementPanel } from "@/features/desk/settlement-panel";
+import { JobsPanel } from "@/features/desk/jobs-panel";
+import { getCaseJobs } from "@/server/jobs";
 import { getFinancialCase } from "@/server/financial";
 import styles from "@/features/desk/desk.module.css";
 
@@ -20,6 +22,7 @@ const eventLabels: Record<string, string> = {
   SOURCE_EVIDENCE_ADDED: "Source note recorded",
   FINANCIAL_BILL: "Bill revision recorded", FINANCIAL_ASSESS: "Rule assessment recorded", FINANCIAL_PACK: "Claim pack reviewed",
   FINANCIAL_SUBMISSION: "External submission acknowledged", FINANCIAL_QUERY_ACK: "Query response acknowledged", FINANCIAL_QUERY_RESOLVE: "Query resolution recorded",
+  FINANCIAL_DECISION: "Payer decision recorded", FINANCIAL_CONFIRM: "Billing allocation confirmed", FINANCIAL_PATIENT_RECEIPT: "Patient receipt recorded", FINANCIAL_PATIENT_REVERSAL: "Patient receipt reversed", FINANCIAL_PATIENT_REFUND: "Patient refund executed", REMITTANCE_RECORDED: "Remittance recorded", REMITTANCE_REVERSED: "Remittance reversed",
 };
 const indiaDate = (value: string) => new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 function historyText(payload: Record<string, unknown>): string {
@@ -35,10 +38,10 @@ function historyText(payload: Record<string, unknown>): string {
 }
 export default async function PersistedCase({ params, searchParams }: { params: Promise<{ caseId: string }>; searchParams: Promise<Search> }) {
   const [{ caseId }, search] = await Promise.all([params, searchParams]);
-  let record; let workspace; let timeline; let documents; let financial;
+  let record; let workspace; let timeline; let documents; let financial; let jobs;
   try {
     const staffHeaders = new Headers(await headers());
-    [record, workspace, timeline, documents, financial] = await Promise.all([getCase(staffHeaders, caseId), getDeskData(staffHeaders), getCaseTimeline(staffHeaders, caseId), listDocuments(staffHeaders, caseId), getFinancialCase(staffHeaders, caseId)]);
+    [record, workspace, timeline, documents, financial, jobs] = await Promise.all([getCase(staffHeaders, caseId), getDeskData(staffHeaders), getCaseTimeline(staffHeaders, caseId), listDocuments(staffHeaders, caseId), getFinancialCase(staffHeaders, caseId), getCaseJobs(staffHeaders, caseId)]);
   }
   catch (error) {
     if (error instanceof AuthError && error.status === 401) redirect("/login");
@@ -64,5 +67,6 @@ export default async function PersistedCase({ params, searchParams }: { params: 
     <DocumentPanel listing={documents} canUpload={record.status !== "CANCELLED" && workspace.branches.some((branch) => branch.id === record.branchId && branch.canUpload)} />
     <FinancialPanel key={financial.version} data={financial} documents={documents} />
     <SettlementPanel key={`settlement-${financial.version}`} data={financial} documents={documents} cases={workspace.cases.filter((item) => item.branchId === record.branchId).map((item) => ({ id: item.id, claimNo: item.claimNo }))} />
+    <JobsPanel caseId={caseId} version={financial.version} packId={financial.packCurrent ? financial.pack?.id : undefined} canRequest={financial.canDesk} ownerId={workspace.actor.userId} jobs={jobs} />
   </>;
 }

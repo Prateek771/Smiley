@@ -33,13 +33,16 @@ export async function requireRevision(client: PoolClient, caseId: string, revisi
   return revision.rows[0];
 }
 export const policyContext = (current: Record<string, unknown>) => fingerprint([current.patient_insurance_id, current.policy_id, current.valid_from, current.valid_to]);
+export async function revisionCurrent(client: PoolClient, caseId: string, revisionId: string) {
+  const latest = await client.query("SELECT revision_id FROM document_revisions WHERE claim_id=$1 AND claim_document_id=(SELECT claim_document_id FROM document_revisions WHERE revision_id=$2) ORDER BY revision_number DESC LIMIT 1", [caseId, revisionId]);
+  return latest.rows[0]?.revision_id === revisionId;
+}
 export async function usableRecords(client: PoolClient, caseId: string, current: Record<string, unknown>, records: FinancialRecord[]) {
   const { bill, assessment } = currentFinancial(records);
   let valid = !!assessment && assessment.payload.contextFingerprint === policyContext(current);
   if (valid && bill && assessment) {
     for (const id of [bill.payload.sourceRevisionId, assessment.payload.policyRevisionId, ...(bill.payload.reductionRevisionId ? [bill.payload.reductionRevisionId] : [])]) {
-      const latest = await client.query("SELECT revision_id FROM document_revisions WHERE claim_id=$1 AND claim_document_id=(SELECT claim_document_id FROM document_revisions WHERE revision_id=$2) ORDER BY revision_number DESC LIMIT 1", [caseId, id]);
-      if (latest.rows[0]?.revision_id !== id) { valid = false; break; }
+      if (!await revisionCurrent(client, caseId, id)) { valid = false; break; }
     }
   }
   return valid ? records : records.filter((row) => row.kind !== "assess");

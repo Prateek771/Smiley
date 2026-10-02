@@ -57,6 +57,20 @@
       "when": 1790942042698,
       "tag": "0007_remittances",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790942689854,
+      "tag": "0008_worker_jobs",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790943482984,
+      "tag": "0009_worker_crash_recovery",
+      "breakpoints": true
     }
   ]
 }

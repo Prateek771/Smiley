@@ -9,11 +9,16 @@ export type Actor = StaffSession;
 export async function withActorTransaction<T>(headers: Headers, permission: Permission, branchId: string | undefined,
   operation: (client: PoolClient, actor: Actor) => Promise<T>): Promise<T> {
   const authenticated = await requireStaffSession(headers);
+  return withIdentityTransaction(authenticated.authUserId, permission, branchId, operation);
+}
+// Background work must rehydrate current grants; persisted sessions or role snapshots are never trusted.
+export async function withIdentityTransaction<T>(authUserId: string, permission: Permission, branchId: string | undefined,
+  operation: (client: PoolClient, actor: Actor) => Promise<T>): Promise<T> {
   const client = await appPool.connect();
   try {
     await client.query("BEGIN");
-    await setIdentityContext(client, authenticated.authUserId);
-    const actor = await lookupStaff(client, authenticated.authUserId);
+    await setIdentityContext(client, authUserId);
+    const actor = await lookupStaff(client, authUserId);
     if (!actor) throw new AccessError(401, "Your staff access is no longer active.");
     const readable = branchScope(actor, "case:read");
     const permitted = branchScope(actor, permission);

@@ -1,70 +1,49 @@
-# Saavantus Hospital Claims Desk
+# Smiley Hospital Claims Desk
 
-Smiley's local synthetic cashless-claims workspace for hospital staff. Phases 0–10 provide login, hospital/branch/role isolation, patient and insurance registration, persisted cases, controlled preparation actions, immutable history, and private document revisions.
+Synthetic cashless discharge workspace for hospital insurance Desk, Billing and Finance staff. Phases 0–15 cover sign-in, scoped registration/cases, private documents, bill assessments, reviewed claim packs, manual submission/query acknowledgements, payer decisions, patient reconciliation, remittances and persistent background review.
 
-The protected `/desk` uses PostgreSQL. The public `/demo` walks through fixed fictional checkpoints; its role controls are previews. Financial assessment, payer submissions/authorization, bank settlement, and AI extraction are later phases in [BUILD_PLAN.md](BUILD_PLAN.md).
+The protected `/desk` uses native PostgreSQL. `/demo` shows fixed fictional examples. Actual payer integrations, OCR and TypeScript LangGraph begin in later phases of [BUILD_PLAN.md](BUILD_PLAN.md). AI never grants payer approval.
 
 ## Local development
 
-Use Node.js 24+ and locally installed PostgreSQL 18 (17+ is supported). Docker is not required. Run from the managed `dev` worktree. For a new installation, privately set `LOCAL_POSTGRES_ADMIN_URL` to your existing loopback `postgres` administration database and run `npm run db:setup` once; see [database setup](docs/development-database.md). Migrated installations already have configuration and should not rerun seeds just to start the app.
+Use Node.js 24+ and native PostgreSQL 18 (17+ supported) from the managed `dev` worktree. Existing installations retain their ignored environment files, staff accounts and private documents. A new installation requires an explicit private `LOCAL_POSTGRES_ADMIN_URL`; run `npm run db:setup` once. See [database setup](docs/development-database.md).
 
 ```powershell
 npm ci
 npm run db:start
 npm run db:migrate
-npm run db:seed
-npm run auth:seed
+npm run worker:setup
 npm run dev
 ```
 
-Open `http://localhost:3000/login`. The seed command saves fictional staff credentials in ignored `tmp/synthetic-auth-sehospitaldb.json`; use `deskA` for the insurance desk, `adminA` for hospital administration, or `billingA` for a read-only case review. The other hospital and northern branch fixtures exercise isolation. Keep this credential file private and synthetic.
+In a separate terminal, run `npm run worker`. Open `http://localhost:3000/login`. The worker is a persistent Node process, independent of the web server. Queue installation is explicit; the runtime uses Graphile's `runTaskList` without automatic schema migrations. No Docker runtime is used.
 
-Native setup creates ignored `.env.local` and `.env.test.local` with random local secrets and separate databases, and refuses existing database/role name conflicts. Startup checks preserve existing data; domain seeds preserve registered rows. `auth:seed` reactivates known synthetic staff/grants and resets their fixture credentials. The shared Windows PostgreSQL service runs independently of Next.js. See [development-database.md](docs/development-database.md) for roles, paths and recovery. Change `BETTER_AUTH_URL` in ignored configuration when using another origin.
+For a fresh synthetic installation only, run `npm run db:seed` and `npm run auth:seed`. These save fictional accounts in ignored `tmp/synthetic-auth-sehospitaldb.json`: `deskA` prepares cases and records payer evidence; `billingA` assesses bills and confirms patient liability; `financeA` records remittances/refunds; `adminA` manages hospital access. Do not rerun auth seeds merely to start an existing installation: they reset fixture credentials/grants. Never publish credentials or identifiable patient data.
 
 ## Verification
 
 ```powershell
 npm run db:migrate -- --test
-npm run db:seed -- --test
-npx playwright install chromium
-npm run test:integration
-npm run test:e2e
+npm run worker:setup -- --test
+npm test
 npm run lint
 npm run typecheck
-npm run build
 ```
 
-`npm test` runs both test suites. Server tests require the explicit local `sehospitaldb_test` connections; they never reset the development database. `npm run test:e2e` retains the isolated database/fixture preparation, builds the application, then serves production on port 3210 for desktop and Pixel 7 journeys. Do not run another server on that port, or a development server, production server or build sharing the same `.next` directory during these checks.
+`npm test` runs serial Node unit/database/API checks, builds production, then serves an isolated HTTP review on port 3216. Test fixtures require explicit `_test` connections and preserve development data. `npm run test:integration` runs server checks alone; `npm run test:http` runs production HTTP checks. Stop any server sharing `.next` before a build or HTTP suite.
 
-CI repeats empty-database/additive migration preservation, seeds, server tests, browser tooling, lint, types, production build, and browser journeys against an isolated native PostgreSQL 18 cluster on port 55432. Only the CI Browser journeys step sets `PLAYWRIGHT_SKIP_BUILD=1` to reuse its fresh preceding Build step in the same job; the runner requires `.next/BUILD_ID` and still prepares isolated fixtures. Local checks build by default. Packages are locked in `package-lock.json`; each worktree needs its own `npm ci`.
+CI provisions native PostgreSQL 18 on port 55432, tests fresh/additive migration preservation, installs the pinned private queue, runs server checks, lint/types/build, then production HTTP checks. Only CI sets `HTTP_SKIP_BUILD=1` after its fresh build. Visible UI review uses Codex's in-app browser. Vercel agent-browser and Playwright are retained as historical tooling and are not invoked for this build or CI.
 
-## Browser inspection
+## Architecture and boundaries
 
-[agent-browser](https://github.com/vercel-labs/agent-browser) is pinned locally. With the app running, use a separate synthetic session:
+`src/app/` contains pages/APIs; `src/features/desk/` contains staff forms; `src/server/` contains scoped services; `src/worker/` runs durable pack review. Drizzle migrations preserve the 42 domain tables and four reporting views, adding justified identity/evidence/financial/job tables (57 public tables total). Current hospital, branch, staff and role checks plus forced RLS protect access. See [access model](docs/access-model.md).
 
-```powershell
-npm run browser:install
-New-Item -ItemType Directory -Force tmp/browser | Out-Null
-npm run browser -- --session smiley-local open http://localhost:3000
-npm run browser -- --session smiley-local snapshot
-npm run browser -- --session smiley-local screenshot tmp/browser/desktop.png
-npm run browser -- --session smiley-local set viewport 390 844
-npm run browser -- --session smiley-local errors
-npm run browser -- --session smiley-local close
-```
+Amounts use exact safe integer paise and fictional `SYN-DISCHARGE-1` rules. Estimates, final authorization, confirmed patient responsibility, decision disputes and actual receipts are separately named. Changed bill, policy, assessment or pinned evidence invalidates dependent current facts while immutable history remains visible. Higher approvals can reduce patient liability; unexplained payer deductions cannot silently increase it.
 
-Use current snapshot references for clicks and fills. Raw screenshots and session state belong in ignored `tmp/browser/`. Copy reviewed synthetic evidence into `docs/evidence/` intentionally. Playwright Test provides regression assertions; the optional Playwright MCP server is unnecessary for this scope.
+Private documents remain outside public/build directories. Manual source evidence is not OCR verification. Persistent jobs recheck current staff ownership and inputs, deduplicate completion, and stop after three attempts. Startup safely unlocks only workers on the same host whose recorded PID is proven absent; live/reused PIDs and permission denials are never treated as stopped. Other-host crashes use Graphile's stale-lock recovery and need operational procedures before deployment. Failed/stale/denied requests retain owner recovery history.
 
-## Architecture and current limits
-
-Next.js App Router pages/APIs are under `src/app/`, feature screens under `src/features/`, and scoped server services under `src/server/`. PostgreSQL/Drizzle preserve the 42 domain tables and four reporting views, with 10 internal identity/evidence tables. Better Auth handles identity; current hospital, branch, and role grants control operations. [access-model.md](docs/access-model.md) documents those boundaries.
-
-Private files live outside public assets in ignored local storage. Downloads recheck current staff access and file integrity; originals and source notes remain tied to exact revisions. The 5 MiB limit, supported formats, rollback cleanup, and local-host assumptions are recorded in Phase 10 evidence. PDF parsing uses a bounded local worker; keep `src/server/documents/pdf-validation-worker.mjs` and pinned dependencies available when serving the build. Standalone/cloud packaging, cloud storage, production backups, OCR/model providers, and hosting remain later decisions. Do not use identifiable patient data in this local build.
-
-Amounts remain unknown until deterministic assessment and actual payer evidence are implemented. A locally prepared query response is never shown as payer acknowledgement. Graphile Worker and TypeScript LangGraph run in a separate persistent worker in later phases.
+Hosting, cloud storage, real hospital rules and model/OCR providers remain unselected. Synthetic success does not establish production readiness.
 
 ## Repository workflow
 
-The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley). Work on `dev`; promote an exact tested checkpoint to `main` after GitHub checks pass. Preserve existing changes and local recovery refs; never force-push or publish backup refs. Track completed phases and evidence in [BUILD_PLAN.md](BUILD_PLAN.md) and the [execution ledger](docs/evidence/phases-3-10-progress.md).
-
-`prototype/` and `outputs/` are historical references. The earlier `build-guide/` has its own repository in the original project folder and is excluded from this application. Scratch files, credentials, and private documents are excluded from Git.
+The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley). Develop on `dev`, promote tested checkpoints to `main` after CI, and preserve local recovery refs. Never force-push or publish private backups. [BUILD_PLAN.md](BUILD_PLAN.md) and [phase evidence](docs/evidence/) track progress. `prototype/` and `outputs/` are historical; the separate `build-guide/` remains in the original checkout.

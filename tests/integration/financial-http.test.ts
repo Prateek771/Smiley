@@ -1,0 +1,28 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { after, before, test } from "node:test";
+import { closePools } from "../../src/server/db/client";
+import { GET, POST } from "../../src/app/api/cases/[caseId]/financial/route";
+import { POST as remittancePOST } from "../../src/app/api/remittances/route";
+import { POST as jobPOST } from "../../src/app/api/cases/[caseId]/jobs/route";
+import { workflowFixture, syntheticBill } from "../helpers/workflow";
+let fixture: Awaited<ReturnType<typeof workflowFixture>>;
+before(async () => { fixture = await workflowFixture(); }); after(closePools);
+test("financial HTTP boundaries enforce sessions, origin, size, JSON and active roles", async () => {
+  const item = await fixture.approvedCase(); const context = { params: Promise.resolve({ caseId: item.caseId }) }; const url = `${process.env.BETTER_AUTH_URL}/api/cases/${item.caseId}/financial`;
+  assert.equal((await GET(new Request(url), context)).status, 401);
+  assert.equal((await GET(new Request(url, { headers: fixture.headers.deskB }), context)).status, 404);
+  const headers = new Headers(fixture.headers.deskA); headers.set("content-type", "application/json");
+  assert.equal((await POST(new Request(url, { method: "POST", headers, body: "{}" }), context)).status, 403);
+  headers.set("origin", new URL(process.env.BETTER_AUTH_URL!).origin);
+  assert.equal((await POST(new Request(url, { method: "POST", headers, body: "{" }), context)).status, 400);
+  assert.equal((await POST(new Request(url, { method: "POST", headers, body: " ".repeat(65537) }), context)).status, 413);
+  const snapshot = await GET(new Request(url, { headers }), context); assert.equal(snapshot.status, 200); assert.equal(snapshot.headers.get("cache-control"), "no-store");
+  const detail = await snapshot.json(); assert.equal(detail.patientConfirmedPaise, 800000);
+  const request = { expectedVersion: detail.version, idempotencyKey: randomUUID(), action: { type: "bill", bill: syntheticBill, sourceRevisionId: item.sources["final-bill"], reductionRevisionId: item.sources["approved-hospital-reduction"], verified: true } };
+  assert.equal((await POST(new Request(url, { method: "POST", headers, body: JSON.stringify(request) }), context)).status, 403);
+  assert.equal((await remittancePOST(new Request(`${process.env.BETTER_AUTH_URL}/api/remittances`, { method: "POST", headers, body: JSON.stringify({ type: "unsupported", data: {} }) }))).status, 400);
+  assert.equal((await jobPOST(new Request(`${url}/jobs`, { method: "POST", headers, body: JSON.stringify({ expectedVersion: detail.version - 1, packId: item.pack.recordId, idempotencyKey: randomUUID() }) }), context)).status, 409);
+  const billingHeaders = new Headers(fixture.headers.billingA); billingHeaders.set("origin", new URL(process.env.BETTER_AUTH_URL!).origin); billingHeaders.set("content-type", "application/json");
+  assert.equal((await jobPOST(new Request(`${url}/jobs`, { method: "POST", headers: billingHeaders, body: JSON.stringify({ expectedVersion: detail.version, packId: item.pack.recordId, idempotencyKey: randomUUID() }) }), context)).status, 403);
+});

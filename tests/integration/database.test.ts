@@ -130,7 +130,7 @@ test("migrations and synthetic seeds are idempotent without resetting rows", asy
 test("all source tables, enums, eight indexes and four invoker views exist", async () => {
   const inventory = JSON.parse(await readFile(path.join(process.cwd(), "docs/schema/domain-inventory.json"), "utf8"));
   const tables = await migrationPool.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'");
-  assert.equal(tables.rowCount, 56);
+  assert.equal(tables.rowCount, 57);
   assert.ok(tables.rows.some((row) => row.table_name === "claim_records"));
   for (const table of inventory.tables) {
     assert.ok(tables.rows.some((row) => row.table_name === table.name), `Missing source table ${table.name}`);

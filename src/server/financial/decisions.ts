@@ -1,7 +1,7 @@
 import type { PoolClient } from "pg";
 import { z } from "zod";
 import { AccessError } from "../access";
-import { currentFinancial, requireRevision, type FinancialRecord } from "./records";
+import { currentFinancial, requireRevision, revisionCurrent, type FinancialRecord } from "./records";
 import { packState } from "./submissions";
 import { money, sumPaise } from "./rules";
 const receipt = { reference: z.string().trim().min(1).max(150), evidenceRevisionId: z.uuid(), occurredAt: z.iso.datetime({ offset: true }).refine((value) => new Date(value).getTime() <= Date.now() + 300000), verified: z.literal(true) };
@@ -24,7 +24,7 @@ export function netPatientReceipts(records: FinancialRecord[]) {
 export async function patientState(client: PoolClient, caseId: string, records: FinancialRecord[]) {
   const { bill, assessment } = currentFinancial(records); const state = await packState(client, caseId, records);
   const candidate = records.find((row) => row.kind === "decision") as DecisionRecord | undefined;
-  const decision = state.packCurrent && candidate?.payload.packId === state.pack?.id ? candidate : null;
+  const decision = candidate && state.packCurrent && candidate.payload.packId === state.pack?.id && await revisionCurrent(client, caseId, candidate.payload.evidenceRevisionId) ? candidate : null;
   const confirmation = records.find((row) => row.kind === "confirm") as ConfirmationRecord | undefined;
   const current = !!confirmation && !!decision && decision.payload.status !== "CONDITIONAL" && confirmation.payload.decisionId === decision.id && confirmation.payload.billId === bill?.id && confirmation.payload.assessmentId === assessment?.id;
   const patientConfirmedPaise = current ? confirmation!.payload.patientPaise : null;
@@ -46,7 +46,8 @@ export async function prepareDecision(client: PoolClient, caseId: string, action
   if (action.type === "confirm") {
     if (!bill || !assessment || !state.decision || state.decision.id !== action.decisionId || state.decision.payload.status === "CONDITIONAL") throw new AccessError(409, "A current final payer decision is required for Billing confirmation.");
     const result = assessment.payload.result;
-    if (action.patientPaise !== result.patientPaise || sumPaise([state.decision.payload.authorizedPaise, action.patientPaise, action.disputePaise, result.reductionPaise]) !== result.grossPaise) throw new AccessError(400, "Keep the verified patient estimate; record unexplained payer deductions as a decision dispute. All allocations must equal the bill.");
+    const allocated = BigInt(state.decision.payload.authorizedPaise) + BigInt(action.patientPaise) + BigInt(action.disputePaise) + BigInt(result.reductionPaise);
+    if (result.patientPaise === null || action.patientPaise > result.patientPaise || allocated !== BigInt(result.grossPaise)) throw new AccessError(400, "Patient liability may decrease with evidenced approval. Record unexplained payer deductions as a decision dispute; all allocations must equal the bill.");
     return { ...action, billId: bill.id, assessmentId: assessment.id };
   }
   if (action.type === "patient-receipt") { sumPaise([state.patientNetPaise, action.amountPaise]); return action; }

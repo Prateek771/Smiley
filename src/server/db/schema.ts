@@ -1284,3 +1284,15 @@ export const remittanceReversals = pgTable("remittance_reversals", {
   foreignKey({ name: "fk_reversal_evidence", columns: [t.hospitalId, t.branchId, t.evidenceCaseId, t.evidenceRevisionId], foreignColumns: [documentRevisions.hospitalId, documentRevisions.branchId, documentRevisions.claimId, documentRevisions.revisionId] }).onDelete("restrict"),
   foreignKey({ name: "fk_reversal_actor", columns: [t.hospitalId, t.actorUserId], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
 ]);
+
+export const caseJobs = pgTable("case_jobs", {
+  id: uuid("id").primaryKey(), hospitalId: bigint("hospital_id", { mode: "bigint" }).notNull(), branchId: bigint("branch_id", { mode: "bigint" }).notNull(), claimId: bigint("claim_id", { mode: "bigint" }).notNull(),
+  actorUserId: bigint("actor_user_id", { mode: "bigint" }).notNull(), authOwnerId: text("auth_owner_id").notNull(), packId: uuid("pack_id").notNull(), inputVersion: integer("input_version").notNull(), inputFingerprint: text("input_fingerprint").notNull(), requestFingerprint: text("request_fingerprint").notNull(), idempotencyKey: text("idempotency_key").notNull(),
+  retryOf: uuid("retry_of"), status: text("status").notNull().default("QUEUED"), attempts: integer("attempts").notNull().default(0), reason: text("reason"), result: jsonb("result"), workerPid: integer("worker_pid"), workerHost: text("worker_host"), queueWorkerId: text("queue_worker_id"), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(), updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [unique("uq_case_job_scope").on(t.hospitalId, t.branchId, t.claimId, t.id), unique("uq_case_job_key").on(t.hospitalId, t.claimId, t.idempotencyKey),
+  check("ck_job_status", sql`${t.status} IN ('QUEUED','RUNNING','RETRYING','COMPLETE','FAILED','STALE','DENIED')`), check("ck_job_attempts", sql`${t.attempts} BETWEEN 0 AND 3`), check("ck_job_version", sql`${t.inputVersion} > 0`),
+  index("ix_case_job_claim").on(t.hospitalId, t.branchId, t.claimId), index("ix_case_job_actor").on(t.hospitalId, t.actorUserId), index("ix_case_job_retry").on(t.retryOf),
+  foreignKey({ name: "fk_case_job_pack", columns: [t.hospitalId, t.branchId, t.claimId, t.packId], foreignColumns: [claimRecords.hospitalId, claimRecords.branchId, claimRecords.claimId, claimRecords.id] }).onDelete("restrict"),
+  foreignKey({ name: "fk_case_job_actor", columns: [t.hospitalId, t.actorUserId], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
+  foreignKey({ name: "fk_case_job_auth", columns: [t.authOwnerId], foreignColumns: [authUser.id] }).onDelete("restrict"),
+]);

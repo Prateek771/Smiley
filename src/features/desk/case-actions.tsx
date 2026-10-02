@@ -40,7 +40,7 @@ export function CaseActions(props: Props) {
       <label className={styles.field}>Next action<textarea name="nextAction" defaultValue={props.nextAction ?? ""} maxLength={2000} required /></label>
       <label className={styles.field}>Due date and time (IST)<input name="dueAt" type="datetime-local" defaultValue={props.dueAt ? new Date(new Date(props.dueAt).getTime() + 330 * 60000).toISOString().slice(0, 16) : ""} /></label>
       <button className={styles.button} disabled={pending}>Save preparation</button></form></section>
-    <section aria-label="Preparation status" className={styles.card}><h2>Preparation status</h2><p className={styles.muted}>Payer decisions and bank receipts are recorded in later phases.</p><form className={styles.form} onSubmit={(event) => {
+    <section aria-label="Preparation status" className={styles.card}><h2>Preparation status</h2><p className={styles.muted}>Use the financial and settlement sections below to record evidenced payer decisions and receipts.</p><form className={styles.form} onSubmit={(event) => {
       const values = form(event); const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement;
       void execute({ type: "status", status: submitter.value as "PENDING" | "IN_PROGRESS" | "CANCELLED", reason: String(values.get("reason")) });
     }}><label className={styles.field}>Reason for status change<textarea name="reason" required maxLength={2000} /></label>

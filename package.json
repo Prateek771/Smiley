@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "browser": "agent-browser",
     "browser:install": "agent-browser install",
-    "test": "npm run test:integration",
+    "test": "npm run test:integration && npm run test:http",
+    "test:http": "node scripts/run-http-tests.mjs",
     "test:integration": "node scripts/run-tests.mjs",
     "test:e2e": "node --import tsx scripts/run-e2e.mjs test",
     "test:e2e:ui": "node --import tsx scripts/run-e2e.mjs test --ui",
@@ -20,7 +21,9 @@
     "db:setup": "node scripts/db-runtime.mjs setup",
     "db:start": "node scripts/db-runtime.mjs start",
     "db:status": "node scripts/db-runtime.mjs status",
-    "auth:seed": "tsx scripts/auth-seed.ts"
+    "auth:seed": "tsx scripts/auth-seed.ts",
+    "worker:setup": "tsx scripts/worker-setup.ts",
+    "worker": "tsx src/worker/index.ts"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -28,6 +31,7 @@
   "dependencies": {
     "better-auth": "1.7.7",
     "drizzle-orm": "0.45.3",
+    "graphile-worker": "0.18.0",
     "next": "16.3.8",
     "pdf-lib": "1.17.1",
     "pg": "8.23.1",

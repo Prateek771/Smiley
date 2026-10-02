@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { before, after, test } from "node:test";
 import { closePools } from "../../src/server/db/client";
 import { getFinancialCase } from "../../src/server/financial";
-import { workflowFixture, syntheticBill } from "../helpers/workflow";
+import { workflowFixture, syntheticBill, syntheticRule } from "../helpers/workflow";
+import { uploadDocument } from "../../src/server/documents";
 let fixture: Awaited<ReturnType<typeof workflowFixture>>;
 before(async () => { fixture = await workflowFixture(); }); after(closePools);
 const occurredAt = "2026-10-02T10:00:00+05:30";
@@ -43,4 +44,35 @@ test("conditional decisions block sign-off; actual refunds and reversals cannot 
   await item.act("financeA", refund);
   assert.equal((await getFinancialCase(fixture.headers.financeA, item.caseId)).refundPaise, 0);
   await assert.rejects(item.act("billingA", { type: "patient-reversal", receiptId: receipt.recordId, reference: "REV", evidenceRevisionId: item.sources["patient-payment"], occurredAt, verified: true }), { status: 400 });
+});
+
+test("a higher final payer approval reduces the patient amount through evidenced Billing confirmation", async () => {
+  const item = await submitted();
+  const decision = await item.act("deskA", { type: "decision", packId: item.pack.recordId, status: "APPROVED", authorizedPaise: 9000000, conditions: "", reference: randomUUID(), evidenceRevisionId: item.sources["payer-decision"], occurredAt, verified: true });
+  await item.act("billingA", { type: "confirm", decisionId: decision.recordId, patientPaise: 300000, disputePaise: 0, evidenceRevisionId: item.sources["payer-decision"], reason: "The higher actual approval reduces the verified patient obligation", verified: true });
+  assert.equal((await getFinancialCase(fixture.headers.billingA, item.caseId)).patientConfirmedPaise, 300000);
+});
+
+test("revised decision evidence invalidates its current sign-off even when it was added after the pack", async () => {
+  const item = await fixture.newCase();
+  const pack = await item.act("deskA", { type: "pack", assessmentId: item.assessment.recordId, revisionIds: ["policy", "preauthorization", "final-bill", "discharge-summary", "approved-hospital-reduction"].map((purpose) => item.sources[purpose]), verified: true });
+  await item.act("deskA", { type: "submission", packId: pack.recordId, reference: randomUUID(), evidenceRevisionId: item.sources.preauthorization, occurredAt });
+  const decision = await item.act("deskA", { type: "decision", packId: pack.recordId, status: "APPROVED", authorizedPaise: 8500000, conditions: "", reference: randomUUID(), evidenceRevisionId: item.sources["payer-decision"], occurredAt, verified: true });
+  await item.act("billingA", { type: "confirm", decisionId: decision.recordId, patientPaise: 800000, disputePaise: 0, evidenceRevisionId: item.sources.policy, reason: "Verified actual decision", verified: true });
+  const { listDocuments } = await import("../../src/server/documents"); const listing = await listDocuments(fixture.headers.deskA, item.caseId);
+  const original = listing.revisions.find((row) => row.id === item.sources["payer-decision"])!;
+  await uploadDocument(fixture.headers.deskA, item.caseId, { bytes: Buffer.from("Fictional corrected payer decision"), name: "corrected-decision.txt", mimeType: "text/plain", documentType: "payer-decision", documentId: original.documentId, idempotencyKey: randomUUID() });
+  const current = await getFinancialCase(fixture.headers.billingA, item.caseId); assert.equal(current.patientConfirmedPaise, null); assert.equal(current.authorizedPaise, null);
+});
+
+test("verified patient responsibility1300000 with deposit2000000 owes700000 refund", async () => {
+  const item = await fixture.newCase();
+  const bill = await item.act("billingA", { type: "bill", bill: { ...syntheticBill, lines: [{ ...syntheticBill.lines[0], excludedPaise: 1300000 }] }, sourceRevisionId: item.sources["final-bill"], reductionRevisionId: item.sources["approved-hospital-reduction"], verified: true });
+  const assessed = await item.act("billingA", { type: "assess", billId: bill.recordId, rule: syntheticRule, policyRevisionId: item.sources.policy, verified: true });
+  const pack = await item.act("deskA", { type: "pack", assessmentId: assessed.recordId, revisionIds: Object.values(item.sources), verified: true });
+  await item.act("deskA", { type: "submission", packId: pack.recordId, reference: randomUUID(), evidenceRevisionId: item.sources.preauthorization, occurredAt });
+  const decision = await item.act("deskA", { type: "decision", packId: pack.recordId, status: "APPROVED", authorizedPaise: 8000000, conditions: "", reference: randomUUID(), evidenceRevisionId: item.sources["payer-decision"], occurredAt, verified: true });
+  await item.act("billingA", { type: "confirm", decisionId: decision.recordId, patientPaise: 1300000, disputePaise: 0, evidenceRevisionId: item.sources.policy, reason: "Reviewed patient exclusions", verified: true });
+  await item.act("billingA", { type: "patient-receipt", amountPaise: 2000000, reference: randomUUID(), evidenceRevisionId: item.sources["patient-payment"], occurredAt, verified: true });
+  assert.equal((await getFinancialCase(fixture.headers.financeA, item.caseId)).refundPaise, 700000);
 });
