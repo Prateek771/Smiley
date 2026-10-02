@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, check, date, foreignKey, index, integer, jsonb, numeric, pgTable, primaryKey, text, timestamp, unique, varchar } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, date, foreignKey, index, integer, jsonb, numeric, pgTable, primaryKey, text, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { authUser } from "./auth-schema";
 
 // Exact source money is NUMERIC INR rupees (driver strings); IDs remain bigint.
@@ -1148,6 +1148,27 @@ export const staffInvitations = pgTable("staff_invitations", {
   foreignKey({ name: "fk_invitation_created_by", columns: [table.hospitalId, table.createdBy], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
   foreignKey({ name: "fk_invitation_accepted_user_id", columns: [table.hospitalId, table.acceptedUserId], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
   foreignKey({ name: "fk_invitation_role", columns: [table.roleId], foreignColumns: [roles.roleId] }).onDelete("restrict"),
+]);
+
+export const claimRecords = pgTable("claim_records", {
+  id: uuid("id").primaryKey(),
+  hospitalId: bigint("hospital_id", { mode: "bigint" }).notNull(),
+  branchId: bigint("branch_id", { mode: "bigint" }).notNull(),
+  claimId: bigint("claim_id", { mode: "bigint" }).notNull(),
+  actorUserId: bigint("actor_user_id", { mode: "bigint" }).notNull(),
+  kind: text("kind").notNull(),
+  caseVersion: integer("case_version").notNull(),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+  payload: jsonb("payload").notNull(),
+}, (table) => [
+  unique("uq_claim_record_scope").on(table.hospitalId, table.branchId, table.claimId, table.id),
+  index("ix_claim_records_scope").on(table.hospitalId, table.branchId, table.claimId, table.caseVersion),
+  check("ck_claim_records_version", sql`${table.caseVersion} > 0`),
+  check("ck_claim_records_payload", sql`jsonb_typeof(${table.payload})='object'`),
+  check("ck_claim_records_kind", sql`${table.kind} IN ('bill','assess','pack','submission','query-ack','query-resolve','decision','confirm','patient-receipt','patient-reversal','patient-refund')`),
+  foreignKey({ name: "fk_claim_records_claim", columns: [table.hospitalId, table.branchId, table.claimId], foreignColumns: [claims.hospitalId, claims.branchId, claims.claimId] }).onDelete("restrict"),
+  foreignKey({ name: "fk_claim_records_actor", columns: [table.hospitalId, table.actorUserId], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
 ]);
 
 export const claimEvents = pgTable("claim_events", {

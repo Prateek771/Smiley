@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Application, database, and browser checks
+    name: Application and native database checks
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -63,17 +63,9 @@ jobs:
         run: npm run db:seed
       - name: Server integration tests
         run: npm run test:integration
-      - name: Verify browser CLI
-        run: npm run browser -- --version
       - name: Lint
         run: npm run lint
       - name: Check TypeScript
         run: npm run typecheck
       - name: Build
         run: npm run build
-      - name: Install browser for journeys
-        run: npx playwright install --with-deps chromium
-      - name: Browser journeys
-        run: npm run test:e2e
-        env:
-          PLAYWRIGHT_SKIP_BUILD: '1'

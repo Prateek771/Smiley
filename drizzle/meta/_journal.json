@@ -43,6 +43,13 @@
       "when": 1790847814411,
       "tag": "0005_claim_query_reference",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790939722541,
+      "tag": "0006_claim_records",
+      "breakpoints": true
     }
   ]
 }

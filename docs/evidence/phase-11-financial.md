@@ -1,0 +1,7 @@
+# Phase 11 — Bill and rule assessment
+
+Billing can capture immutable bill revisions and reviewed synthetic rule snapshots, including line explanations, effective dates, deductibles, co-pay and tariff/benefit caps. The protected case page distinguishes the estimate from a still-unknown confirmed patient amount. Revised bills invalidate current assessments; previous snapshots and original evidence remain available.
+
+Verification: the deterministic calculation check failed before implementation and now passes. Three isolated PostgreSQL financial tests passed for Billing authority, foreign evidence/scope denial, exact retries, conflicting keys, stale updates and immutable history. The complete allowed server suite passed 116/116 with zero skips. Lint, fresh TypeScript checking and the production build passed. Codex's in-app browser showed the Billing form and a persisted ₹1,00,000 bill / ₹85,000 insurer estimate / ₹8,000 patient estimate, with confirmation still unknown. Raw synthetic screenshot stays ignored in `tmp/phases-11-15/`.
+
+Native development was privately backed up before additive migration 0006. Existing data, source migrations, staff credentials and private files were preserved. Browser automation through Playwright and agent-browser was removed from active npm/CI checks at the user's request; the legacy test sources remain available but were not run. Submission/decision/receipt flows continue in Phases 12–15.

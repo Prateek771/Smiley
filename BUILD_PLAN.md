@@ -137,7 +137,8 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 11 — Add deterministic bill and rule assessment
 
-- [ ] Complete Phase 11 and record evidence.
+- [x] Complete Phase 11 and record evidence.
+- **Delivered:** Versioned Billing bill/assessment snapshots, exact paise arithmetic and protected native forms. 116 server checks, lint, fresh types and build pass; reviewed in Codex's browser. [Evidence](docs/evidence/phase-11-financial.md). Phases 12–15 are now being implemented continuously.
 - **Build:** Capture/revise bill lines; apply versioned synthetic policy/tariff rules and preserve calculation snapshots, rounding choices, and line explanations.
 - **Test:** Independently expected totals, co-pay/deductibles/caps, revised bills, missing rules, conflicting dates, and rounding cases.
 - **Pass when:** Supported calculations match expected results and reproduce from their versions; uncertainty requests review instead of inventing coverage.
