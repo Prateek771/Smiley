@@ -3,6 +3,7 @@ import type { PoolClient } from "pg";
 import { z } from "zod";
 import { appPool } from "../db/client";
 import { AuthError, createAuth, lookupStaff, setIdentityContext, type StaffSession } from "./index";
+import { writeAudit } from "../audit";
 
 const invitationInput = z.object({
   email: z.email().max(150).transform((value) => value.toLowerCase()),
@@ -24,6 +25,8 @@ async function withAdministrator<T>(actor: StaffSession, operation: (client: Poo
   try {
     await client.query("BEGIN");
     await setIdentityContext(client, actor.authUserId);
+    // Reload authority after sibling administration requests have committed.
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,19))", [`admin:${actor.hospitalId}`]);
     const current = await lookupStaff(client, actor.authUserId);
     if (!current || current.userId !== actor.userId || current.hospitalId !== actor.hospitalId || (!current.roles.includes("HOSPITAL_ADMIN") || current.roles.includes("SUPER_ADMIN"))) {
       throw new AuthError(403, "A current hospital administrator is required.");
@@ -56,6 +59,7 @@ export async function createInvitation(actor: StaffSession, input: InvitationInp
        VALUES($1,$2,$3,$4,$5,$6,$7,'PENDING',$8)`,
       [id, current.hospitalId, value.branchId, role.rows[0].role_id, value.email, tokenHash, expiresAt, current.userId],
     );
+    await writeAudit(client, current, null, "staff-invitations", "CREATED", null, null, { invitationId: id, email: value.email, branchId: value.branchId, role: value.role, expiresAt: expiresAt.toISOString() });
     const url = new URL("/invite", process.env.BETTER_AUTH_URL);
     url.searchParams.set("token", token);
     return { id, url: url.toString(), expiresAt: expiresAt.toISOString() };
@@ -123,10 +127,26 @@ export async function disableStaff(actor: StaffSession, targetUserId: string) {
     if (platform.rowCount) throw new AuthError(403, "Hospital administrators cannot disable platform accounts.");
     const target = await client.query("SELECT auth_user_id,staff_id FROM users WHERE user_id=$1 AND hospital_id=$2 FOR UPDATE", [targetUserId, current.hospitalId]);
     if (target.rowCount !== 1) throw new AuthError(404, "The staff account is unavailable in your hospital.");
+    const administrators = await client.query(`SELECT
+      EXISTS(SELECT 1 FROM user_roles ur JOIN roles r ON r.role_id=ur.role_id
+        WHERE ur.user_id=$1 AND ur.hospital_id=$2 AND r.role_code='HOSPITAL_ADMIN' AND r.status='ACTIVE') AS target_admin,
+      EXISTS(SELECT 1 FROM users u JOIN auth_user a ON a.id=u.auth_user_id
+        JOIN staff s ON s.staff_id=u.staff_id AND s.hospital_id=u.hospital_id
+        JOIN user_roles ur ON ur.user_id=u.user_id AND ur.hospital_id=u.hospital_id
+        JOIN roles r ON r.role_id=ur.role_id
+        WHERE u.hospital_id=$2 AND u.user_id<>$1 AND u.status='ACTIVE' AND s.status='ACTIVE'
+          AND r.role_code='HOSPITAL_ADMIN' AND r.status='ACTIVE'
+          AND NOT EXISTS(SELECT 1 FROM user_roles pr JOIN roles platform_role ON platform_role.role_id=pr.role_id
+            WHERE pr.user_id=u.user_id AND pr.hospital_id=u.hospital_id AND platform_role.role_code='SUPER_ADMIN')) AS remaining_admin`,
+    [targetUserId, current.hospitalId]);
+    if (administrators.rows[0].target_admin && !administrators.rows[0].remaining_admin) {
+      throw new AuthError(409, "The hospital must retain an active hospital administrator.");
+    }
     await client.query("UPDATE users SET status='INACTIVE' WHERE user_id=$1 AND hospital_id=$2", [targetUserId, current.hospitalId]);
     await client.query("UPDATE staff SET status='INACTIVE' WHERE staff_id=$1 AND hospital_id=$2", [target.rows[0].staff_id, current.hospitalId]);
     await client.query("UPDATE user_branch_memberships SET status='REVOKED',revoked_at=now() WHERE user_id=$1 AND hospital_id=$2", [targetUserId, current.hospitalId]);
     await client.query("DELETE FROM auth_session WHERE user_id=$1", [target.rows[0].auth_user_id]);
     await client.query("UPDATE staff_invitations SET status='REVOKED' WHERE hospital_id=$1 AND email=(SELECT email FROM users WHERE user_id=$2) AND status='PENDING'", [current.hospitalId, targetUserId]);
+    await writeAudit(client, current, null, "staff", "DISABLED", targetUserId, null, { userId: targetUserId });
   });
 }

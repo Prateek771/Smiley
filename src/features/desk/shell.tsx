@@ -11,6 +11,8 @@ export function DeskShell({ actor, children }: { actor: StaffSession; children: 
       <Link href="/desk" className={styles.brand}>smiley<small>HOSPITAL INSURANCE DESK</small></Link>
       <nav className={styles.nav} aria-label="Workspaces">
         <Link href="/desk">Work queue</Link>
+        <Link href="/desk/reports">Operations reports</Link>
+        {actor.roles.includes("HOSPITAL_ADMIN") && !actor.roles.includes("SUPER_ADMIN") && <Link href="/desk/admin">Hospital administration</Link>}
         <Link href="/demo">Synthetic demo</Link>
       </nav>
       <div className={styles.identity}>

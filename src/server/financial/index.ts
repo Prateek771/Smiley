@@ -5,19 +5,20 @@ import { assessBill, billSchema, ruleSchema, type Assessment } from "./rules";
 import { submissionActions, prepareSubmission, packState, type PackRecord } from "./submissions";
 import { decisionActions, prepareDecision, patientState } from "./decisions";
 import { settlementState } from "./settlement";
+import { registeredRule, rulesForHospital } from "../admin";
 import { caseIdSchema, scopedCase, recordsForCase, currentFinancial, requireRevision, usableRecords, policyContext, fingerprint, appendFinancialRecord, type RecordResult, type FinancialRecord, type BillRecord, type AssessmentRecord } from "./records";
 export type { FinancialRecord, RecordResult } from "./records";
 const verified = z.literal(true);
 const actionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("bill"), bill: billSchema, sourceRevisionId: z.uuid(), reductionRevisionId: z.uuid().nullable(), verified }).strict(),
-  z.object({ type: z.literal("assess"), billId: z.uuid(), rule: ruleSchema.nullable(), policyRevisionId: z.uuid(), verified }).strict(),
+  z.object({ type: z.literal("assess"), billId: z.uuid(), rule: ruleSchema.nullable(), registeredRuleId: z.uuid().optional(), policyRevisionId: z.uuid(), verified }).strict(),
   ...submissionActions,
   ...decisionActions,
 ]);
 const requestSchema = z.object({ expectedVersion: z.number().int().positive().max(2147483646), idempotencyKey: z.string().min(8).max(100), action: actionSchema }).strict();
 export type FinancialCase = Awaited<ReturnType<typeof patientState>> & Awaited<ReturnType<typeof settlementState>> & { caseId: string; version: number; bill: BillRecord | null; assessment: AssessmentRecord | null; records: FinancialRecord[];
   canBill: boolean; canDesk: boolean; canFinance: boolean; patientConfirmedPaise: number | null; pack: PackRecord | null; packCurrent: boolean;
-  queries: { reference: string; status: string; responseEventId: string | null; responseAckCurrent: boolean }[] };
+  rules: Awaited<ReturnType<typeof rulesForHospital>>; queries: { reference: string; status: string; responseEventId: string | null; responseAckCurrent: boolean }[] };
 export async function getFinancialCase(headers: Headers, caseId: string): Promise<FinancialCase> {
   if (!caseIdSchema.safeParse(caseId).success) throw new AccessError(400, "Provide a valid case ID.");
   return withActorTransaction(headers, "case:read", undefined, async (client, actor) => {
@@ -25,7 +26,7 @@ export async function getFinancialCase(headers: Headers, caseId: string): Promis
     const usable = await usableRecords(client, caseId, current, records);
     const patient = await patientState(client, caseId, usable);
     const queries = await client.query(`SELECT q.external_reference AS reference,q.status,(SELECT e.event_id FROM claim_events e WHERE e.claim_id=q.claim_id AND e.event_type='QUERY_RESPONSE_PREPARED' AND e.payload->'action'->>'reference'=q.external_reference ORDER BY e.case_version DESC LIMIT 1) AS "responseEventId" FROM claim_queries q WHERE q.claim_id=$1 ORDER BY q.query_id`, [caseId]);
-    return { caseId, version: current.version, ...currentFinancial(usable), ...await packState(client, caseId, usable), ...patient, ...await settlementState(client, caseId, patient.authorizedPaise), records,
+    return { caseId, version: current.version, ...currentFinancial(usable), ...await packState(client, caseId, usable), ...patient, ...await settlementState(client, caseId, patient.authorizedPaise), records, rules: (await rulesForHospital(client, actor.hospitalId)).filter((rule) => rule.status === "APPROVED" && rule.policyId === String(current.policy_id)),
       queries: queries.rows.map((query) => ({ ...query, responseAckCurrent: records.find((row) => row.kind === "query-ack" && row.payload.queryReference === query.reference)?.payload.responseEventId === query.responseEventId && !!query.responseEventId })),
       canBill: branchScope(actor, "billing:write").includes(String(current.branch_id)), canDesk: branchScope(actor, "case:act").includes(String(current.branch_id)), canFinance: branchScope(actor, "finance:write").includes(String(current.branch_id)) };
   });
@@ -58,12 +59,14 @@ export async function applyFinancialAction(headers: Headers, caseId: string, inp
       const { bill } = currentFinancial(await recordsForCase(client, caseId));
       if (!bill || bill.id !== action.billId) throw new AccessError(409, "Choose the current bill revision before assessment.");
       await requireRevision(client, caseId, action.policyRevisionId, "policy");
+      if (action.registeredRuleId && action.rule !== null) throw new AccessError(400, "Use either the approved registered rule or a manual synthetic snapshot.");
+      const rule = action.registeredRuleId ? await registeredRule(client, actor.hospitalId, action.registeredRuleId, String(current.policy_id), bill.payload.bill.serviceDate) : action.rule;
       let result: Assessment;
-      try { result = assessBill(bill.payload.bill, action.rule); } catch { throw new AccessError(400, "The rule and monetary values are invalid."); }
+      try { result = assessBill(bill.payload.bill, rule); } catch { throw new AccessError(400, "The rule and monetary values are invalid."); }
       if (!current.valid_from || !current.valid_to || bill.payload.bill.serviceDate < current.valid_from || bill.payload.bill.serviceDate > current.valid_to) {
         result = { ...result, status: "NEEDS_REVIEW", blocks: [...result.blocks, "The registered policy coverage dates do not cover this service date."], insurerPaise: null, patientPaise: null };
       }
-      payload = { ...action, result, contextFingerprint: policyContext(current) };
+      payload = { ...action, rule, ruleSource: action.registeredRuleId ? "approved-registry" : "manual-synthetic", result, contextFingerprint: policyContext(current) };
     } else if (["decision", "confirm", "patient-receipt", "patient-reversal", "patient-refund"].includes(action.type)) {
       payload = await prepareDecision(client, caseId, action as Parameters<typeof prepareDecision>[2], await usableRecords(client, caseId, current, await recordsForCase(client, caseId)));
     } else {

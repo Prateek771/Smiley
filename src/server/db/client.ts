@@ -29,7 +29,8 @@ function connectionString(migration: boolean): string | undefined {
 
 // Pool construction is lazy; builds and public demo routes do not connect.
 export const appPool = new Pool({ connectionString: connectionString(false), max: 10 });
-export const migrationPool = new Pool({ connectionString: connectionString(true), max: 2 });
+// One worker LISTEN connection, one run lock and checkpoint/queue writes need separate connections.
+export const migrationPool = new Pool({ connectionString: connectionString(true), max: 4 });
 for (const pool of [appPool, migrationPool]) pool.on("error", () => console.error("An idle PostgreSQL connection failed; subsequent work will reconnect."));
 export const db = drizzle(appPool, { schema: { ...domainSchema, ...authSchema } });
 

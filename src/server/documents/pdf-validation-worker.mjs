@@ -99,12 +99,15 @@ async function validatePdf(bytes) {
   const count = countPages(root, undefined, 0);
   if (count < 1) return false;
   const pages = document.getPages();
-  return pages.length === count && pages.every((page) => {
+  const valid = pages.length === count && pages.every((page) => {
     const { x, y, width, height } = page.getMediaBox();
     return [x, y, width, height].every(Number.isFinite) && width > 0 && height > 0 && width <= 14400 && height <= 14400;
   });
+  return valid ? count : false;
 }
 
 let valid = false;
 try { valid = await validatePdf(workerData?.bytes); } catch { valid = false; }
-parentPort?.postMessage(valid);
+// Existing validation callers retain a boolean; metadata callers receive the
+// independently checked page-tree count, never the untrusted declared Count.
+parentPort?.postMessage(workerData?.metadata === true ? (valid || null) : valid !== false);

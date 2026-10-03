@@ -13,7 +13,7 @@ export type RecordResult = { caseId: string; version: number; recordId: string; 
 export const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
 export async function scopedCase(client: PoolClient, actor: Actor, caseId: string, lock = false) {
-  const result = await client.query(`SELECT c.*,pi.valid_from,pi.valid_to,pi.policy_id FROM claims c JOIN patient_insurance pi ON pi.patient_insurance_id=c.patient_insurance_id AND pi.hospital_id=c.hospital_id WHERE c.claim_id=$1 AND c.hospital_id=$2 ${lock ? "FOR UPDATE OF c" : ""}`, [caseId, actor.hospitalId]);
+  const result = await client.query(`SELECT c.*,pi.valid_from::text AS valid_from,pi.valid_to::text AS valid_to,pi.valid_from AS legacy_valid_from,pi.valid_to AS legacy_valid_to,pi.policy_id FROM claims c JOIN patient_insurance pi ON pi.patient_insurance_id=c.patient_insurance_id AND pi.hospital_id=c.hospital_id WHERE c.claim_id=$1 AND c.hospital_id=$2 ${lock ? "FOR UPDATE OF c" : ""}`, [caseId, actor.hospitalId]);
   if (!result.rowCount) throw new AccessError(404, "The case is unavailable in your hospital or assigned branches.");
   return result.rows[0];
 }
@@ -39,7 +39,8 @@ export async function revisionCurrent(client: PoolClient, caseId: string, revisi
 }
 export async function usableRecords(client: PoolClient, caseId: string, current: Record<string, unknown>, records: FinancialRecord[]) {
   const { bill, assessment } = currentFinancial(records);
-  let valid = !!assessment && assessment.payload.contextFingerprint === policyContext(current);
+  const legacyContext = fingerprint([current.patient_insurance_id, current.policy_id, current.legacy_valid_from, current.legacy_valid_to]);
+  let valid = !!assessment && [policyContext(current), legacyContext].includes(assessment.payload.contextFingerprint);
   if (valid && bill && assessment) {
     for (const id of [bill.payload.sourceRevisionId, assessment.payload.policyRevisionId, ...(bill.payload.reductionRevisionId ? [bill.payload.reductionRevisionId] : [])]) {
       if (!await revisionCurrent(client, caseId, id)) { valid = false; break; }

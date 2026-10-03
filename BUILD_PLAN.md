@@ -4,7 +4,9 @@ Updated: 3 October 2026. This is the living progress record for the repository.
 
 **Native database transfer:** Both databases were restored and verified against their saved data/security snapshots, and all app/test connections now use installed PostgreSQL 18.6 on port 5432. The Docker runtime, Compose configuration and container-based CI service have been replaced. 112 unit/server checks and 15 fresh migration checks pass; lint, types and production build pass. All 58 desktop/mobile checks pass, and preserved staff sign-in, queue, case details and document download work on localhost:3000. See [transfer evidence](docs/evidence/native-postgresql-transfer.md).
 
-**Current position:** Phases 0–15 are implemented and verified with synthetic data. The current checkpoint passes 133 unit/server/database/API checks, two production HTTP scenarios including sign-in throttling, lint, TypeScript and production build. Codex browser review covers staff roles and responsive job status. Application commit `25e3cf9` passed [exact native GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/37009596206) and was fast-forwarded to `main`. See [Phases 11–15 validation](docs/evidence/phases-11-15-validation.md). Earlier 58-browser-journey results are historical: Playwright and agent-browser are not invoked in this build. This checkpoint does not establish production or real-hospital readiness.
+**Current position:** Phases 0–19 are implemented with synthetic data. Local verification passed 200 combined unit/server/database/API checks, followed by the added platform-race and AI-classification regressions (nine admin, 26 AI unit and ten durable AI checks). The latest build passes three production HTTP scenarios, lint and TypeScript. Codex browser review covers source-backed extraction/pack drafts, staff acceptance/rejection, eligibility history, scoped reports, administration and phone layouts. Exact-commit CI and promotion are pending. See [Phases 16–19 validation](docs/evidence/phases-16-19-validation.md). Earlier Playwright/agent-browser results are historical; neither tool was invoked. This checkpoint does not establish production or real-hospital readiness.
+
+**Readiness refresh, 3 October:** Baseline `9fea3dc` passed fresh local 133 server/database/API checks, two production HTTP scenarios, lint, types and production build. PostgreSQL, preserved development data, private documents, GitHub authentication/push access and exact-commit CI on `main`/`dev` were verified. OCR.space and OpenRouter's exact `qwen/qwen3.8-27b:free` model passed synthetic connectivity checks; application integration remains Phases 16–17. Localhost and the persistent worker are running. See [the readiness audit](docs/evidence/phase-16-readiness-2026-10-03.md).
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -25,9 +27,9 @@ as an earlier recovery checkpoint, with its remote branch removed.
 - PostgreSQL, database name `sehospitaldb`; Drizzle for queries and reviewed migrations.
 - The supplied **42 business/domain tables and four reporting views** are the starting inventory. Review all 42; implement their workflows incrementally.
 - Better Auth manages identities/sessions. Hospital, branch, and role authorization is enforced separately.
-- Graphile Worker runs in a separate persistent Node.js process from Phase 15. It performs deterministic synthetic pack review with bounded retries and owner recovery. TypeScript LangGraph and model/OCR evaluation remain Phases 16–17; no AI runtime or payer integration is implemented. Phase 10's bounded PDF-validation threads remain separate.
+- Graphile Worker runs in a separate persistent Node.js process. It performs deterministic pack review and checkpointed TypeScript LangGraph extraction/drafting, with bounded retries and owner recovery. Actual payer submissions and acknowledgements remain manually evidenced. Phase 10's bounded PDF-validation threads remain separate.
 - Tailwind CSS and native accessible controls support the desk journey; add a component dependency only when justified.
-- Hosting, private document storage, and model/OCR providers remain undecided.
+- Hosting and production private document storage remain undecided. Synthetic AI uses OCR.space and OpenRouter with only `qwen/qwen3.8-27b:free`; bounded adapters, immutable staff reviews and private PostgreSQL LangGraph persistence are implemented. No alternative model or local OCR fallback is enabled.
 
 These decisions supersede older stack proposals in `outputs/`. The existing prototype is a visual reference. Extra authentication, queue, or agent-persistence tables may be necessary; explain their purpose and placement before adding them. Do not silently add domain tables or promise 42 as the permanent total.
 
@@ -182,6 +184,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 16 — Add document extraction with human verification
 
 - [ ] Complete Phase 16 and record evidence.
+- **Delivered:** Bounded cloud extraction, exact source/page quotes, immutable staff reviews and durable private LangGraph checkpoints. Live extraction correctly labels reference/bill/authorization tokens after format-guard review fixes; no date is invented. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Evaluate model/OCR candidates on synthetic documents; connect TypeScript LangGraph through the worker with persistent state. Attach extracted facts to exact source/page evidence and staff correction records.
 - **Test:** Poor scans, contradictory values, missing pages, provider outage, unsupported documents, and job resumption.
 - **Pass when:** Uncertain fields are reviewable, manual entry remains usable, and identifiable patient data is excluded from external traces by default.
@@ -189,6 +192,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 17 — Add claim-pack checks and response drafts
 
 - [ ] Complete Phase 17 and record evidence.
+- **Delivered:** Selected-source missing/conflict checks, sourced pack/query drafts and explicit follow-up suggestions. Live pack checking completes with correct quotes; staff control all consequential actions. Earlier request-linked queries retain manual preparation/acknowledgement. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Let agents identify missing/inconsistent evidence, prepare reviewed packs, draft source-backed query responses, and suggest follow-up tasks.
 - **Test:** Invented claims/reasons, stale document versions, unsupported conclusions, repeated jobs, and human rejection/correction of drafts.
 - **Pass when:** Drafts cite evidence, staff control consequential actions, and AI output never substitutes for payer approval or deterministic financial calculation.
@@ -196,6 +200,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 18 — Extend the earlier patient journey
 
 - [ ] Complete Phase 18 and record evidence.
+- **Delivered:** Eligibility, actual preauthorization responses, treatment, repeated enhancement/query lineage and discharge handoff with chronology/source guards. Fifteen journey checks pass; a Codex browser action records evidenced UNCLEAR eligibility and history. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Add eligibility tracking, preauthorization, treatment updates, and authorization enhancements using existing case/document/query capabilities.
 - **Test:** Repeated enhancement/query cycles, expired eligibility, revised approvals, and unclear payer responses.
 - **Pass when:** Registration through final discharge is traceable; a request, estimate, and actual payer response remain distinct.
@@ -203,6 +208,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 ### Phase 19 — Add administration and useful reporting
 
 - [ ] Complete Phase 19 and record evidence.
+- **Delivered:** Hospital access/branch/invitation administration, separate platform registry, immutable rule lifecycle and scoped desk/finance reports/CSV. Concurrent deactivation races are fixed; missing/stale money remains unknown. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Complete hospital/platform administration, controlled rule management, exports, and desk/finance reporting. Show preparation time, payer waiting time, and desk resolution separately.
 - **Test:** Role-scoped exports, private-data leakage, revised rules, missing financial evidence, and report totals against known cases.
 - **Pass when:** Reports reconcile with underlying facts and do not imply that synthetic timing proves a real 1–2 hour outcome.
@@ -253,7 +259,7 @@ These are separate small build/test cycles after the core workflow is proven; th
 | Component library | Phase 3 | Tailwind and native accessible controls implemented; add a library when justified |
 | Identity/tenancy mapping and internal tables | Phases 4–7 | Implemented: separate Better Auth identity, hospital/branch/role grants and forced RLS; 42 domain tables plus 10 justified internal tables, four invoker views |
 | Private storage provider/region/access policy | Real storage integration; Phase 20 staging at latest | Production provider unselected; Phase 10 uses private local synthetic storage and reviewed access checks |
-| Actual model/OCR provider and agent persistence | Phase 16 | Evaluate synthetic documents first; LangGraph is orchestration |
+| Actual model/OCR provider and agent persistence | Phase 16 | OCR.space plus exact OpenRouter `qwen/qwen3.8-27b:free`; bounded adapters, persisted LangGraph stages, source validation and immutable staff reviews implemented. Correct live extraction/pack checks and browser reviews passed; exact checkpoint CI pending. No alternative model fallback |
 | Hosting provider/region/budget | Phase 20 | Unselected; persistent web/worker/database roles established |
 | Pilot, approved real rules, and integration permissions | Phases 22–23 or any real integration | Unresolved; does not block synthetic development |
 

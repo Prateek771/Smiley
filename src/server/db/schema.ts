@@ -1296,3 +1296,6 @@ export const caseJobs = pgTable("case_jobs", {
   foreignKey({ name: "fk_case_job_actor", columns: [t.hospitalId, t.actorUserId], foreignColumns: [users.hospitalId, users.userId] }).onDelete("restrict"),
   foreignKey({ name: "fk_case_job_auth", columns: [t.authOwnerId], foreignColumns: [authUser.id] }).onDelete("restrict"),
 ]);
+
+export * from "./ai-schema";
+export * from "./admin-schema";

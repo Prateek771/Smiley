@@ -4,7 +4,7 @@ import { before, after, test } from "node:test";
 import { closePools } from "../../src/server/db/client";
 import { getFinancialCase } from "../../src/server/financial";
 import { workflowFixture, syntheticBill, syntheticRule } from "../helpers/workflow";
-import { uploadDocument } from "../../src/server/documents";
+import { uploadDocument, listDocuments } from "../../src/server/documents";
 let fixture: Awaited<ReturnType<typeof workflowFixture>>;
 before(async () => { fixture = await workflowFixture(); }); after(closePools);
 const occurredAt = "2026-10-02T10:00:00+05:30";
@@ -75,4 +75,19 @@ test("verified patient responsibility1300000 with deposit2000000 owes700000 refu
   await item.act("billingA", { type: "confirm", decisionId: decision.recordId, patientPaise: 1300000, disputePaise: 0, evidenceRevisionId: item.sources.policy, reason: "Reviewed patient exclusions", verified: true });
   await item.act("billingA", { type: "patient-receipt", amountPaise: 2000000, reference: randomUUID(), evidenceRevisionId: item.sources["patient-payment"], occurredAt, verified: true });
   assert.equal((await getFinancialCase(fixture.headers.financeA, item.caseId)).refundPaise, 700000);
+});
+
+test("revised Billing confirmation evidence reopens allocation while actual payer approval and receipts remain", async () => {
+  const item = await fixture.newCase();
+  const pack = await item.act("deskA", { type: "pack", assessmentId: item.assessment.recordId, revisionIds: ["policy", "preauthorization", "final-bill", "discharge-summary", "approved-hospital-reduction"].map((purpose) => item.sources[purpose]), verified: true });
+  await item.act("deskA", { type: "submission", packId: pack.recordId, reference: randomUUID(), evidenceRevisionId: item.sources.preauthorization, occurredAt });
+  const decision = await item.act("deskA", { type: "decision", packId: pack.recordId, status: "APPROVED", authorizedPaise: 8500000, conditions: "", reference: randomUUID(), evidenceRevisionId: item.sources["payer-decision"], occurredAt, verified: true });
+  await item.act("billingA", { type: "confirm", decisionId: decision.recordId, patientPaise: 800000, disputePaise: 0, evidenceRevisionId: item.sources["patient-payment"], reason: "Separate original allocation evidence", verified: true });
+  await item.act("billingA", { type: "patient-receipt", amountPaise: 500000, reference: randomUUID(), evidenceRevisionId: item.sources["patient-payment"], occurredAt, verified: true });
+  const listing = await listDocuments(fixture.headers.deskA, item.caseId); const original = listing.revisions.find((row) => row.id === item.sources["patient-payment"])!;
+  await uploadDocument(fixture.headers.deskA, item.caseId, { bytes: Buffer.from("Fictional revised Billing allocation evidence"), name: "revised-confirmation.txt", mimeType: "text/plain", documentType: "patient-payment", documentId: original.documentId, idempotencyKey: randomUUID() });
+  const current = await getFinancialCase(fixture.headers.financeA, item.caseId);
+  assert.equal(current.authorizedPaise, 8500000); assert.equal(current.patientNetPaise, 500000);
+  assert.equal(current.patientConfirmedPaise, null); assert.equal(current.disputePaise, null); assert.equal(current.collectPaise, null); assert.equal(current.refundPaise, null);
+  assert.ok(current.records.some((record) => record.kind === "confirm"));
 });

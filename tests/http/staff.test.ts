@@ -25,7 +25,7 @@ test("production login and staff pages expose role-appropriate financial, settle
   const guest = await fetch(`${origin}/desk`, { redirect: "manual" }); assert.equal(guest.status, 307); assert.match(guest.headers.get("location")!, /login/u);
   for (const role of ["deskA", "billingA", "financeA"]) {
     const response = await fetch(`${origin}/desk/cases/${item.caseId}`, { headers: { cookie: cookies[role] } }); assert.equal(response.status, 200);
-    const html = await response.text(); for (const text of ["Bill and financial assessment", "Payer decision and patient reconciliation", "Settlement and remittance", "Background review jobs"]) assert.ok(html.includes(text), text);
+    const html = await response.text(); for (const text of ["Bill and financial assessment", "Payer decision and patient reconciliation", "Settlement and remittance", "Background review jobs", "AI evidence and staff review", "Earlier cashless journey"]) assert.ok(html.includes(text), text);
     const controls = { deskA: "Record payer decision", billingA: "Billing confirmation", financeA: "Record remittance receipt" }; assert.ok(html.includes(controls[role as keyof typeof controls]));
   }
 });
@@ -34,4 +34,20 @@ test("served APIs require scoped cookies and reject cross-origin mutations", asy
   assert.equal((await fetch(url)).status, 401); assert.equal((await fetch(url, { headers: { cookie: cookies.deskB } })).status, 404);
   const allowed = await fetch(url, { headers: { cookie: cookies.financeA } }); assert.equal(allowed.status, 200); assert.equal((await allowed.json()).patientConfirmedPaise, 800000);
   assert.equal((await fetch(url, { method: "POST", headers: { cookie: cookies.billingA, origin: "https://wrong.invalid", "content-type": "application/json" }, body: "{}" })).status, 403);
+});
+
+test("served administration, reports and platform entry preserve role separation", async () => {
+  async function signIn(role: "adminA" | "platform") {
+    const options = { method: "POST", headers: { origin, "content-type": "application/json" }, body: JSON.stringify({ email: fixture.users[role].email, password: fixture.users[role].password }) };
+    let response = await fetch(`${origin}/api/auth/sign-in/email`, options);
+    if (response.status === 429) { await new Promise((resolve) => setTimeout(resolve, (Number(response.headers.get("x-retry-after")) + 1) * 1000)); response = await fetch(`${origin}/api/auth/sign-in/email`, options); }
+    assert.equal(response.status, 200); return response.headers.getSetCookie().map((value) => value.split(";")[0]).join("; ");
+  }
+  const admin = await signIn("adminA"); const platform = await signIn("platform");
+  const hospitalPage = await fetch(`${origin}/desk/admin`, { headers: { cookie: admin } }); assert.equal(hospitalPage.status, 200); assert.match(await hospitalPage.text(), /Hospital administration/);
+  const reports = await fetch(`${origin}/desk/reports`, { headers: { cookie: cookies.deskA } }); assert.equal(reports.status, 200); assert.match(await reports.text(), /Desk workflow report/);
+  const platformPage = await fetch(`${origin}/platform`, { headers: { cookie: platform } }); assert.equal(platformPage.status, 200); assert.match(await platformPage.text(), /Platform registry/);
+  const entry = await fetch(`${origin}/desk`, { headers: { cookie: platform }, redirect: "manual" }); assert.equal(entry.status, 307); assert.match(entry.headers.get("location") ?? "", /platform/);
+  assert.equal((await fetch(`${origin}/api/cases`, { headers: { cookie: platform } })).status, 403);
+  assert.equal((await fetch(`${origin}/api/platform`, { headers: { cookie: admin } })).status, 403);
 });

@@ -14,7 +14,7 @@ export const decisionActions = [
 ] as const;
 type Action = z.infer<(typeof decisionActions)[number]>;
 export type DecisionRecord = FinancialRecord<{ packId: string; status: string; authorizedPaise: number; reference: string; conditions: string; evidenceRevisionId: string }>;
-type ConfirmationRecord = FinancialRecord<{ decisionId: string; assessmentId: string; billId: string; patientPaise: number; disputePaise: number }>;
+type ConfirmationRecord = FinancialRecord<{ decisionId: string; assessmentId: string; billId: string; patientPaise: number; disputePaise: number; evidenceRevisionId: string }>;
 export function netPatientReceipts(records: FinancialRecord[]) {
   const reversed = new Set(records.filter((row) => row.kind === "patient-reversal").map((row) => row.payload.receiptId));
   const total = records.reduce((sum, row) => sum + (row.kind === "patient-receipt" && !reversed.has(row.id) ? BigInt(Number(row.payload.amountPaise)) : row.kind === "patient-refund" ? -BigInt(Number(row.payload.amountPaise)) : 0n), 0n);
@@ -26,7 +26,7 @@ export async function patientState(client: PoolClient, caseId: string, records: 
   const candidate = records.find((row) => row.kind === "decision") as DecisionRecord | undefined;
   const decision = candidate && state.packCurrent && candidate.payload.packId === state.pack?.id && await revisionCurrent(client, caseId, candidate.payload.evidenceRevisionId) ? candidate : null;
   const confirmation = records.find((row) => row.kind === "confirm") as ConfirmationRecord | undefined;
-  const current = !!confirmation && !!decision && decision.payload.status !== "CONDITIONAL" && confirmation.payload.decisionId === decision.id && confirmation.payload.billId === bill?.id && confirmation.payload.assessmentId === assessment?.id;
+  const current = !!confirmation && !!decision && decision.payload.status !== "CONDITIONAL" && confirmation.payload.decisionId === decision.id && confirmation.payload.billId === bill?.id && confirmation.payload.assessmentId === assessment?.id && await revisionCurrent(client, caseId, confirmation.payload.evidenceRevisionId);
   const patientConfirmedPaise = current ? confirmation!.payload.patientPaise : null;
   const patientNetPaise = netPatientReceipts(records);
   return { decision, confirmation: current ? confirmation! : null, authorizedPaise: decision?.payload.status === "CONDITIONAL" ? null : decision?.payload.authorizedPaise ?? null,

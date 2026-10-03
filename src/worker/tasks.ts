@@ -8,6 +8,7 @@ import { migrationPool } from "../server/db/client";
 import { AccessError, withIdentityTransaction } from "../server/access";
 import { scopedCase } from "../server/financial/records";
 import { jobInputs } from "../server/jobs";
+import { executeAIRun } from "./ai";
 const terminal = ["COMPLETE", "FAILED", "STALE", "DENIED"];
 export async function executeJob(id: string, review: () => Promise<{ summary: string }> = async () => ({ summary: "Current synthetic pack inputs remain valid. Human approval and external submission stay separate." }), queue?: { attempts: number; locked_by: string | null }) {
   z.uuid().parse(id); const client = await migrationPool.connect(); let retryFailure = false;
@@ -35,7 +36,10 @@ export async function executeJob(id: string, review: () => Promise<{ summary: st
   finally { await client.query("SELECT pg_advisory_unlock(hashtextextended($1,23))", [id]); client.release(); }
   if (retryFailure) throw new Error("Background review failed; see the sanitized case job status.");
 }
-export const taskList: TaskList = { "pack-review": async (payload, helpers) => { const value = z.object({ requestId: z.uuid() }).strict().parse(payload); await executeJob(value.requestId, undefined, helpers.job); } };
+export const taskList: TaskList = {
+  "pack-review": async (payload, helpers) => { const value = z.object({ requestId: z.uuid() }).strict().parse(payload); await executeJob(value.requestId, undefined, helpers.job); },
+  "ai-review": async (payload, helpers) => { const value = z.object({ requestId: z.uuid() }).strict().parse(payload); await executeAIRun(value.requestId, { signal: helpers.abortSignal }, helpers.job); },
+};
 
 const registry = join(process.cwd(), "tmp", "worker-instances");
 export function startRegisteredWorker(options: WorkerPoolOptions = {}, tasks: TaskList = taskList) {
@@ -53,7 +57,7 @@ export function startRegisteredWorker(options: WorkerPoolOptions = {}, tasks: Ta
 }
 
 export async function recoverStoppedWorkers() {
-  const jobs = await migrationPool.query("SELECT DISTINCT j.locked_by AS queue_worker_id FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id=j.task_id WHERE t.identifier='pack-review' AND j.locked_by IS NOT NULL");
+  const jobs = await migrationPool.query("SELECT DISTINCT j.locked_by AS queue_worker_id FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id=j.task_id WHERE t.identifier IN ('pack-review','ai-review') AND j.locked_by IS NOT NULL");
   for (const row of jobs.rows) {
     if (!/^pool-[a-f0-9]{18}$/u.test(row.queue_worker_id)) continue;
     let identity: { queueWorkerId: string; pid: number; host: string };
@@ -66,11 +70,12 @@ export async function recoverStoppedWorkers() {
     try {
       await client.query("BEGIN");
       await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,27))", [row.queue_worker_id]);
-      const deliveries = await client.query("SELECT payload->>'requestId' AS id,attempts FROM graphile_worker._private_jobs WHERE locked_by=$1 FOR UPDATE", [row.queue_worker_id]);
+      const deliveries = await client.query("SELECT j.payload->>'requestId' AS id,j.attempts,t.identifier FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id=j.task_id WHERE j.locked_by=$1 AND t.identifier IN ('pack-review','ai-review') FOR UPDATE OF j", [row.queue_worker_id]);
       if (deliveries.rowCount) {
         for (const delivery of deliveries.rows) {
           if (!z.uuid().safeParse(delivery.id).success) continue;
-          await client.query("UPDATE case_jobs SET attempts=greatest(attempts,$2),status=CASE WHEN greatest(attempts,$2)>=3 THEN 'FAILED' ELSE 'RETRYING' END,reason=CASE WHEN greatest(attempts,$2)>=3 THEN 'The worker stopped after three deliveries. The active owner can recover the review.' ELSE 'The stopped local worker was recovered. A new worker will resume this review.' END,updated_at=now() WHERE id=$1 AND status NOT IN ('COMPLETE','FAILED','STALE','DENIED')", [delivery.id, Math.min(3, delivery.attempts)]);
+          const table = delivery.identifier === "ai-review" ? "ai_runs" : "case_jobs";
+          await client.query(`UPDATE ${table} SET attempts=greatest(attempts,$2),status=CASE WHEN greatest(attempts,$2)>=3 THEN 'FAILED' ELSE 'RETRYING' END,reason=CASE WHEN greatest(attempts,$2)>=3 THEN 'The worker stopped after three deliveries. The active owner can recover the review.' ELSE 'The stopped local worker was recovered. A new worker will resume this review.' END,updated_at=now() WHERE id=$1 AND status NOT IN ('COMPLETE','FAILED','STALE','DENIED','REVIEW_REQUIRED')`, [delivery.id, Math.min(3, delivery.attempts)]);
         }
         await client.query("SELECT graphile_worker.force_unlock_workers($1::text[])", [[row.queue_worker_id]]);
       }

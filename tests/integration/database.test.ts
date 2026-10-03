@@ -130,8 +130,13 @@ test("migrations and synthetic seeds are idempotent without resetting rows", asy
 test("all source tables, enums, eight indexes and four invoker views exist", async () => {
   const inventory = JSON.parse(await readFile(path.join(process.cwd(), "docs/schema/domain-inventory.json"), "utf8"));
   const tables = await migrationPool.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'");
-  assert.equal(tables.rowCount, 57);
+  assert.equal(tables.rowCount, 62);
   assert.ok(tables.rows.some((row) => row.table_name === "claim_records"));
+  for (const name of ["ai_runs", "ai_run_sources", "ai_reviews", "rule_revisions", "rule_lifecycle_events"]) {
+    assert.ok(tables.rows.some((row) => row.table_name === name), `Missing phase 16–19 table ${name}`);
+    const security = await migrationPool.query("SELECT relrowsecurity,relforcerowsecurity FROM pg_class WHERE oid=$1::regclass", [name]);
+    assert.deepEqual(security.rows[0], { relrowsecurity: true, relforcerowsecurity: true });
+  }
   for (const table of inventory.tables) {
     assert.ok(tables.rows.some((row) => row.table_name === table.name), `Missing source table ${table.name}`);
     const columns = await migrationPool.query("SELECT column_name,data_type,column_default FROM information_schema.columns WHERE table_schema='public' AND table_name=$1", [table.name]);

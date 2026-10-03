@@ -1,0 +1,60 @@
+import assert from "node:assert/strict";
+import { after, before, test } from "node:test";
+import { appPool, migrationPool } from "../../src/server/db/client";
+import { workflowFixture } from "../helpers/workflow";
+import { getReport, exportReport } from "../../src/server/reporting";
+import { GET as reportGET } from "../../src/app/api/reports/route";
+import { GET as exportGET } from "../../src/app/api/reports/export/route";
+import { uploadDocument, listDocuments } from "../../src/server/documents";
+import { randomUUID } from "node:crypto";
+import { getCase } from "../../src/server/cases";
+let fixture: Awaited<ReturnType<typeof workflowFixture>>;
+before(async () => { fixture = await workflowFixture(); });
+after(async () => { await appPool.end(); await migrationPool.end(); });
+test("desk exports omit financial and private fields and deny unassigned branches", async () => {
+  const item = await fixture.newCase(); const caseNumber = (await getCase(fixture.headers.deskA, item.caseId)).claimNo;
+  const report = await getReport(fixture.headers.deskA, { mode: "desk", caseNumber });
+  assert.ok(report.rows.every((row) => row.branchId === fixture.users.deskA.branchId));
+  assert.ok(report.rows.every((row) => !("authorizedPaise" in row)));
+  await assert.rejects(getReport(fixture.headers.deskA, { mode: "desk", branchId: fixture.users.deskB.branchId }), { status: 403 });
+  await assert.rejects(getReport(fixture.headers.deskA, { mode: "finance" }), { status: 403 });
+  const output = await exportReport(fixture.headers.deskA, { mode: "desk", caseNumber });
+  assert.equal(/patient|policy number|storage|evidence text|payload/iu.test(output), false);
+});
+test("finance report reconciles independent approval, patient confirmation and receipts", async () => {
+  const item = await fixture.approvedCase(8200000);
+  const report = await getReport(fixture.headers.financeA, { mode: "finance", caseNumber: (await getCase(fixture.headers.deskA, item.caseId)).claimNo });
+  const row = report.rows.find((entry) => entry.caseId === item.caseId)!;
+  assert.equal(row.insurerEstimatePaise, 8500000);
+  assert.equal(row.authorizedPaise, 8200000);
+  assert.equal(row.patientConfirmedPaise, 800000);
+  assert.equal(row.disputePaise, 300000);
+  assert.equal(row.payerReceivedPaise, 0);
+  assert.equal(row.receivablePaise, 8200000);
+  assert.deepEqual(report.totals?.authorizedPaise, { knownPaise: "8200000", unknownCases: 0 });
+  assert.deepEqual(report.totals?.disputePaise, { knownPaise: "300000", unknownCases: 0 });
+});
+test("missing financial evidence reports unknown values instead of approving zero", async () => {
+  const item = await fixture.newCase();
+  const row = (await getReport(fixture.headers.financeA, { mode: "finance", caseNumber: (await getCase(fixture.headers.deskA, item.caseId)).claimNo })).rows.find((entry) => entry.caseId === item.caseId)!;
+  assert.equal(row.authorizedPaise, null);
+  assert.equal(row.patientConfirmedPaise, null);
+  assert.equal(row.receivablePaise, null);
+});
+test("revised payer evidence removes current authorization from finance exports", async () => {
+  const item = await fixture.approvedCase();
+  const source = (await listDocuments(fixture.headers.deskA, item.caseId)).revisions.find((revision) => revision.id === item.sources["payer-decision"])!;
+  await uploadDocument(fixture.headers.deskA, item.caseId, { bytes: Buffer.from("Fictional revised payer decision"), name: "revised-decision.txt", mimeType: "text/plain", documentType: "payer-decision", documentId: source.documentId, idempotencyKey: randomUUID() });
+  const row = (await getReport(fixture.headers.financeA, { mode: "finance", caseNumber: (await getCase(fixture.headers.deskA, item.caseId)).claimNo })).rows.find((entry) => entry.caseId === item.caseId)!;
+  assert.equal(row.authorizedPaise, null); assert.equal(row.patientConfirmedPaise, null); assert.equal(row.receivablePaise, null);
+});
+test("report and export HTTP enforce current scope and private response headers", async () => {
+  const url = `${process.env.BETTER_AUTH_URL}/api/reports`;
+  assert.equal((await reportGET(new Request(url))).status, 401);
+  assert.equal((await exportGET(new Request(`${url}/export?mode=finance`, { headers: fixture.headers.deskA }))).status, 403);
+  assert.equal((await reportGET(new Request(`${url}?branchId=${fixture.users.deskB.branchId}`, { headers: fixture.headers.financeA }))).status, 403);
+  assert.equal((await reportGET(new Request(`${url}?mode=unsupported`, { headers: fixture.headers.deskA }))).status, 400);
+  const item = await fixture.newCase(); const caseNumber = (await getCase(fixture.headers.deskA, item.caseId)).claimNo;
+  const exported = await exportGET(new Request(`${url}/export?mode=finance&caseNumber=${encodeURIComponent(caseNumber)}`, { headers: fixture.headers.financeA }));
+  assert.equal(exported.status, 200); assert.equal(exported.headers.get("cache-control"), "no-store"); assert.match(exported.headers.get("content-type")!, /text\/csv/u);
+});

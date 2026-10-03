@@ -12,6 +12,10 @@ import { SettlementPanel } from "@/features/desk/settlement-panel";
 import { JobsPanel } from "@/features/desk/jobs-panel";
 import { getCaseJobs } from "@/server/jobs";
 import { getFinancialCase } from "@/server/financial";
+import { getCaseAI } from "@/server/ai";
+import { getJourney } from "@/server/journey";
+import { AIPanel } from "@/features/desk/ai-panel";
+import { JourneyPanel } from "@/features/desk/journey-panel";
 import styles from "@/features/desk/desk.module.css";
 
 type Search = { q?: string; branchId?: string };
@@ -20,6 +24,7 @@ const eventLabels: Record<string, string> = {
   PREPARATION_STATUS_CHANGED: "Preparation status changed", PAYER_QUERY_RECORDED: "Payer query recorded",
   QUERY_RESPONSE_PREPARED: "Query response prepared", DOCUMENT_UPLOADED: "Document revision uploaded",
   SOURCE_EVIDENCE_ADDED: "Source note recorded",
+  JOURNEY_ELIGIBILITY: "Eligibility evidence recorded", JOURNEY_PREAUTH_REQUEST: "Preauthorization request sent", JOURNEY_PREAUTH_RESPONSE: "Preauthorization response recorded", JOURNEY_TREATMENT_UPDATE: "Treatment update recorded", JOURNEY_PAYER_QUERY: "Journey payer query recorded", JOURNEY_QUERY_RESPONSE_PREPARED: "Journey query response prepared", JOURNEY_QUERY_ACKNOWLEDGED: "Journey query response acknowledged", JOURNEY_DISCHARGE_HANDOFF: "Discharge handoff recorded",
   FINANCIAL_BILL: "Bill revision recorded", FINANCIAL_ASSESS: "Rule assessment recorded", FINANCIAL_PACK: "Claim pack reviewed",
   FINANCIAL_SUBMISSION: "External submission acknowledged", FINANCIAL_QUERY_ACK: "Query response acknowledged", FINANCIAL_QUERY_RESOLVE: "Query resolution recorded",
   FINANCIAL_DECISION: "Payer decision recorded", FINANCIAL_CONFIRM: "Billing allocation confirmed", FINANCIAL_PATIENT_RECEIPT: "Patient receipt recorded", FINANCIAL_PATIENT_REVERSAL: "Patient receipt reversed", FINANCIAL_PATIENT_REFUND: "Patient refund executed", REMITTANCE_RECORDED: "Remittance recorded", REMITTANCE_REVERSED: "Remittance reversed",
@@ -38,10 +43,10 @@ function historyText(payload: Record<string, unknown>): string {
 }
 export default async function PersistedCase({ params, searchParams }: { params: Promise<{ caseId: string }>; searchParams: Promise<Search> }) {
   const [{ caseId }, search] = await Promise.all([params, searchParams]);
-  let record; let workspace; let timeline; let documents; let financial; let jobs;
+  let record; let workspace; let timeline; let documents; let financial; let jobs; let ai; let journey;
   try {
     const staffHeaders = new Headers(await headers());
-    [record, workspace, timeline, documents, financial, jobs] = await Promise.all([getCase(staffHeaders, caseId), getDeskData(staffHeaders), getCaseTimeline(staffHeaders, caseId), listDocuments(staffHeaders, caseId), getFinancialCase(staffHeaders, caseId), getCaseJobs(staffHeaders, caseId)]);
+    [record, workspace, timeline, documents, financial, jobs, ai, journey] = await Promise.all([getCase(staffHeaders, caseId), getDeskData(staffHeaders), getCaseTimeline(staffHeaders, caseId), listDocuments(staffHeaders, caseId), getFinancialCase(staffHeaders, caseId), getCaseJobs(staffHeaders, caseId), getCaseAI(staffHeaders, caseId), getJourney(staffHeaders, caseId)]);
   }
   catch (error) {
     if (error instanceof AuthError && error.status === 401) redirect("/login");
@@ -65,6 +70,8 @@ export default async function PersistedCase({ params, searchParams }: { params: 
     {timeline.queries.length > 0 && <section aria-label="Recorded queries" className={styles.card}><h2>Recorded queries</h2><ol className={styles.timeline}>{timeline.queries.map((query) => <li key={query.query_id}><strong>{query.external_reference}</strong><p>{query.query_text}</p>{query.response_text && <p className={styles.action}>{query.response_text}</p>}<p className={styles.muted}>{query.status === "RESPONDED" ? "Response prepared locally; payer acknowledgement pending" : query.status}</p></li>)}</ol></section>}
     {canAct && <CaseActions caseId={caseId} version={record.version} status={record.status} ownerId={record.ownerId} nextAction={record.nextAction} dueAt={record.dueAt} owners={workspace.owners.filter((owner) => owner.branchId === record.branchId)} queries={timeline.queries.map((query) => ({ reference: String(query.external_reference), status: String(query.status) }))} />}
     <DocumentPanel listing={documents} canUpload={record.status !== "CANCELLED" && workspace.branches.some((branch) => branch.id === record.branchId && branch.canUpload)} />
+    <JourneyPanel key={`journey-${journey.version}`} caseId={caseId} version={record.version} journey={journey} documents={documents} queries={timeline.queries.map((query) => ({ reference: String(query.external_reference), status: String(query.status) }))} canAct={canAct && record.status !== "CANCELLED"} />
+    <AIPanel key={`ai-${record.version}`} caseId={caseId} version={record.version} ownerId={workspace.actor.userId} data={ai} documents={documents} queries={timeline.queries.map((query) => ({ reference: String(query.external_reference), status: String(query.status) }))} canAct={canAct && record.status !== "CANCELLED"} />
     <FinancialPanel key={financial.version} data={financial} documents={documents} />
     <SettlementPanel key={`settlement-${financial.version}`} data={financial} documents={documents} cases={workspace.cases.filter((item) => item.branchId === record.branchId).map((item) => ({ id: item.id, claimNo: item.claimNo }))} />
     <JobsPanel caseId={caseId} version={financial.version} packId={financial.packCurrent ? financial.pack?.id : undefined} canRequest={financial.canDesk} ownerId={workspace.actor.userId} jobs={jobs} />

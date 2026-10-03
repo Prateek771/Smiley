@@ -66,34 +66,38 @@ function validJpeg(bytes: Buffer) {
   }
   return false;
 }
-async function validPdf(bytes: Buffer): Promise<boolean> {
+export async function getPdfPageCount(bytes: Uint8Array): Promise<number | null> {
+  if (!bytes.byteLength || bytes.byteLength > MAX_DOCUMENT_BYTES) return null;
   if (pdfWorkerState.active >= PDF_WORKER_LIMIT) throw new AuthError(503, "Document validation is busy. Retry shortly.");
   pdfWorkerState.active += 1;
   try {
     const payload = Uint8Array.from(bytes);
     const worker = new Worker(resolve(process.cwd(), "src/server/documents/pdf-validation-worker.mjs"), {
-      workerData: { bytes: payload }, transferList: [payload.buffer], execArgv: [], stdout: true, stderr: true,
+      workerData: { bytes: payload, metadata: true }, transferList: [payload.buffer], execArgv: [], stdout: true, stderr: true,
       resourceLimits: { maxOldGenerationSizeMb: 96, maxYoungGenerationSizeMb: 16, stackSizeMb: 4 },
     });
     // Parser warnings must not reach logs or accumulate in parent memory.
     worker.stdout?.resume();
     worker.stderr?.resume();
-    return await new Promise<boolean>((resolveResult) => {
+    return await new Promise<number | null>((resolveResult) => {
       let settled = false;
-      const timer = setTimeout(() => finish(false), PDF_VALIDATION_TIMEOUT_MS);
-      function finish(valid: boolean) {
+      const timer = setTimeout(() => finish(null), PDF_VALIDATION_TIMEOUT_MS);
+      function finish(pageCount: number | null) {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
         // Keep the slot until termination completes, including parser errors/timeouts.
-        void worker.terminate().then(() => resolveResult(valid), () => resolveResult(false));
+        void worker.terminate().then(() => resolveResult(pageCount), () => resolveResult(null));
       }
-      worker.once("message", (message: unknown) => finish(message === true));
-      worker.once("error", () => finish(false));
-      worker.once("exit", () => finish(false));
+      worker.once("message", (message: unknown) => finish(typeof message === "number" && Number.isSafeInteger(message) && message > 0 && message <= 1000 ? message : null));
+      worker.once("error", () => finish(null));
+      worker.once("exit", () => finish(null));
     });
-  } catch { return false; }
+  } catch { return null; }
   finally { pdfWorkerState.active -= 1; }
+}
+async function validPdf(bytes: Buffer): Promise<boolean> {
+  return await getPdfPageCount(bytes) !== null;
 }
 async function validImage(bytes: Buffer, format: "png" | "jpeg"): Promise<boolean> {
   try {
