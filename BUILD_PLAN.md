@@ -10,9 +10,11 @@ Updated: 3 October 2026. This is the living progress record for the repository.
 
 ## Branch workflow
 
-All future development uses `dev` in the managed worktree. Push phase work to
+All future development uses `dev` in the single standalone project folder,
+`%USERPROFILE%\.codex\worktrees\saavantus-app\Smiley insurance`. Push phase work to
 `dev`; promote a checkpoint to `main` only after its applicable checks and
-GitHub checks pass. The original project checkout follows `main`. Preserve
+GitHub checks pass. Both branches use this one repository; the former original
+checkout was removed after [verified consolidation](docs/evidence/project-folder-consolidation-2026-10-03.md). Preserve
 existing work; never force-push application branches or publish local recovery
 refs. GitHub has `main` and `dev`; `codex/saavantus-app` is retained locally
 as an earlier recovery checkpoint, with its remote branch removed.
@@ -275,7 +277,7 @@ Phases 3–9: [execution ledger](docs/evidence/phases-3-10-progress.md) records 
 
 The **public GitHub repository is connected** and Phase 1's publication checks passed. The owner confirmed public visibility on 3 October 2026 so friends can view it; future visibility changes remain the owner's decision. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting can be decided in Phase 20.
 
-Created `Prateek771/Smiley` privately under the owner's original authorization; its current visibility is public. `main` and `dev` track their remote branches; `codex/saavantus-app` remains only as an earlier local recovery branch. The managed worktree is preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions. The [3 October sync audit](docs/evidence/repository-sync-2026-10-03.md) confirms both local folders match GitHub and records the corrected folder/branch references.
+Created `Prateek771/Smiley` privately under the owner's original authorization; its current visibility is public. `main` and `dev` track their remote branches; `codex/saavantus-app` remains only as an earlier local recovery branch. The retained folder is now standalone, with all Git history and local recovery refs preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions. The [3 October sync audit](docs/evidence/repository-sync-2026-10-03.md) preceded the [single-folder consolidation](docs/evidence/project-folder-consolidation-2026-10-03.md); the former original checkout no longer exists.
 
 - [GitHub: adding local code](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github)
 - [GitHub: continuous integration](https://docs.github.com/en/actions/get-started/continuous-integration)

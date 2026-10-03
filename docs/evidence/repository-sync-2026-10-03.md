@@ -2,6 +2,8 @@
 
 Date: 3 October 2026. Scope: local folders, GitHub connection, tracked files and documentation; application behavior and phase completion were not changed.
 
+This records the earlier two-folder audit. The subsequent [owner-requested consolidation](project-folder-consolidation-2026-10-03.md) retained the active folder as a standalone repository and removed the former original checkout.
+
 ## Verified baseline
 
 - Original checkout: `C:\dev\codex projects\Smiley insurance`, on `main`, tracking `origin/main`.

@@ -6,7 +6,7 @@ The protected `/desk` uses native PostgreSQL. `/demo` shows fixed fictional exam
 
 ## Local development
 
-Use Node.js 24+ and native PostgreSQL 18 (17+ supported) from the managed `dev` worktree. Existing installations retain their ignored environment files, staff accounts and private documents. A new installation requires an explicit private `LOCAL_POSTGRES_ADMIN_URL`; run `npm run db:setup` once. See [database setup](docs/development-database.md).
+Use Node.js 24+ and native PostgreSQL 18 (17+ supported) on the `dev` branch in the single project folder. Existing installations retain their ignored environment files, staff accounts and private documents. A new installation requires an explicit private `LOCAL_POSTGRES_ADMIN_URL`; run `npm run db:setup` once. See [database setup](docs/development-database.md).
 
 ```powershell
 npm ci
@@ -46,13 +46,8 @@ Hosting, cloud storage, real hospital rules and model/OCR providers remain unsel
 
 ## Repository workflow
 
-The public repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley). The owner confirmed public visibility on 3 October 2026; future visibility changes are the owner's decision. Develop on `dev`, promote tested checkpoints to `main` after CI, and preserve local recovery refs. Never force-push or publish private backups. [BUILD_PLAN.md](BUILD_PLAN.md) and [phase evidence](docs/evidence/) track progress. `prototype/` and `outputs/` are historical; the separate `build-guide/` remains in the original checkout.
+The public repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley). The owner confirmed public visibility on 3 October 2026; future visibility changes are the owner's decision. Develop on `dev`, promote tested checkpoints to `main` after CI, and preserve local recovery refs. Never force-push or publish private backups. [BUILD_PLAN.md](BUILD_PLAN.md) and [phase evidence](docs/evidence/) track progress.
 
-Both local folders are linked checkouts of this repository, sharing the original folder's Git history and `origin`:
+The sole local project folder is `%USERPROFILE%\.codex\worktrees\saavantus-app\Smiley insurance`. Despite its directory name, it is now a standalone repository: its `.git` history, environment configuration and private documents are self-contained. The former `C:\dev\codex projects\Smiley insurance` checkout was removed after verification. Keep working in this folder; do not create another worktree unless the owner asks.
 
-| Local folder | Branch | Purpose |
-| --- | --- | --- |
-| `C:\dev\codex projects\Smiley insurance` | `main` | Original project folder; receives tested checkpoints |
-| `%USERPROFILE%\.codex\worktrees\saavantus-app\Smiley insurance` | `dev` | Active development worktree |
-
-GitHub currently has `main` and `dev`. The earlier `codex/saavantus-app` branch is retained locally for recovery; its remote branch has been removed. Edits in one checkout do not automatically change the other. Environment files, database contents, private documents, dependencies and build output remain local. See the [repository sync audit](docs/evidence/repository-sync-2026-10-03.md).
+GitHub has `main` and `dev`, both available as branches in this one local repository. The active branch is `dev`; the earlier `codex/saavantus-app` branch remains local recovery history. `prototype/` and `outputs/` are historical. The older planning guide was preserved in ignored `build-guide/`, with its separate history. Original-only files and differing originals were preserved privately before removal. PostgreSQL data lives under the installed service's data directory, outside the project. Environment files, database contents, private documents, dependencies and build output remain local. See the [consolidation evidence](docs/evidence/project-folder-consolidation-2026-10-03.md).

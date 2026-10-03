@@ -2,11 +2,11 @@
 
 ## Project Structure & Module Organization
 
-`src/app/` holds pages/APIs; `src/features/{demo,desk}/` holds previews/protected staff screens. `src/server/` contains scoped identity, case, document, financial and database services; `src/worker/` runs persistent jobs. Migrations live in `drizzle/`, checks in `tests/{unit,integration,http}/`, assets in `public/`, and private synthetic files in ignored `tmp/`. `docs/` records evidence; `prototype/` and `outputs/` are historical. The separate `build-guide/` stays in the original checkout.
+`src/app/` holds pages/APIs; `src/features/{demo,desk}/` holds previews/protected staff screens. `src/server/` contains scoped identity, case, document, financial and database services; `src/worker/` runs persistent jobs. Migrations live in `drizzle/`, checks in `tests/{unit,integration,http}/`, assets in `public/`, and private synthetic files in ignored `tmp/`. `docs/` records evidence; `prototype/` and `outputs/` are historical. The older planning guide is preserved in ignored `build-guide/` with its separate history.
 
 ## Build, Test, and Development Commands
 
-Use Node.js 24+ and npm from the `dev` worktree.
+Use Node.js 24+ and npm on `dev` in `%USERPROFILE%\.codex\worktrees\saavantus-app\Smiley insurance`. This is the sole standalone project checkout; do not create another worktree unless the owner asks.
 
 - `npm ci`: install locked dependencies.
 - `npm run db:setup`: provision unused native PostgreSQL databases with an explicit private administrator connection.
