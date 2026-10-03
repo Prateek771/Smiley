@@ -4,9 +4,9 @@ Updated: 3 October 2026. This is the living progress record for the repository.
 
 **Native database transfer:** Both databases were restored and verified against their saved data/security snapshots, and all app/test connections now use installed PostgreSQL 18.6 on port 5432. The Docker runtime, Compose configuration and container-based CI service have been replaced. 112 unit/server checks and 15 fresh migration checks pass; lint, types and production build pass. All 58 desktop/mobile checks pass, and preserved staff sign-in, queue, case details and document download work on localhost:3000. See [transfer evidence](docs/evidence/native-postgresql-transfer.md).
 
-**Current position:** Phases 0–19 are implemented with synthetic data. Local verification passed 200 combined unit/server/database/API checks, followed by the added platform-race and AI-classification regressions (nine admin, 26 AI unit and ten durable AI checks). The latest build passes three production HTTP scenarios, lint and TypeScript. Codex browser review covers source-backed extraction/pack drafts, staff acceptance/rejection, eligibility history, scoped reports, administration and phone layouts. Exact-commit CI and promotion are pending. See [Phases 16–19 validation](docs/evidence/phases-16-19-validation.md). Earlier Playwright/agent-browser results are historical; neither tool was invoked. This checkpoint does not establish production or real-hospital readiness.
+**Current position:** Phases 0–19 are implemented and verified with synthetic data. Application checkpoint `1b1982b` passed [exact GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/37118628739): 205 unit/server/database/API checks, 15 fresh migration checks, three production HTTP scenarios, lint, TypeScript and production build. Codex browser review covers source-backed extraction/pack drafts, staff acceptance/rejection, eligibility history, scoped reports, administration and phone layouts. See [Phases 16–19 validation](docs/evidence/phases-16-19-validation.md). Earlier Playwright/agent-browser results are historical; neither tool was invoked. This checkpoint does not establish production or real-hospital readiness. Phase 20 requires a hosting/storage decision.
 
-**Readiness refresh, 3 October:** Baseline `9fea3dc` passed fresh local 133 server/database/API checks, two production HTTP scenarios, lint, types and production build. PostgreSQL, preserved development data, private documents, GitHub authentication/push access and exact-commit CI on `main`/`dev` were verified. OCR.space and OpenRouter's exact `qwen/qwen3.8-27b:free` model passed synthetic connectivity checks; application integration remains Phases 16–17. Localhost and the persistent worker are running. See [the readiness audit](docs/evidence/phase-16-readiness-2026-10-03.md).
+**Pre-build readiness refresh, 3 October:** Baseline `9fea3dc` passed fresh local 133 server/database/API checks, two production HTTP scenarios, lint, types and production build. PostgreSQL, preserved development data, private documents, GitHub authentication/push access and exact-commit CI on `main`/`dev` were verified. OCR.space and OpenRouter's exact `qwen/qwen3.8-27b:free` model passed synthetic connectivity checks; their application integration is now delivered in Phases 16–17. See [the baseline readiness audit](docs/evidence/phase-16-readiness-2026-10-03.md).
 
 **First useful release:** A hospital insurance desk and billing team can prepare a cashless discharge case, handle repeated payer queries, record actual authorization, and confirm the patient amount with evidence. Settlement follows separately. The 1–2 hour ambition is a workflow target to measure, not a guarantee of payer approval or bank settlement.
 
@@ -183,7 +183,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 16 — Add document extraction with human verification
 
-- [ ] Complete Phase 16 and record evidence.
+- [x] Complete Phase 16 and record evidence.
 - **Delivered:** Bounded cloud extraction, exact source/page quotes, immutable staff reviews and durable private LangGraph checkpoints. Live extraction correctly labels reference/bill/authorization tokens after format-guard review fixes; no date is invented. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Evaluate model/OCR candidates on synthetic documents; connect TypeScript LangGraph through the worker with persistent state. Attach extracted facts to exact source/page evidence and staff correction records.
 - **Test:** Poor scans, contradictory values, missing pages, provider outage, unsupported documents, and job resumption.
@@ -191,7 +191,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 17 — Add claim-pack checks and response drafts
 
-- [ ] Complete Phase 17 and record evidence.
+- [x] Complete Phase 17 and record evidence.
 - **Delivered:** Selected-source missing/conflict checks, sourced pack/query drafts and explicit follow-up suggestions. Live pack checking completes with correct quotes; staff control all consequential actions. Earlier request-linked queries retain manual preparation/acknowledgement. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Let agents identify missing/inconsistent evidence, prepare reviewed packs, draft source-backed query responses, and suggest follow-up tasks.
 - **Test:** Invented claims/reasons, stale document versions, unsupported conclusions, repeated jobs, and human rejection/correction of drafts.
@@ -199,7 +199,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 18 — Extend the earlier patient journey
 
-- [ ] Complete Phase 18 and record evidence.
+- [x] Complete Phase 18 and record evidence.
 - **Delivered:** Eligibility, actual preauthorization responses, treatment, repeated enhancement/query lineage and discharge handoff with chronology/source guards. Fifteen journey checks pass; a Codex browser action records evidenced UNCLEAR eligibility and history. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Add eligibility tracking, preauthorization, treatment updates, and authorization enhancements using existing case/document/query capabilities.
 - **Test:** Repeated enhancement/query cycles, expired eligibility, revised approvals, and unclear payer responses.
@@ -207,7 +207,7 @@ The requested document files and their ZIP/tar archive entries have been removed
 
 ### Phase 19 — Add administration and useful reporting
 
-- [ ] Complete Phase 19 and record evidence.
+- [x] Complete Phase 19 and record evidence.
 - **Delivered:** Hospital access/branch/invitation administration, separate platform registry, immutable rule lifecycle and scoped desk/finance reports/CSV. Concurrent deactivation races are fixed; missing/stale money remains unknown. [Validation](docs/evidence/phases-16-19-validation.md).
 - **Build:** Complete hospital/platform administration, controlled rule management, exports, and desk/finance reporting. Show preparation time, payer waiting time, and desk resolution separately.
 - **Test:** Role-scoped exports, private-data leakage, revised rules, missing financial evidence, and report totals against known cases.
@@ -259,7 +259,7 @@ These are separate small build/test cycles after the core workflow is proven; th
 | Component library | Phase 3 | Tailwind and native accessible controls implemented; add a library when justified |
 | Identity/tenancy mapping and internal tables | Phases 4–7 | Implemented: separate Better Auth identity, hospital/branch/role grants and forced RLS; 42 domain tables plus 10 justified internal tables, four invoker views |
 | Private storage provider/region/access policy | Real storage integration; Phase 20 staging at latest | Production provider unselected; Phase 10 uses private local synthetic storage and reviewed access checks |
-| Actual model/OCR provider and agent persistence | Phase 16 | OCR.space plus exact OpenRouter `qwen/qwen3.8-27b:free`; bounded adapters, persisted LangGraph stages, source validation and immutable staff reviews implemented. Correct live extraction/pack checks and browser reviews passed; exact checkpoint CI pending. No alternative model fallback |
+| Actual model/OCR provider and agent persistence | Phase 16 | OCR.space plus exact OpenRouter `qwen/qwen3.8-27b:free`; bounded adapters, persisted LangGraph stages, source validation and immutable staff reviews implemented. Correct live extraction/pack checks, browser reviews and exact application checkpoint CI passed. No alternative model fallback |
 | Hosting provider/region/budget | Phase 20 | Unselected; persistent web/worker/database roles established |
 | Pilot, approved real rules, and integration permissions | Phases 22–23 or any real integration | Unresolved; does not block synthetic development |
 
@@ -278,6 +278,8 @@ Add one row for each completed phase or meaningful failed checkpoint. Store test
 | 2026-10-01 | 2: synthetic discharge workflow | [9e2f78a](https://github.com/Prateek771/Smiley/commit/9e2f78a153f2c70acb50b4b33b722620f2fe8f82) | Independent integer-paise audits: 5 packs, 11 checkpoints, 143 monetary/null outputs, 7 bill sums; 5 timing walkthroughs; current evidence/query/version scope reviewed | [Workflow](docs/superpowers/specs/2026-10-01-cashless-discharge-design.md), [fixtures](docs/fixtures/phase-2-cashless-discharge.json), [validation](docs/evidence/phase-2-validation.md). Synthetic assumptions only; subsequent application checkpoints are recorded in the execution ledger. |
 
 Phases 3–9: [execution ledger](docs/evidence/phases-3-10-progress.md) records exact checkpoint SHAs, CI runs and validation reports. Phase 10 final results: 107 unit/server checks and 15 fresh-migration checks passed with zero skips; 58 desktop/mobile browser journeys passed (3.7 minutes locally, 1.5 minutes in exact CI); lint, typecheck and production build passed; production dependency audit found zero vulnerabilities. Reopen a phase if a later change invalidates its acceptance evidence; keep future phase results and approval gates explicit.
+
+Phases 16–19 application checkpoint [1b1982b](https://github.com/Prateek771/Smiley/commit/1b1982b8c232c22a329e2ea987aeb80363e922a2) passed [exact CI](https://github.com/Prateek771/Smiley/actions/runs/37118628739): 205 server checks, 15 fresh migration checks and three production HTTP scenarios, with no failures or skips. Lint, types and build passed; production dependency audit found zero vulnerabilities. Live cloud extraction/pack checks and Codex desktop/phone review passed. All 56 original non-session development tables and three private document objects remain intact. [Full validation and limits](docs/evidence/phases-16-19-validation.md). The evidence-only checkpoint retains this application code and follows the same exact-CI-before-`main` publication rule.
 
 ## GitHub recommendation and references
 
