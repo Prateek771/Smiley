@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "Smiley · Hospital claims desk", template: "%s · Smiley" },
-  description: "Explore the Smiley cashless-discharge workflow with fictional cases, evidence, and clearly separated financial facts.",
+  description: "Manage hospital cashless claims, source evidence, payer queries and discharge coordination in a scoped staff workspace.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

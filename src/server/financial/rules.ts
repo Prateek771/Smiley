@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const DEFAULT_CALCULATION_VERSION = "CASHLESS-DISCHARGE-1";
+export const isSupportedCalculationVersion = (version: string) => version === DEFAULT_CALCULATION_VERSION || version === "SYN-DISCHARGE-1";
+
 export const money = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 export const billSchema = z.object({
   serviceDate: z.iso.date(),
@@ -28,7 +31,7 @@ export function assessBill(input: BillInput, ruleInput: RuleInput | null): Asses
   const blocks: string[] = [];
   if (!rule) blocks.push("A verified policy and rule snapshot is required.");
   else {
-    if (rule.version !== "SYN-DISCHARGE-1") blocks.push("This rule version is unsupported.");
+    if (!isSupportedCalculationVersion(rule.version)) blocks.push("This rule version is unsupported.");
     if (rule.validFrom > rule.validTo || bill.serviceDate < rule.validFrom || bill.serviceDate > rule.validTo) blocks.push("The service date and policy effective dates conflict.");
     if (rule.tariffCapsPaise.length && rule.tariffCapsPaise.length !== bill.lines.length) blocks.push("Each bill line needs its corresponding tariff cap or an explicit uncapped entry.");
   }

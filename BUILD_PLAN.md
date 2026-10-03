@@ -2,9 +2,11 @@
 
 Updated: 3 October 2026. This is the living progress record for the repository.
 
+**Product direction, 3 October:** Build a working hospital staff product; synthetic records are test fixtures, not the product's permitted business inputs. Normal staff screens and new supported rule versions use hospital-workflow terminology. `/demo` remains a labelled training example. Historical phase evidence remains valid as engineering evidence. The remaining phases now complete product setup, data handling/security, deployment/operations and hospital acceptance. See [production direction and staff journey](docs/production-direction.md).
+
 **Native database transfer:** Both databases were restored and verified against their saved data/security snapshots, and all app/test connections now use installed PostgreSQL 18.6 on port 5432. The Docker runtime, Compose configuration and container-based CI service have been replaced. 112 unit/server checks and 15 fresh migration checks pass; lint, types and production build pass. All 58 desktop/mobile checks pass, and preserved staff sign-in, queue, case details and document download work on localhost:3000. See [transfer evidence](docs/evidence/native-postgresql-transfer.md).
 
-**Current position:** Phases 0–19 are implemented and verified with synthetic data. Application checkpoint `1b1982b` passed [exact GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/37118628739): 205 unit/server/database/API checks, 15 fresh migration checks, three production HTTP scenarios, lint, TypeScript and production build. Codex browser review covers source-backed extraction/pack drafts, staff acceptance/rejection, eligibility history, scoped reports, administration and phone layouts. See [Phases 16–19 validation](docs/evidence/phases-16-19-validation.md). Earlier Playwright/agent-browser results are historical; neither tool was invoked. This checkpoint does not establish production or real-hospital readiness. Phase 20 requires a hosting/storage decision.
+**Current position:** Phases 0–19 are implemented and verified with synthetic data. Application checkpoint `1b1982b` passed [exact GitHub CI](https://github.com/Prateek771/Smiley/actions/runs/37118628739): 205 unit/server/database/API checks, 15 fresh migration checks, three production HTTP scenarios, lint, TypeScript and production build. Codex browser review covers source-backed extraction/pack drafts, staff acceptance/rejection, eligibility history, scoped reports, administration and phone layouts. See [Phases 16–19 validation](docs/evidence/phases-16-19-validation.md). Earlier Playwright/agent-browser results are historical; neither tool was invoked. This checkpoint does not establish production or real-hospital readiness. Next is Phase 20: production application foundation; hosting/private storage are Phase 22 decisions.
 
 **Pre-build readiness refresh, 3 October:** Baseline `9fea3dc` passed fresh local 133 server/database/API checks, two production HTTP scenarios, lint, types and production build. PostgreSQL, preserved development data, private documents, GitHub authentication/push access and exact-commit CI on `main`/`dev` were verified. OCR.space and OpenRouter's exact `qwen/qwen3.8-27b:free` model passed synthetic connectivity checks; their application integration is now delivered in Phases 16–17. See [the baseline readiness audit](docs/evidence/phase-16-readiness-2026-10-03.md).
 
@@ -213,33 +215,38 @@ The requested document files and their ZIP/tar archive entries have been removed
 - **Test:** Role-scoped exports, private-data leakage, revised rules, missing financial evidence, and report totals against known cases.
 - **Pass when:** Reports reconcile with underlying facts and do not imply that synthetic timing proves a real 1–2 hour outcome.
 
-### Phase 20 — Deploy a synthetic staging environment
+### Phase 20 — Complete production application foundation
 
 - [ ] Complete Phase 20 and record evidence.
-- **Build:** Choose provider/region/budget and deploy the Next.js server, persistent worker, PostgreSQL, and private document storage. Separate environments and secrets.
-- **Test:** Fresh deployment, worker continuity, private storage access, configuration errors, and provider outage fallback.
-- **Pass when:** The approved staging environment runs synthetic cases with observable web/worker failures. Real patient data has not been enabled.
+- [x] **20.1 direction checkpoint:** Normal staff wording and the supported `CASHLESS-DISCHARGE-1` calculation version are delivered, with legacy arithmetic/provenance preserved. [Verification and remaining limits](docs/evidence/production-direction-2026-10-03.md). Checkpoints 20.2–20.4 remain pending.
+- **Build:** Complete a hospital staff workspace independent of seeded examples: normal hospital/branch setup, first-admin provisioning, invitations, insurer/TPA/policy configuration and source-backed rules. Separate training/sample data from environment configuration. Keep documented unsupported-rule review paths.
+- **Small checkpoints:** 20.1 staff wording and supported non-fixture calculation version; 20.2 seed-free hospital/administrator onboarding; 20.3 insurer/TPA/policy configuration; 20.4 reviewed rule/tariff setup and role walkthrough.
+- **Test:** Use synthetic inputs with ordinary names/codes through the same APIs/forms. Verify empty installations, ownership, dates, unsupported contracts, exact money and preserved historical snapshots. Existing development records must survive.
+- **Pass when:** A newly configured hospital can run the supported manual workflow without test seeds or fixture-specific engine identifiers. Production data permissions remain a separate Phase 21 gate.
 
-### Phase 21 — Prove recovery and synthetic release readiness
+### Phase 21 — Complete production data handling and security
 
 - [ ] Complete Phase 21 and record evidence.
-- **Build:** Exercise backup/restore, worker recovery, failure monitoring, protected audit records, and the complete role-based workflow.
-- **Test:** Restore into an isolated environment; replay interrupted/duplicate work; run all critical calculation, permission, document, and end-to-end cases.
-- **Pass when:** Record an evidence-backed release report and known limitations. **Gate A: synthetic technical readiness** is complete.
+- **Build:** Replace the cloud connector's test-only request/database contract with explicit document classification and hospital-scoped external-processing approval. Complete private document retention/access, secure deployment credentials/sessions, staff recovery and reviewed audit responsibilities. Retain manual workflows and the owner's exact model choice.
+- **Small checkpoints:** 21.1 handling policy and provider decision; 21.2 scoped processing contract and worker revocation; 21.3 document lifecycle; 21.4 deployed identity/access review and recovery.
+- **Test:** Use synthetic documents to prove unapproved processing is denied before network calls, revoked permission stops queued work, source changes prevent publication, provider limits/outages have clear recovery, and removed staff cannot read documents/exports.
+- **Pass when:** Engineering behavior is independently verified and the owner/hospital has approved the permitted handling route. Clinical cloud processing remains disabled wherever approval is absent; testing does not require real patients.
 
-### Phase 22 — Validate permitted historical cases
+### Phase 22 — Deploy and prove production operations
 
 - [ ] Complete Phase 22 and record evidence.
-- **Build:** Obtain a pilot hospital, explicit handling permission, an approved data route, applicable policy/tariff versions, and named desk/billing reviewers. Start with permitted de-identified cases.
-- **Test:** Compare calculations, missing-document findings, workflow outcomes, and measured times with independently reviewed historical results.
-- **Pass when:** Accuracy, disagreements, exclusions, and measured results are documented. **Gate B: historical validation** is complete; synthetic success alone cannot satisfy it.
+- **Build:** Choose hosting/region/budget and private storage; deploy web server, persistent worker and PostgreSQL with separate staging/production configuration. Add useful monitoring, incident ownership, backups and documented multi-process recovery.
+- **Small checkpoints:** 22.1 infrastructure/storage choice; 22.2 staging deployment with test fixtures; 22.3 backup/restore and worker failure drill; 22.4 production configuration and operational handoff.
+- **Test:** Fresh deployment, failed uploads, access denials, configuration errors, real process interruption, duplicate jobs, provider outage, isolated restore and complete role-based journeys. Development/test seeds must never run against production.
+- **Pass when:** **Gate A: technical and operational readiness** has an evidence-backed release report, successful restore and named operating responsibilities. Clinical handling remains subject to Phase 21 approval.
 
-### Phase 23 — Run a controlled production pilot
+### Phase 23 — Hospital acceptance and controlled production release
 
 - [ ] Complete Phase 23 and record evidence.
-- **Build:** Agree live scope, access responsibilities, operating/support procedures, provider handling terms, and hospital sign-offs for identifiable patient use.
-- **Test:** A limited monitored rollout exercises access, corrections, fallback, recovery, and incident handling under the approved live scope.
-- **Pass when:** **Gate C: identifiable-data production readiness** is signed off. Expand only from actual pilot evidence.
+- **Build:** Walk named hospital staff through their real operating roles, validate applicable policies/rules against permitted historical cases, and agree limited live scope, access, support and handling responsibilities. Use a monitored pilot after those decisions.
+- **Small checkpoints:** 23.1 role acceptance with synthetic cases; 23.2 permitted historical validation; 23.3 approved limited pilot; 23.4 release decision and documented exclusions.
+- **Test:** Compare calculations and workflow outcomes with independently reviewed expected results. Exercise corrections, private access, manual fallback, recovery and incident ownership; record measured times without promising payer outcomes.
+- **Pass when:** **Gate B: hospital/rule validation** and **Gate C: permitted production use** are signed off. Expand from actual acceptance and pilot evidence, not a fictional success rate.
 
 ## Later extension lane
 
@@ -258,10 +265,10 @@ These are separate small build/test cycles after the core workflow is proven; th
 | First workflow details and synthetic expected results | Phase 2 | Synthetic workflow/roles/timers and five packs defined; 11 checkpoints independently checked; real hospital rules and role authority remain unvalidated |
 | Component library | Phase 3 | Tailwind and native accessible controls implemented; add a library when justified |
 | Identity/tenancy mapping and internal tables | Phases 4–7 | Implemented: separate Better Auth identity, hospital/branch/role grants and forced RLS; 42 domain tables plus 10 justified internal tables, four invoker views |
-| Private storage provider/region/access policy | Real storage integration; Phase 20 staging at latest | Production provider unselected; Phase 10 uses private local synthetic storage and reviewed access checks |
+| Private storage provider/region/access policy | Phase 21 handling design and Phase 22 deployment | Production provider unselected; current local development storage has reviewed scope checks |
 | Actual model/OCR provider and agent persistence | Phase 16 | OCR.space plus exact OpenRouter `qwen/qwen3.8-27b:free`; bounded adapters, persisted LangGraph stages, source validation and immutable staff reviews implemented. Correct live extraction/pack checks, browser reviews and exact application checkpoint CI passed. No alternative model fallback |
-| Hosting provider/region/budget | Phase 20 | Unselected; persistent web/worker/database roles established |
-| Pilot, approved real rules, and integration permissions | Phases 22–23 or any real integration | Unresolved; does not block synthetic development |
+| Hosting provider/region/budget | Phase 22 | Unselected; persistent web/worker/database roles established |
+| Hospital rules, document handling, pilot and integration permissions | Rule setup in Phase 20; handling in Phase 21; acceptance in Phase 23 | Unresolved; develop the actual product with synthetic fixtures while these decisions are prepared |
 
 ## Evidence and progress log
 
@@ -283,7 +290,7 @@ Phases 16–19 application checkpoint [1b1982b](https://github.com/Prateek771/Sm
 
 ## GitHub recommendation and references
 
-The **public GitHub repository is connected** and Phase 1's publication checks passed. The owner confirmed public visibility on 3 October 2026 so friends can view it; future visibility changes remain the owner's decision. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting can be decided in Phase 20.
+The **public GitHub repository is connected** and Phase 1's publication checks passed. The owner confirmed public visibility on 3 October 2026 so friends can view it; future visibility changes remain the owner's decision. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting is decided in the revised Phase 22 deployment work.
 
 Created `Prateek771/Smiley` privately under the owner's original authorization; its current visibility is public. `main` and `dev` track their remote branches; `codex/saavantus-app` remains only as an earlier local recovery branch. The retained folder is now standalone, with all Git history and local recovery refs preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions. The [3 October sync audit](docs/evidence/repository-sync-2026-10-03.md) preceded the [single-folder consolidation](docs/evidence/project-folder-consolidation-2026-10-03.md); the former original checkout no longer exists.
 

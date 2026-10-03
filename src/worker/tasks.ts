@@ -10,7 +10,7 @@ import { scopedCase } from "../server/financial/records";
 import { jobInputs } from "../server/jobs";
 import { executeAIRun } from "./ai";
 const terminal = ["COMPLETE", "FAILED", "STALE", "DENIED"];
-export async function executeJob(id: string, review: () => Promise<{ summary: string }> = async () => ({ summary: "Current synthetic pack inputs remain valid. Human approval and external submission stay separate." }), queue?: { attempts: number; locked_by: string | null }) {
+export async function executeJob(id: string, review: () => Promise<{ summary: string }> = async () => ({ summary: "Current pack inputs remain valid. Human approval and external submission stay separate." }), queue?: { attempts: number; locked_by: string | null }) {
   z.uuid().parse(id); const client = await migrationPool.connect(); let retryFailure = false;
   try {
     await client.query("SELECT pg_advisory_lock(hashtextextended($1,23))", [id]);

@@ -30,7 +30,7 @@ export function AIPanel({ caseId, version, ownerId, data, documents, queries, ca
     void send("review", { runId, itemIndex, action, ...(action === "CORRECT" ? { value: String(form.get("value")) } : {}), reason: String(form.get("reason")), verified: form.get("verified") === "on", expectedVersion: version });
   }
   return <section className={`${styles.card} ${styles.actionPanels}`} aria-label="AI evidence and staff review"><h2>AI evidence and staff review</h2>
-    <p className={styles.muted}>OCR.space reads supported PDFs and images; Qwen selects source evidence. Check every suggestion against the original. Financial and payer decisions still require their separate staff actions.</p>
+    <p className={styles.muted}>Review extracted facts and draft wording against the original evidence. Financial and payer decisions require their separate staff actions. The current cloud connector supports test documents only; use manual source notes for other documents until hospital external processing is approved.</p>
     <p className={styles.muted}>Cloud extraction supports files up to 1 MB and PDFs up to 3 pages. UTF-8 source text is read directly. Original documents and manual source notes remain available above.</p>
     {notice && <p role="status" className={styles.action}>{notice}</p>}
     {canAct && <form className={styles.form} onSubmit={request}>

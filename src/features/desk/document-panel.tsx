@@ -54,7 +54,7 @@ export function DocumentPanel({ listing, canUpload }: { listing: DocumentListing
     if (sourceRetry.current?.content !== content) sourceRetry.current = { content, key: crypto.randomUUID() };
     if (await send(`/api/cases/${listing.caseId}/evidence`, JSON.stringify({ ...body, idempotencyKey: sourceRetry.current.key }), true)) sourceRetry.current = null;
   }
-  return <section aria-label="Private documents" className={`${styles.card} ${styles.full} ${styles.actionPanels}`}><h2>Private documents and revisions</h2><p className={styles.muted}>Synthetic files only. PDF, PNG, JPEG or UTF-8 text; maximum 5 MiB. Downloads require current staff access.</p>
+  return <section aria-label="Private documents" className={`${styles.card} ${styles.full} ${styles.actionPanels}`}><h2>Private documents and revisions</h2><p className={styles.muted}>Upload documents permitted for your hospital workspace. PDF, PNG, JPEG or UTF-8 text; maximum 5 MiB. Downloads require current staff access.</p>
     {notice && <p className={notice.error ? styles.alert : styles.success} role={notice.error ? "alert" : "status"}>{notice.text}</p>}
     {listing.revisions.length ? <ul className={styles.timeline}>{listing.revisions.map((revision) => <li key={revision.id}>
       <a className={styles.back} href={`/api/documents/${revision.id}/download`}>Download {revision.name} revision {revision.revisionNumber}</a>
@@ -68,7 +68,7 @@ export function DocumentPanel({ listing, canUpload }: { listing: DocumentListing
         <label className={styles.field}>Document file<input name="file" type="file" accept="application/pdf,image/png,image/jpeg,text/plain" required /></label>
         <button className={styles.button} disabled={pending}>Upload private document</button>
       </form></section>
-      <section aria-label="Record source note"><h3>Record a source note</h3><p className={styles.muted}>A manual excerpt stays attached to its exact revision. Verification and extraction follow in later phases.</p><form className={styles.form} onSubmit={(event) => void source(event)}>
+      <section aria-label="Record source note"><h3>Record a source note</h3><p className={styles.muted}>A manual excerpt stays attached to its exact revision. Review it against the original evidence; AI suggestions have a separate staff review.</p><form className={styles.form} onSubmit={(event) => void source(event)}>
         <label className={styles.field}>Source revision<select name="revisionId" required>{listing.revisions.map((revision) => <option key={revision.id} value={revision.id}>{revision.name} · revision {revision.revisionNumber}</option>)}</select></label>
         <label className={styles.field}>Field or topic<input name="fieldName" maxLength={150} required /></label><label className={styles.field}>Page number (optional)<input name="pageNumber" type="number" min={1} max={2147483647} /></label>
         <label className={styles.field}>Source excerpt<textarea name="sourceExcerpt" maxLength={10000} required /></label><button className={styles.button} disabled={pending || !listing.revisions.length}>Save source note</button>

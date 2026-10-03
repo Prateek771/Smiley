@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+test("hospital calculation version accepts ordinary bill inputs and preserves legacy arithmetic", async () => {
+  const { assessBill } = await import("../../src/server/financial/rules");
+  const bill = { serviceDate: "2026-10-02", lines: [{ description: "Room charges", grossPaise: 10000000, excludedPaise: 500000, reductionPaise: 700000 }] };
+  const rule = { version: "CASHLESS-DISCHARGE-1", validFrom: "2026-01-01", validTo: "2026-12-31", deductiblePaise: 300000, copayBps: 1000, benefitLimitPaise: 20000000, tariffCapsPaise: [] };
+  const current = assessBill(bill, rule);
+  assert.equal(current.status, "READY");
+  assert.deepEqual(current, assessBill(bill, { ...rule, version: "SYN-DISCHARGE-1" }));
+  assert.equal(current.grossPaise, current.insurerPaise! + current.patientPaise! + current.reductionPaise);
+  assert.equal(assessBill(bill, { ...rule, version: "CASHLESS-DISCHARGE-999" }).status, "NEEDS_REVIEW");
+  assert.equal(assessBill(bill, { ...rule, validTo: "2026-01-01" }).insurerPaise, null);
+});
+
 test("versioned synthetic assessment preserves money, reasons, rounding and review blocks", async () => {
   const rules = await import("../../src/server/financial/rules").catch(() => null);
   assert.ok(rules, "Implement the deterministic versioned bill assessment.");

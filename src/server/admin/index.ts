@@ -6,7 +6,7 @@ import { lookupStaff, requireStaffSession, setIdentityContext } from "../auth";
 import { createInvitation, disableStaff } from "../auth/staff";
 import { appPool } from "../db/client";
 import { writeAudit } from "../audit";
-import { ruleSchema, type RuleInput } from "../financial/rules";
+import { isSupportedCalculationVersion, ruleSchema, type RuleInput } from "../financial/rules";
 import { caseIdSchema as id } from "../financial/records";
 
 export const branchRoles = ["INSURANCE_EXECUTIVE", "TPA_EXECUTIVE", "CLAIM_VERIFIER", "BILLING_OFFICER", "FINANCE_OFFICER", "DOCTOR", "RECEPTIONIST", "REPORT_USER"] as const;
@@ -14,7 +14,7 @@ const reason = z.string().trim().min(1).max(2000);
 const name = z.string().trim().min(1).max(150);
 const code = z.string().trim().min(1).max(30).regex(/^[A-Za-z0-9_-]+$/u);
 const status = z.enum(["ACTIVE", "INACTIVE"]);
-const ruleInput = ruleSchema.refine((rule) => rule.version === "SYN-DISCHARGE-1" && rule.validFrom <= rule.validTo, "Use the supported calculation version and ordered dates.");
+const ruleInput = ruleSchema.refine((rule) => isSupportedCalculationVersion(rule.version) && rule.validFrom <= rule.validTo, "Use the supported calculation version and ordered dates.");
 const adminInput = z.discriminatedUnion("type", [
   z.object({ type: z.literal("hospital"), name: name.max(200), reason }).strict(),
   z.object({ type: z.literal("branch-create"), code, name }).strict(),

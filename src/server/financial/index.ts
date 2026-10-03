@@ -59,14 +59,14 @@ export async function applyFinancialAction(headers: Headers, caseId: string, inp
       const { bill } = currentFinancial(await recordsForCase(client, caseId));
       if (!bill || bill.id !== action.billId) throw new AccessError(409, "Choose the current bill revision before assessment.");
       await requireRevision(client, caseId, action.policyRevisionId, "policy");
-      if (action.registeredRuleId && action.rule !== null) throw new AccessError(400, "Use either the approved registered rule or a manual synthetic snapshot.");
+      if (action.registeredRuleId && action.rule !== null) throw new AccessError(400, "Use either the approved registered rule or a manually reviewed snapshot.");
       const rule = action.registeredRuleId ? await registeredRule(client, actor.hospitalId, action.registeredRuleId, String(current.policy_id), bill.payload.bill.serviceDate) : action.rule;
       let result: Assessment;
       try { result = assessBill(bill.payload.bill, rule); } catch { throw new AccessError(400, "The rule and monetary values are invalid."); }
       if (!current.valid_from || !current.valid_to || bill.payload.bill.serviceDate < current.valid_from || bill.payload.bill.serviceDate > current.valid_to) {
         result = { ...result, status: "NEEDS_REVIEW", blocks: [...result.blocks, "The registered policy coverage dates do not cover this service date."], insurerPaise: null, patientPaise: null };
       }
-      payload = { ...action, rule, ruleSource: action.registeredRuleId ? "approved-registry" : "manual-synthetic", result, contextFingerprint: policyContext(current) };
+      payload = { ...action, rule, ruleSource: action.registeredRuleId ? "approved-registry" : rule?.version === "SYN-DISCHARGE-1" ? "manual-synthetic" : "manual-reviewed", result, contextFingerprint: policyContext(current) };
     } else if (["decision", "confirm", "patient-receipt", "patient-reversal", "patient-refund"].includes(action.type)) {
       payload = await prepareDecision(client, caseId, action as Parameters<typeof prepareDecision>[2], await usableRecords(client, caseId, current, await recordsForCase(client, caseId)));
     } else {

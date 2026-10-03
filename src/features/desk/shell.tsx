@@ -13,7 +13,7 @@ export function DeskShell({ actor, children }: { actor: StaffSession; children: 
         <Link href="/desk">Work queue</Link>
         <Link href="/desk/reports">Operations reports</Link>
         {actor.roles.includes("HOSPITAL_ADMIN") && !actor.roles.includes("SUPER_ADMIN") && <Link href="/desk/admin">Hospital administration</Link>}
-        <Link href="/demo">Synthetic demo</Link>
+        <Link href="/demo">Training demo</Link>
       </nav>
       <div className={styles.identity}>
         <div><strong>{actor.name}</strong><p>Verified staff session</p></div>

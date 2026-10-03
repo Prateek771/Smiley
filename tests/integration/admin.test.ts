@@ -70,6 +70,33 @@ test("branch grant revocation is enforced for an existing staff session", async 
   await applyAdminAction(fixture.headers.adminA, { type: "revoke-grant", ...input });
   await assert.rejects(getReport(fixture.headers.deskA, { mode: "desk", branchId: input.branchId }), { status: 403 });
 });
+
+test("hospital rule registry assesses a supported version independent of synthetic fixture identifiers", async () => {
+  const data = await adminData(fixture.headers.adminA);
+  const rule = { ...syntheticRule, version: "CASHLESS-DISCHARGE-1" };
+  const created = await applyAdminAction(fixture.headers.adminA, {
+    type: "rule-create", policyId: data.policies[0].id, name: "Reviewed discharge benefit",
+    rule, reason: "Policy evidence reviewed by hospital administration",
+  });
+  await applyAdminAction(fixture.headers.adminA, {
+    type: "rule-state", ruleId: created.id, expectedVersion: 1, status: "APPROVED", reason: "Reviewed calculation inputs",
+  });
+  try {
+    const item = await fixture.newCase();
+    await item.act("billingA", { type: "assess", billId: item.bill.recordId, rule: null, registeredRuleId: created.id, policyRevisionId: item.sources.policy, verified: true });
+    const financial = await getFinancialCase(fixture.headers.billingA, item.caseId);
+    assert.equal(financial.assessment?.payload.rule?.version, "CASHLESS-DISCHARGE-1");
+    assert.equal(financial.assessment?.payload.result.status, "READY");
+    assert.equal(financial.assessment?.payload.ruleSource, "approved-registry");
+    assert.equal(financial.decision, null);
+    await item.act("billingA", { type: "assess", billId: item.bill.recordId, rule, policyRevisionId: item.sources.policy, verified: true });
+    assert.equal((await getFinancialCase(fixture.headers.billingA, item.caseId)).assessment?.payload.ruleSource, "manual-reviewed");
+  } finally {
+    await applyAdminAction(fixture.headers.adminA, {
+      type: "rule-state", ruleId: created.id, expectedVersion: 2, status: "RETIRED", reason: "Calculation test completed",
+    });
+  }
+});
 test("unsupported rules, nonfinite money and self disabling are denied", async () => {
   const data = await adminData(fixture.headers.adminA);
   const action = { type: "rule-create", policyId: data.policies[0].id, name: "Invalid synthetic rule", reason: "Negative probe" };
