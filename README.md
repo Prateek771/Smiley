@@ -46,4 +46,13 @@ Hosting, cloud storage, real hospital rules and model/OCR providers remain unsel
 
 ## Repository workflow
 
-The private repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley). Develop on `dev`, promote tested checkpoints to `main` after CI, and preserve local recovery refs. Never force-push or publish private backups. [BUILD_PLAN.md](BUILD_PLAN.md) and [phase evidence](docs/evidence/) track progress. `prototype/` and `outputs/` are historical; the separate `build-guide/` remains in the original checkout.
+The public repository is [Prateek771/Smiley](https://github.com/Prateek771/Smiley). The owner confirmed public visibility on 3 October 2026; future visibility changes are the owner's decision. Develop on `dev`, promote tested checkpoints to `main` after CI, and preserve local recovery refs. Never force-push or publish private backups. [BUILD_PLAN.md](BUILD_PLAN.md) and [phase evidence](docs/evidence/) track progress. `prototype/` and `outputs/` are historical; the separate `build-guide/` remains in the original checkout.
+
+Both local folders are linked checkouts of this repository, sharing the original folder's Git history and `origin`:
+
+| Local folder | Branch | Purpose |
+| --- | --- | --- |
+| `C:\dev\codex projects\Smiley insurance` | `main` | Original project folder; receives tested checkpoints |
+| `%USERPROFILE%\.codex\worktrees\saavantus-app\Smiley insurance` | `dev` | Active development worktree |
+
+GitHub currently has `main` and `dev`. The earlier `codex/saavantus-app` branch is retained locally for recovery; its remote branch has been removed. Edits in one checkout do not automatically change the other. Environment files, database contents, private documents, dependencies and build output remain local. See the [repository sync audit](docs/evidence/repository-sync-2026-10-03.md).

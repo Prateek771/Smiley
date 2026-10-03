@@ -1,6 +1,6 @@
 # Smiley / Saavantus Build Tracker
 
-Updated: 2 October 2026. This is the living progress record for the repository.
+Updated: 3 October 2026. This is the living progress record for the repository.
 
 **Native database transfer:** Both databases were restored and verified against their saved data/security snapshots, and all app/test connections now use installed PostgreSQL 18.6 on port 5432. The Docker runtime, Compose configuration and container-based CI service have been replaced. 112 unit/server checks and 15 fresh migration checks pass; lint, types and production build pass. All 58 desktop/mobile checks pass, and preserved staff sign-in, queue, case details and document download work on localhost:3000. See [transfer evidence](docs/evidence/native-postgresql-transfer.md).
 
@@ -14,7 +14,8 @@ All future development uses `dev` in the managed worktree. Push phase work to
 `dev`; promote a checkpoint to `main` only after its applicable checks and
 GitHub checks pass. The original project checkout follows `main`. Preserve
 existing work; never force-push application branches or publish local recovery
-refs. `codex/saavantus-app` is retained as the earlier checkpoint branch.
+refs. GitHub has `main` and `dev`; `codex/saavantus-app` is retained locally
+as an earlier recovery checkpoint, with its remote branch removed.
 
 ## Agreed foundation
 
@@ -245,7 +246,7 @@ These are separate small build/test cycles after the core workflow is proven; th
 
 | Decision | Needed before | Current position |
 | --- | --- | --- |
-| GitHub owner/name and publishable history | Phase 1 publication | [Prateek771/Smiley](https://github.com/Prateek771/Smiley), private; clean root history published; main and codex branches connected |
+| GitHub owner/name and publishable history | Phase 1 publication | [Prateek771/Smiley](https://github.com/Prateek771/Smiley), currently public by owner choice; clean root history published; main and dev connected |
 | First workflow details and synthetic expected results | Phase 2 | Synthetic workflow/roles/timers and five packs defined; 11 checkpoints independently checked; real hospital rules and role authority remain unvalidated |
 | Component library | Phase 3 | Tailwind and native accessible controls implemented; add a library when justified |
 | Identity/tenancy mapping and internal tables | Phases 4–7 | Implemented: separate Better Auth identity, hospital/branch/role grants and forced RLS; 42 domain tables plus 10 justified internal tables, four invoker views |
@@ -272,9 +273,9 @@ Phases 3–9: [execution ledger](docs/evidence/phases-3-10-progress.md) records 
 
 ## GitHub recommendation and references
 
-The **private GitHub repository is connected** and Phase 1's publication checks passed. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting can be decided in Phase 20.
+The **public GitHub repository is connected** and Phase 1's publication checks passed. The owner confirmed public visibility on 3 October 2026 so friends can view it; future visibility changes remain the owner's decision. It gives an off-computer source/history copy, reviewable phase changes, and automated checks on pushes/pull requests. Keep this Markdown checklist as the main progress record; add GitHub issues only for concrete work/bugs as they arise. Website hosting can be decided in Phase 20.
 
-Created `Prateek771/Smiley` privately under the owner's authorization. `main` and `dev` track their remote branches; `codex/saavantus-app` is retained as the earlier checkpoint branch. The managed worktree is preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions.
+Created `Prateek771/Smiley` privately under the owner's original authorization; its current visibility is public. `main` and `dev` track their remote branches; `codex/saavantus-app` remains only as an earlier local recovery branch. The managed worktree is preserved. The original history remains under `refs/local-backups/pre-github-foundation` locally; keep that recovery ref off GitHub. Hosting and later product implementation need their own scope decisions. The [3 October sync audit](docs/evidence/repository-sync-2026-10-03.md) confirms both local folders match GitHub and records the corrected folder/branch references.
 
 - [GitHub: adding local code](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github)
 - [GitHub: continuous integration](https://docs.github.com/en/actions/get-started/continuous-integration)
